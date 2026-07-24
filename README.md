@@ -1,5 +1,3 @@
-Yeh GitHub README.md ke liye ek professional aur hackathon-ready content hai jo aap directly paste kar sakte ho.
-
 SubSense AI – Autonomous Financial Copilot
 
 SubSense AI is an AI-powered financial copilot that automatically understands bills, subscriptions, and spending patterns to help users save money before unnecessary charges occur.
