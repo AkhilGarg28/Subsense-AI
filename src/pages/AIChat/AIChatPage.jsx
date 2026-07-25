@@ -19,6 +19,7 @@ const AIChatPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // TODO: Connect to AI backend
+    //todo: Add message to chat history
     console.log('Message sent:', message);
     setMessage('');
   };
