@@ -1,19 +1,26 @@
 const express = require('express');
 const router = express.Router();
+const {
+  getDashboardOverview,
+  getDashboardSummary,
+} = require('../controllers/dashboardController');
+const { protect } = require('../middleware/authMiddleware');
+
+// All dashboard routes require authentication
+router.use(protect);
 
 /**
- * Dashboard Routes Placeholder (Phase 5 - Dashboard & Financial Health Analytics)
- * Future Endpoints:
- * - GET  /api/v1/dashboard/summary
- * - GET  /api/v1/dashboard/health-score
- * - GET  /api/v1/dashboard/expense-trends
+ * @route   GET /api/v1/dashboard
+ * @desc    Get dashboard metrics overview (totals, status breakdown, 7-day upcoming)
+ * @access  Private
  */
+router.get('/', getDashboardOverview);
 
-router.get('/status', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Dashboard analytics service module is ready for Phase 5 implementation.',
-  });
-});
+/**
+ * @route   GET /api/v1/dashboard/summary
+ * @desc    Get detailed financial summary analytics via MongoDB Aggregation Pipelines
+ * @access  Private
+ */
+router.get('/summary', getDashboardSummary);
 
 module.exports = router;

@@ -1,19 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const { analyzeSpending, askAIChat } = require('../controllers/aiController');
+const { protect } = require('../middleware/authMiddleware');
+
+// All AI routes require authentication
+router.use(protect);
 
 /**
- * AI Routes Placeholder (Phase 6 - AI Copilot, Chat & Expense Forecasting)
- * Future Endpoints:
- * - POST /api/v1/ai/chat
- * - GET  /api/v1/ai/recommendations
- * - GET  /api/v1/ai/forecast
+ * @route   POST /api/v1/ai/analyze
+ * @desc    Analyze user financial spending, trends, duplicate subscriptions, and risk alerts
+ * @access  Private
  */
+router.post('/analyze', analyzeSpending);
 
-router.get('/status', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'AI Copilot service module is ready for Phase 6 implementation.',
-  });
-});
+/**
+ * @route   POST /api/v1/ai/chat
+ * @desc    Conversational AI Financial Assistant Chatbot
+ * @access  Private
+ */
+router.post('/chat', askAIChat);
 
 module.exports = router;

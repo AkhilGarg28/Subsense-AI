@@ -1,19 +1,31 @@
 const express = require('express');
 const router = express.Router();
+const {
+  getNotifications,
+  generateNotifications,
+  markAsRead,
+} = require('../controllers/notificationController');
+const { protect } = require('../middleware/authMiddleware');
+
+// All notification routes require authentication
+router.use(protect);
 
 /**
- * Notification Routes Placeholder (Phase 7 - Renewal Alerts & Push Notifications)
- * Future Endpoints:
- * - GET  /api/v1/notifications
- * - PUT  /api/v1/notifications/:id/read
- * - POST /api/v1/notifications/settings
+ * @route   GET /api/v1/notifications
+ * @desc    Get user notifications
+ * @access  Private
+ * 
+ * @route   POST /api/v1/notifications/generate
+ * @desc    Trigger smart notification engine for user
+ * @access  Private
  */
+router.route('/').get(getNotifications).post(generateNotifications);
 
-router.get('/status', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Notification alert service module is ready for Phase 7 implementation.',
-  });
-});
+/**
+ * @route   PUT /api/v1/notifications/:id/read
+ * @desc    Mark notification as read
+ * @access  Private
+ */
+router.put('/:id/read', markAsRead);
 
 module.exports = router;
