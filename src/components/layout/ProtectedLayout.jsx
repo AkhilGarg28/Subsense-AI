@@ -1,18 +1,13 @@
+import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import TopNavbar from './TopNavbar';
 import Loader from '../ui/Loader';
 
-/**
- * ProtectedLayout — Layout wrapper for authenticated pages.
- * Redirects to login if user is not authenticated.
- * Includes Navbar and Sidebar.
- */
 const ProtectedLayout = () => {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
-  // Show loader while checking auth
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -21,26 +16,18 @@ const ProtectedLayout = () => {
     );
   }
 
-  // Redirect to login if not authenticated
-  // NOTE: Temporarily disabled for development — uncomment when backend is connected
-  // if (!user) {
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar — hidden on mobile, visible on lg+ */}
+    <div className="min-h-screen bg-background text-white selection:bg-primary/30 selection:text-white lg:flex">
       <Sidebar />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col">
-        {/* Navbar — visible on mobile, hidden on lg+ (sidebar handles nav) */}
-        <div className="lg:hidden">
-          <Navbar />
-        </div>
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
+        <TopNavbar />
 
-        {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-10">
           <Outlet />
         </main>
       </div>

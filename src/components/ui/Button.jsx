@@ -1,9 +1,5 @@
 import { cn } from '../../utils/helpers';
 
-/**
- * Button — Reusable button component with multiple variants and sizes.
- * Supports primary, secondary, success, warning, danger, outline, and ghost variants.
- */
 const Button = ({
   children,
   variant = 'primary',
@@ -14,23 +10,21 @@ const Button = ({
   onClick,
   ...props
 }) => {
-  // Variant styles
   const variants = {
-    primary: 'bg-primary hover:bg-primary-hover text-white shadow-sm',
-    secondary: 'bg-secondary hover:bg-secondary-hover text-white shadow-sm',
-    success: 'bg-success hover:bg-success-hover text-white shadow-sm',
-    warning: 'bg-warning hover:bg-warning-hover text-white shadow-sm',
-    danger: 'bg-danger hover:bg-danger-hover text-white shadow-sm',
-    outline: 'border border-border text-text-secondary hover:bg-surface hover:text-text-primary',
-    ghost: 'text-text-secondary hover:bg-surface hover:text-text-primary',
+    primary: 'btn-primary',
+    secondary: 'btn-secondary',
+    success: 'btn-primary from-success to-primary',
+    warning: 'border border-warning/35 bg-warning/15 text-warning hover:bg-warning/25',
+    danger: 'btn-danger',
+    outline: 'btn-outline',
+    ghost: 'btn-ghost',
   };
 
-  // Size styles
   const sizes = {
-    sm: 'px-3 py-1.5 text-xs rounded-md',
-    md: 'px-4 py-2 text-sm rounded-lg',
-    lg: 'px-6 py-3 text-base rounded-lg',
-    xl: 'px-8 py-4 text-lg rounded-xl',
+    sm: 'min-h-10 px-3 text-xs',
+    md: 'min-h-12 px-5 text-sm',
+    lg: 'min-h-13 px-6 text-base',
+    xl: 'min-h-14 px-8 text-base',
   };
 
   return (
@@ -39,9 +33,8 @@ const Button = ({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background',
         'disabled:cursor-not-allowed disabled:opacity-50',
+        'focus:outline-none focus:ring-4 focus:ring-primary/20',
         variants[variant],
         sizes[size],
         className

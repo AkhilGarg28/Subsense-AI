@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   HiOutlineCurrencyDollar,
   HiOutlineCreditCard,
   HiOutlineCalendar,
   HiOutlineSparkles,
   HiOutlineRefresh,
-  HiOutlineCheckCircle,
-  HiOutlineClock,
-  HiOutlineFilter,
+  HiOutlineExclamationCircle,
 } from 'react-icons/hi';
-import { mockDashboardData } from '../../data/mockDashboardData';
+import { dashboardAPI } from '../../services/api';
 import {
   StatCard,
   HealthScoreCard,
+  AIInsightsPanel,
   ExpenseChart,
   CategoryChart,
   BillsList,
@@ -23,177 +22,211 @@ import {
   DashboardSkeleton,
 } from '../../components/dashboard';
 
-/**
- * DashboardPage — Core dashboard overview page for SubSense AI.
- * Assembles all analytical modules, quick action bar, charts, subscriptions table,
- * AI recommendations, and activity timeline into a modern responsive layout.
- * Features time filter state and simulated loading skeleton toggle.
- */
+// Fallback static data for empty database state
+const FALLBACK_METRICS = {
+  spending: { value: '$0.00', trend: '0%', sparkline: [0, 0, 0, 0, 0, 0] },
+  subscriptions: { value: '0 Active', trend: '+0', sparkline: [0, 0, 0, 0, 0, 0] },
+  upcomingBills: { value: '$0.00', trend: '0%', sparkline: [0, 0, 0, 0, 0, 0] },
+  savingsOpportunity: { value: '$0.00/yr', trend: '+0%', sparkline: [0, 0, 0, 0, 0, 0] },
+};
+
 const DashboardPage = () => {
-  // State for Time Filter ('This Month' | 'Last 3 Months' | 'Year to Date')
   const [timeFilter, setTimeFilter] = useState('This Month');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // State for simulated skeleton loading state
-  const [isLoading, setIsLoading] = useState(false);
+  // Live data from API
+  const [dashboardData, setDashboardData] = useState(null);
+  const [healthScore, setHealthScore] = useState(null);
 
-  // Toggle simulated loading for testing skeletons
-  const handleToggleLoading = () => {
+  const fetchDashboardData = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
-  };
+    setError(null);
+    try {
+      const [summaryRes, healthRes] = await Promise.allSettled([
+        dashboardAPI.getSummary(),
+        dashboardAPI.getHealthScore(),
+      ]);
 
-  // Adjust metrics data dynamically based on selected time filter
-  const getFilteredMetrics = () => {
-    switch (timeFilter) {
-      case 'Last 3 Months':
-        return {
-          spending: {
-            value: '$3,820.00',
-            trend: '+8.6%',
-            sparkline: [1100, 1180, 1248, 1290, 1310, 1382],
-          },
-          subscriptions: {
-            value: '16 Active',
-            trend: '+4',
-            sparkline: [12, 13, 14, 15, 15, 16],
-          },
-          upcomingBills: {
-            value: '$1,150.00',
-            trend: '-2.1%',
-            sparkline: [410, 390, 420, 380, 395, 384],
-          },
-          savingsOpportunity: {
-            value: '$1,020.00/yr',
-            trend: '+24.2%',
-            sparkline: [280, 450, 620, 780, 910, 1020],
-          },
-        };
-      case 'Year to Date':
-        return {
-          spending: {
-            value: '$8,450.00',
-            trend: '+14.2%',
-            sparkline: [950, 1020, 1180, 1050, 1120, 1248, 1310, 1580],
-          },
-          subscriptions: {
-            value: '18 Total',
-            trend: '+6',
-            sparkline: [10, 12, 13, 14, 15, 18],
-          },
-          upcomingBills: {
-            value: '$2,410.00',
-            trend: '-4.8%',
-            sparkline: [420, 400, 390, 410, 384, 406],
-          },
-          savingsOpportunity: {
-            value: '$2,850.00/yr',
-            trend: '+31.0%',
-            sparkline: [500, 900, 1400, 1800, 2300, 2850],
-          },
-        };
-      case 'This Month':
-      default:
-        return {
-          spending: {
-            value: mockDashboardData.metrics.monthlySpending.formatted,
-            trend: `+${mockDashboardData.metrics.monthlySpending.trend}%`,
-            sparkline: mockDashboardData.metrics.monthlySpending.sparkline,
-          },
-          subscriptions: {
-            value: mockDashboardData.metrics.activeSubscriptions.formatted,
-            trend: `+${mockDashboardData.metrics.activeSubscriptions.trend}`,
-            sparkline: mockDashboardData.metrics.activeSubscriptions.sparkline,
-          },
-          upcomingBills: {
-            value: mockDashboardData.metrics.upcomingBills.formatted,
-            trend: `${mockDashboardData.metrics.upcomingBills.trend}%`,
-            sparkline: mockDashboardData.metrics.upcomingBills.sparkline,
-          },
-          savingsOpportunity: {
-            value: mockDashboardData.metrics.savingsOpportunity.formatted,
-            trend: `+${mockDashboardData.metrics.savingsOpportunity.trend}%`,
-            sparkline: mockDashboardData.metrics.savingsOpportunity.sparkline,
-          },
-        };
+      if (summaryRes.status === 'fulfilled') {
+        setDashboardData(summaryRes.value.data?.data || summaryRes.value.data || null);
+      }
+      if (healthRes.status === 'fulfilled') {
+        setHealthScore(healthRes.value.data?.data || healthRes.value.data || null);
+      }
+    } catch (err) {
+      console.error('[Dashboard] Fetch error:', err);
+      setError('Failed to load dashboard data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const currentMetrics = getFilteredMetrics();
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  // If loading skeleton state is active, render DashboardSkeleton
+  // Build metrics from live API data
+  const getLiveMetrics = () => {
+    if (!dashboardData) return FALLBACK_METRICS;
+
+    const summary = dashboardData.summary || {};
+    const monthlySpending = dashboardData.monthlySpending || [];
+    const latestMonth = monthlySpending[monthlySpending.length - 1];
+    const prevMonth = monthlySpending[monthlySpending.length - 2];
+
+    const currentMonthSpend = latestMonth?.totalAmount || 0;
+    const prevMonthSpend = prevMonth?.totalAmount || currentMonthSpend;
+    const spendTrend = prevMonthSpend > 0
+      ? (((currentMonthSpend - prevMonthSpend) / prevMonthSpend) * 100).toFixed(1)
+      : '0.0';
+
+    const sparklineData = monthlySpending.slice(-6).map((m) => m.totalAmount || 0);
+
+    return {
+      spending: {
+        value: `$${currentMonthSpend.toFixed(2)}`,
+        trend: `${spendTrend >= 0 ? '+' : ''}${spendTrend}%`,
+        sparkline: sparklineData.length ? sparklineData : [0, 0, 0, 0, 0, currentMonthSpend],
+      },
+      subscriptions: {
+        value: `${summary.totalSpentAllTime !== undefined ? 'See Subscriptions' : 'N/A'}`,
+        trend: '+0',
+        sparkline: [0, 0, 0, 0, 0, 0],
+      },
+      upcomingBills: {
+        value: `$${(summary.averageMonthlyExpense || 0).toFixed(2)}`,
+        trend: '0%',
+        sparkline: sparklineData.length ? sparklineData : [0, 0, 0, 0, 0, 0],
+      },
+      savingsOpportunity: {
+        value: `$${((summary.totalSpentAllTime || 0) * 0.1).toFixed(2)}/yr`,
+        trend: '+10%',
+        sparkline: [0, 100, 200, 300, 400, Math.round((summary.totalSpentAllTime || 0) * 0.1)],
+      },
+    };
+  };
+
+  // Build chart data from API
+  const getExpenseChartData = () => {
+    if (!dashboardData?.monthlySpending) return [];
+    return dashboardData.monthlySpending.map((item) => ({
+      month: item.month,
+      amount: item.totalAmount || 0,
+      count: item.count || 0,
+    }));
+  };
+
+  const getCategoryChartData = () => {
+    if (!dashboardData?.categoryWiseSpending) return [];
+    return dashboardData.categoryWiseSpending.map((item) => ({
+      name: item.category || 'Other',
+      value: item.totalAmount || 0,
+    }));
+  };
+
+  const getHealthSuggestions = () => {
+    if (!healthScore?.suggestions) {
+      return [
+        {
+          id: 'h-default-1',
+          title: 'Add subscriptions to track savings',
+          description: 'Upload receipts or add subscriptions to get AI-powered savings recommendations.',
+          savings: 'Potential savings TBD',
+          badge: 'Get Started',
+          actionText: 'Upload Receipt',
+        },
+      ];
+    }
+    return healthScore.suggestions.map((s, i) => ({
+      id: `h-sug-${i}`,
+      title: s.title || s.message,
+      description: s.description || s.message,
+      savings: s.savings || '',
+      badge: s.badge || 'Tip',
+      actionText: s.actionText || 'View',
+    }));
+  };
+
+  const currentMetrics = getLiveMetrics();
+
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <HiOutlineExclamationCircle className="h-12 w-12 text-danger" />
+        <p className="text-text-secondary">{error}</p>
+        <button
+          type="button"
+          onClick={fetchDashboardData}
+          className="btn-primary"
+        >
+          <HiOutlineRefresh className="h-4 w-4" />
+          <span>Retry</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 w-full animate-fade-in pb-8">
-      {/* Top Header Greeting Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-glass-border bg-glass p-6 backdrop-blur-xl shadow-glass">
-        {/* Glow Accent Circles */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-secondary/10 blur-3xl" />
-
-        <div className="relative z-10 space-y-6">
-          {/* Header Title & Controls Row */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
-                  Good evening, {mockDashboardData.user.name.split(' ')[0]}! 👋
-                </h1>
-                <span className="hidden rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary sm:inline-block">
-                  {mockDashboardData.user.plan}
-                </span>
-              </div>
-              <p className="mt-1 text-sm text-text-secondary">
-                Here is your real-time financial intelligence and SaaS subscription overview.
-              </p>
+    <div className="app-page page-stack">
+      <section className="page-hero p-6 sm:p-8 lg:p-10">
+        <div className="relative z-10 grid gap-8 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div className="max-w-3xl">
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.12] px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary">
+                <HiOutlineSparkles className="h-4 w-4" />
+                Pro Plan
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-bold text-text-secondary">
+                Updated just now
+              </span>
             </div>
-
-            {/* Controls Bar: Time Filter & Skeleton Simulator */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              {/* Time Filter Pills */}
-              <div className="flex items-center rounded-xl border border-slate-700/80 bg-slate-900/90 p-1 backdrop-blur-md shadow-inner">
-                {['This Month', 'Last 3 Months', 'Year to Date'].map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setTimeFilter(filter)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
-                      timeFilter === filter
-                        ? 'bg-primary text-white shadow-md'
-                        : 'text-text-muted hover:text-text-primary hover:bg-slate-800/60'
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-
-              {/* Skeleton Loading Simulator Button */}
-              <button
-                type="button"
-                onClick={handleToggleLoading}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 px-3 py-2 text-xs font-semibold text-text-secondary transition-all hover:border-primary/40 hover:bg-slate-800 hover:text-white"
-                title="Test smooth shimmering loading skeletons"
-              >
-                <HiOutlineRefresh className="h-3.5 w-3.5 text-primary" />
-                <span className="hidden sm:inline">Simulate Loading</span>
-              </button>
-            </div>
+            <h1 className="section-title">Autonomous Portfolio Summary</h1>
+            <p className="section-subtitle mt-3 max-w-2xl">
+              Real-time audit of recurring spend, upcoming renewals, financial health, and AI savings recommendations.
+            </p>
           </div>
 
-          {/* Embedded QuickActions Bar */}
-          <div className="pt-2 border-t border-glass-border">
-            <QuickActions />
+          <div className="flex flex-col gap-3 sm:flex-row xl:justify-end">
+            <div className="flex rounded-2xl border border-white/10 bg-background/50 p-1">
+              {['This Month', 'Last 3 Months', 'Year to Date'].map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setTimeFilter(filter)}
+                  className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-all ${
+                    timeFilter === filter
+                      ? 'gradient-primary text-white shadow-glow-blue'
+                      : 'text-text-secondary hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={fetchDashboardData}
+              className="btn-secondary shrink-0"
+              title="Refresh dashboard data"
+            >
+              <HiOutlineRefresh className="h-4 w-4 text-primary" />
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* 4 StatCards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative z-10 mt-8 border-t border-white/10 pt-6">
+          <QuickActions />
+        </div>
+      </section>
+
+      <section className="kpi-grid">
         <StatCard
           title="Monthly Spending"
           value={currentMetrics.spending.value}
@@ -202,35 +235,35 @@ const DashboardPage = () => {
           trendDirection="up"
           isPositiveGood={false}
           sparklineData={currentMetrics.spending.sparkline}
-          sparklineColor="#3B82F6"
+          sparklineColor="#5B8CFF"
           badgeText={`vs ${timeFilter.toLowerCase()}`}
-          iconBgColor="bg-blue-500/15 text-blue-400"
+          iconBgColor="bg-primary/[0.15] text-primary"
         />
 
         <StatCard
-          title="Active Subscriptions"
-          value={currentMetrics.subscriptions.value}
+          title="Total Tracked Expense"
+          value={`$${(dashboardData?.summary?.totalSpentAllTime || 0).toFixed(2)}`}
           icon={HiOutlineCreditCard}
-          trend={currentMetrics.subscriptions.trend}
+          trend={`+${dashboardData?.summary?.activeMonthsCount || 0} months`}
           trendDirection="up"
           isPositiveGood={true}
           sparklineData={currentMetrics.subscriptions.sparkline}
-          sparklineColor="#10B981"
-          badgeText="in auto-detect"
-          iconBgColor="bg-emerald-500/15 text-emerald-400"
+          sparklineColor="#22C55E"
+          badgeText="all time"
+          iconBgColor="bg-success/[0.15] text-success"
         />
 
         <StatCard
-          title="Upcoming Bills"
-          value={currentMetrics.upcomingBills.value}
+          title="Avg Monthly Expense"
+          value={`$${(dashboardData?.summary?.averageMonthlyExpense || 0).toFixed(2)}`}
           icon={HiOutlineCalendar}
           trend={currentMetrics.upcomingBills.trend}
           trendDirection="down"
           isPositiveGood={true}
           sparklineData={currentMetrics.upcomingBills.sparkline}
           sparklineColor="#F59E0B"
-          badgeText="due in 14 days"
-          iconBgColor="bg-amber-500/15 text-amber-400"
+          badgeText="per month"
+          iconBgColor="bg-warning/[0.15] text-warning"
         />
 
         <StatCard
@@ -243,67 +276,51 @@ const DashboardPage = () => {
           sparklineData={currentMetrics.savingsOpportunity.sparkline}
           sparklineColor="#8B5CF6"
           badgeText="identified by AI"
-          iconBgColor="bg-purple-500/15 text-purple-400"
+          iconBgColor="bg-secondary/[0.15] text-secondary"
         />
-      </div>
+      </section>
 
-      {/* Row 1: HealthScoreCard + ExpenseChart */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1 flex flex-col">
-          <HealthScoreCard
-            score={mockDashboardData.healthScore.score}
-            maxScore={mockDashboardData.healthScore.maxScore}
-            statusBadge={mockDashboardData.healthScore.status}
-            suggestions={mockDashboardData.healthScore.suggestions.map((item, idx) => ({
-              id: `h-sug-${idx}`,
-              title: item,
-              description: 'AI recommendation based on recent transactions',
-              savings: idx === 0 ? 'Save $45/mo' : idx === 1 ? 'Save $72/yr' : 'Save $24/yr',
-              badge: idx === 1 ? 'Unused' : 'Optimization',
-              actionText: 'Apply',
-            }))}
-            className="h-full"
-          />
-        </div>
+      <AIInsightsPanel />
 
-        <div className="lg:col-span-2 flex flex-col">
-          <ExpenseChart
-            data={mockDashboardData.expenseHistory}
-            timeFilter={timeFilter}
-            className="h-full"
-          />
-        </div>
-      </div>
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <HealthScoreCard
+          score={healthScore?.score || 75}
+          maxScore={100}
+          statusBadge={healthScore?.status || 'Good'}
+          suggestions={getHealthSuggestions()}
+          className="xl:col-span-5"
+        />
 
-      {/* Row 2: CategoryChart + BillsList */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ExpenseChart
+          data={getExpenseChartData()}
+          timeFilter={timeFilter}
+          className="xl:col-span-7"
+        />
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <CategoryChart
-          data={mockDashboardData.categoryBreakdown}
+          data={getCategoryChartData()}
           title="Expense Category Breakdown"
+          className="xl:col-span-6"
         />
 
-        <BillsList
-          bills={mockDashboardData.upcomingBills}
-        />
-      </div>
+        <div className="xl:col-span-6">
+          <BillsList bills={[]} />
+        </div>
+      </section>
 
-      {/* Row 3: SubscriptionsTable Section */}
-      <div className="w-full">
-        <SubscriptionsTable
-          subscriptions={mockDashboardData.subscriptions}
-        />
-      </div>
+      <SubscriptionsTable subscriptions={[]} />
 
-      {/* Row 4: AI Recommendations + ActivityTimeline Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RecommendationCard
-          recommendations={mockDashboardData.aiRecommendations}
-        />
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-6">
+          <RecommendationCard recommendations={[]} />
+        </div>
 
-        <ActivityTimeline
-          activities={mockDashboardData.recentActivity}
-        />
-      </div>
+        <div className="xl:col-span-6">
+          <ActivityTimeline activities={[]} />
+        </div>
+      </section>
     </div>
   );
 };

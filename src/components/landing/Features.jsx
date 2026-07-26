@@ -1,209 +1,118 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-  HiOutlineDocumentSearch,
-  HiOutlineRefresh,
-  HiOutlineTrendingUp,
   HiOutlineSparkles,
+  HiOutlineDocumentText,
   HiOutlineChartBar,
-  HiOutlineChatAlt2,
+  HiOutlineShieldCheck,
+  HiOutlineBell,
+  HiOutlineLightningBolt,
 } from 'react-icons/hi';
 
-/**
- * Features — Landing page feature grid highlighting SubSense AI's core capabilities.
- * Features glassmorphism cards, subtle gradient borders on hover, icons, and staggered entrance animations.
- */
-const featureList = [
+const features = [
   {
-    id: 'bill-scanner',
-    icon: HiOutlineDocumentSearch,
-    title: 'AI Bill Scanner',
-    description: 'Automatically parses invoices, receipts, and PDF bills in seconds.',
-    badge: 'Instant OCR',
-    gradient: 'from-blue-500/20 via-indigo-500/20 to-purple-500/20',
-    iconColor: 'text-blue-400',
-    borderColor: 'group-hover:border-blue-500/50',
+    icon: HiOutlineDocumentText,
+    badge: 'LLM OCR VISION',
+    title: 'Autonomous Receipt & PDF OCR',
+    description: 'Instantly extract vendor line-items, tax amounts, renewal terms, and recurring billing dates from uploaded invoices with 99.4% accuracy.',
+    gradient: 'from-[#5B8CFF] to-[#38BDF8]',
   },
   {
-    id: 'subscription-detection',
-    icon: HiOutlineRefresh,
-    title: 'Subscription Detection',
-    description: 'Identifies recurring charges, trial traps, and price hikes across all accounts.',
-    badge: 'Auto-Audit',
-    gradient: 'from-indigo-500/20 via-sky-500/20 to-blue-500/20',
-    iconColor: 'text-indigo-400',
-    borderColor: 'group-hover:border-indigo-500/50',
-  },
-  {
-    id: 'expense-prediction',
-    icon: HiOutlineTrendingUp,
-    title: 'Expense Prediction',
-    description: 'ML model forecasts your end-of-month cashflow with 98% accuracy.',
-    badge: '98% Accuracy',
-    gradient: 'from-emerald-500/20 via-teal-500/20 to-cyan-500/20',
-    iconColor: 'text-emerald-400',
-    borderColor: 'group-hover:border-emerald-500/50',
-  },
-  {
-    id: 'smart-recommendations',
     icon: HiOutlineSparkles,
-    title: 'Smart Recommendations',
-    description: 'Get personalized actionable tips to optimize recurring bills and negotiate rates.',
-    badge: 'AI Insights',
-    gradient: 'from-amber-500/20 via-orange-500/20 to-yellow-500/20',
-    iconColor: 'text-amber-400',
-    borderColor: 'group-hover:border-amber-500/50',
+    badge: 'AUTO-AUDIT ENGINE',
+    title: 'Unused Seat & Duplicate Detector',
+    description: 'Scans connected SaaS workspaces and bank feeds to flag redundant streaming or software seats that haven’t logged activity in 30+ days.',
+    gradient: 'from-[#8B5CF6] to-[#EC4899]',
   },
   {
-    id: 'financial-health-score',
     icon: HiOutlineChartBar,
-    title: 'Financial Health Score',
-    description: 'Dynamic 0-100 score analyzing liquidity, recurring ratio, and savings buffer.',
-    badge: 'Real-time 0-100',
-    gradient: 'from-purple-500/20 via-fuchsia-500/20 to-pink-500/20',
-    iconColor: 'text-purple-400',
-    borderColor: 'group-hover:border-purple-500/50',
+    badge: 'REAL-TIME FORECAST',
+    title: 'Financial Health & Predictive Runway',
+    description: 'Calculates your monthly liquidity health score (0–100) and projects upcoming renewal cliffs 90 days into the future.',
+    gradient: 'from-[#10B981] to-[#06B6D4]',
   },
   {
-    id: 'ai-chat-assistant',
-    icon: HiOutlineChatAlt2,
-    title: 'AI Chat Assistant',
-    description: 'Query your finances in natural language: "How much did I spend on SaaS this month?"',
-    badge: 'Natural NLP',
-    gradient: 'from-cyan-500/20 via-blue-500/20 to-indigo-500/20',
-    iconColor: 'text-cyan-400',
-    borderColor: 'group-hover:border-cyan-500/50',
+    icon: HiOutlineBell,
+    badge: 'PRICE HIKE SHIELD',
+    title: 'Hidden Price Hike Early Alerts',
+    description: 'Detects silent price tier increases across Netflix, AWS, Canva, or Spotify before auto-debits process on your credit cards.',
+    gradient: 'from-[#F59E0B] to-[#EF4444]',
+  },
+  {
+    icon: HiOutlineLightningBolt,
+    badge: '1-CLICK ACTION',
+    title: 'Automated Cancellation & Pause',
+    description: 'Trigger autonomous cancellation emails or liquidity pauses directly through SubSense Copilot with 1-click execution.',
+    gradient: 'from-[#5B8CFF] to-[#8B5CF6]',
+  },
+  {
+    icon: HiOutlineShieldCheck,
+    badge: 'BANK-GRADE SECURITY',
+    title: 'SOC-2 Type II Privacy Shield',
+    description: 'End-to-end encrypted storage with zero plain-text password logging. Your financial data is protected by enterprise tokenization.',
+    gradient: 'from-[#3B82F6] to-[#10B981]',
   },
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.25, 0.1, 0.25, 1],
-    },
-  },
-};
-
 const Features = () => {
   return (
-    <section className="relative py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
-      {/* Background glow accents */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+    <section id="features" className="relative py-24 lg:py-32 overflow-hidden border-t border-white/5">
+      <div className="container-custom relative z-10">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#5B8CFF] mb-3 block">
+            ENTERPRISE CAPABILITIES
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-white tracking-tight leading-tight mb-4">
+            Engineered for <span className="gradient-text-primary">Precision & Autonomy</span>
+          </h2>
+          <p className="text-base sm:text-lg text-[#A1A8B5] leading-relaxed">
+            SubSense AI combines vision AI models with automated financial ledger analytics to eliminate wasteful subscription spending.
+          </p>
+        </div>
 
-      {/* Section Header */}
-      <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase"
-        >
-          <HiOutlineSparkles className="w-4 h-4 text-primary animate-pulse" />
-          Intelligent Financial Control
-        </motion.div>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-primary tracking-tight"
-        >
-          Cutting-edge features for <br className="hidden sm:block" />
-          <span className="gradient-text">effortless subscription management</span>
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-text-secondary text-base sm:text-lg leading-relaxed max-w-2xl mx-auto"
-        >
-          SubSense AI combines deep invoice OCR, predictive cashflow modeling, and autonomous cost optimization to put your finances on autopilot.
-        </motion.p>
-      </div>
-
-      {/* Grid of 6 Feature Cards */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-50px' }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-      >
-        {featureList.map((feature) => {
-          const Icon = feature.icon;
-          return (
-            <motion.div
-              key={feature.id}
-              variants={cardVariants}
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="group relative h-full rounded-2xl p-[1px] transition-all duration-500 bg-gradient-to-b from-border/50 via-border/20 to-transparent hover:from-primary/40 hover:via-secondary/40 hover:to-primary/20 hover:shadow-glow"
-            >
-              {/* Inner Glass Container */}
-              <div className="relative h-full flex flex-col justify-between rounded-[15px] bg-surface/80 backdrop-blur-xl p-6 lg:p-7 border border-glass-border/60 transition-colors group-hover:bg-surface/90">
-                {/* Background Subtle Gradient Patch */}
-                <div
-                  className={`absolute top-0 right-0 w-36 h-36 bg-gradient-to-br ${feature.gradient} rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
-                />
-
+        {/* 6 Equal Height Feature Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feat, index) => {
+            const Icon = feat.icon;
+            return (
+              <motion.div
+                key={feat.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-[#171F2F]/80 p-8 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#5B8CFF]/40 hover:shadow-glow-blue"
+              >
                 <div>
-                  {/* Top Bar: Icon + Badge */}
+                  {/* Icon & Badge Row */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className={`flex items-center justify-center w-12 h-12 rounded-xl bg-surface-light/50 border border-border/50 group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300 shadow-sm ${feature.iconColor}`}>
-                      <Icon className="w-6 h-6" />
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr ${feat.gradient} text-white shadow-md transition-transform group-hover:scale-110`}>
+                      <Icon className="h-6 w-6" />
                     </div>
-
-                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-surface-light/40 text-text-secondary border border-border/40 group-hover:text-text-primary transition-colors">
-                      {feature.badge}
+                    <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-[10px] font-mono font-bold tracking-wider text-[#5B8CFF] uppercase">
+                      {feat.badge}
                     </span>
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-text-primary mb-3 group-hover:text-primary transition-colors duration-200">
-                    {feature.title}
+                  {/* Title & Description */}
+                  <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-[#5B8CFF] transition-colors">
+                    {feat.title}
                   </h3>
-
-                  {/* Description */}
-                  <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                    {feature.description}
+                  <p className="text-sm text-[#A1A8B5] leading-relaxed">
+                    {feat.description}
                   </p>
                 </div>
 
-                {/* Subtle Interactive Footer link indicator */}
-                <div className="flex items-center text-xs font-semibold text-text-muted group-hover:text-primary transition-colors pt-4 border-t border-border/30">
+                <div className="mt-8 pt-4 border-t border-white/5 flex items-center gap-2 text-xs font-mono font-bold text-[#5B8CFF] group-hover:translate-x-1 transition-transform">
                   <span>Learn more</span>
-                  <svg
-                    className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <span>→</span>
                 </div>
-              </div>
-            </motion.div>
-          );
-        })}
-      </motion.div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 };

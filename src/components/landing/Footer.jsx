@@ -1,238 +1,104 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { HiOutlineMail, HiOutlineCheckCircle, HiOutlineSparkles, HiOutlineArrowRight } from 'react-icons/hi';
-import { FaGithub, FaLinkedin, FaTwitter, FaDiscord } from 'react-icons/fa';
-import { APP_NAME, APP_TAGLINE, ROUTES } from '../../utils/constants';
-
-/**
- * Footer — Modern startup footer for SubSense AI landing page.
- * Includes brand section, multi-column navigation links, newsletter signup,
- * copyright notice, and social media icons.
- */
-const footerNavigation = {
-  product: [
-    { name: 'Features', href: '#features' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'Security', href: '#security' },
-    { name: 'Roadmap', href: '#roadmap' },
-  ],
-  resources: [
-    { name: 'Documentation', href: '#docs' },
-    { name: 'Blog', href: '#blog' },
-    { name: 'API Reference', href: '#api' },
-    { name: 'Case Studies', href: '#case-studies' },
-  ],
-  company: [
-    { name: 'About Us', href: '#about' },
-    { name: 'Careers', href: '#careers' },
-    { name: 'Press', href: '#press' },
-    { name: 'Contact', href: '#contact' },
-  ],
-  legal: [
-    { name: 'Privacy Policy', href: '#privacy' },
-    { name: 'Terms of Service', href: '#terms' },
-    { name: 'Security', href: '#security-policy' },
-    { name: 'Cookie Settings', href: '#cookies' },
-  ],
-};
-
-const socialLinks = [
-  { name: 'GitHub', icon: FaGithub, href: 'https://github.com' },
-  { name: 'LinkedIn', icon: FaLinkedin, href: 'https://linkedin.com' },
-  { name: 'Twitter / X', icon: FaTwitter, href: 'https://twitter.com' },
-  { name: 'Discord', icon: FaDiscord, href: 'https://discord.com' },
-];
+import { HiOutlineSparkles, HiOutlineCheck } from 'react-icons/hi';
+import { APP_NAME, ROUTES } from '../../utils/constants';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  const handleNewsletterSubmit = (e) => {
+  const handleSubscribe = (e) => {
     e.preventDefault();
-    if (email.trim()) {
+    if (email) {
       setSubscribed(true);
       setEmail('');
-      setTimeout(() => setSubscribed(false), 5000);
+      setTimeout(() => setSubscribed(false), 4000);
     }
   };
 
   return (
-    <footer className="relative bg-surface/60 border-t border-border/80 pt-16 pb-12 overflow-hidden">
-      {/* Subtle Ambient Glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-48 bg-primary/5 blur-[120px] pointer-events-none -z-10" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Section: Brand + Newsletter */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-14 border-b border-border/50">
-          {/* Brand Info */}
-          <div className="lg:col-span-5 space-y-4">
-            <Link to={ROUTES.HOME || '/'} className="inline-flex items-center gap-2.5">
-              <div className="gradient-primary flex h-9 w-9 items-center justify-center rounded-xl font-bold text-white text-lg shadow-md shadow-primary/20">
+    <footer className="border-t border-white/10 bg-[#0B1020] pt-16 pb-12 text-[#A1A8B5] text-sm">
+      <div className="container-custom">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+          {/* Brand Col */}
+          <div className="lg:col-span-2 space-y-4">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-white font-black text-base shadow-glow-blue">
                 S
               </div>
-              <span className="text-xl font-extrabold text-text-primary tracking-tight">
+              <span className="text-xl font-extrabold text-white tracking-tight">
                 {APP_NAME}
               </span>
             </Link>
-
-            <p className="text-text-secondary text-sm leading-relaxed max-w-sm">
-              {APP_TAGLINE}. Autonomous subscription tracking, AI receipt scanning, and real-time spending insights.
+            <p className="text-xs text-[#A1A8B5] leading-relaxed max-w-sm">
+              The world’s first autonomous financial copilot powered by fine-tuned vision LLMs. Auditing subscriptions, detecting price hikes, and saving money on autopilot.
             </p>
-
-            {/* AI Status Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-light/40 border border-border/60 text-xs text-text-secondary">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>All Systems Operational (v2.4)</span>
+            <div className="flex items-center gap-2 text-xs font-mono text-[#5B8CFF]">
+              <HiOutlineSparkles className="h-4 w-4" />
+              <span>SOC-2 Type II Certified • 256-bit Encryption</span>
             </div>
           </div>
 
-          {/* Newsletter Box */}
-          <div className="lg:col-span-7 flex flex-col justify-center">
-            <div className="glass-card p-6 sm:p-7 rounded-2xl border border-glass-border bg-surface/80">
-              <div className="flex items-center gap-2 text-primary font-semibold text-xs tracking-wide uppercase mb-1">
-                <HiOutlineSparkles className="w-4 h-4" />
-                <span>Stay Ahead of Your Finances</span>
-              </div>
-              <h4 className="text-lg font-bold text-text-primary mb-2">
-                Subscribe to the SubSense AI Digest
-              </h4>
-              <p className="text-xs sm:text-sm text-text-secondary mb-4">
-                Get monthly SaaS optimization tips, market reports, and product updates. No spam ever.
-              </p>
-
-              {subscribed ? (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-medium animate-fade-in">
-                  <HiOutlineCheckCircle className="w-5 h-5 shrink-0" />
-                  <span>Thanks for subscribing! Check your inbox for confirmation.</span>
-                </div>
-              ) : (
-                <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <HiOutlineMail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email address..."
-                      required
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border/80 text-text-primary placeholder:text-text-muted text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl gradient-primary text-white font-semibold text-sm hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/20 shrink-0"
-                  >
-                    <span>Subscribe</span>
-                    <HiOutlineArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Middle Section: Navigation Columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-b border-border/50">
-          {/* Column 1: Product */}
-          <div>
-            <h5 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
-              Product
-            </h5>
-            <ul className="space-y-2.5">
-              {footerNavigation.product.map((item) => (
-                <li key={item.name}>
-                  <a
-                    href={item.href}
-                    className="text-sm text-text-secondary hover:text-primary transition-colors"
-                  >
-                    {item.name}
-                  </a>
-                </li>
-              ))}
+          {/* Links Col 1 */}
+          <div className="space-y-3 font-mono text-xs">
+            <h4 className="font-bold text-white uppercase tracking-wider">Product</h4>
+            <ul className="space-y-2">
+              <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+              <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
+              <li><a href="#dashboard-preview" className="hover:text-white transition-colors">Live Preview</a></li>
+              <li><Link to={ROUTES.DASHBOARD} className="hover:text-white transition-colors">Dashboard Shell</Link></li>
             </ul>
           </div>
 
-          {/* Column 2: Resources */}
-          <div>
-            <h5 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
-              Resources
-            </h5>
-            <ul className="space-y-2.5">
-              {footerNavigation.resources.map((item) => (
-                <li key={item.name}>
-                  <a
-                    href={item.href}
-                    className="text-sm text-text-secondary hover:text-primary transition-colors"
-                  >
-                    {item.name}
-                  </a>
-                </li>
-              ))}
+          {/* Links Col 2 */}
+          <div className="space-y-3 font-mono text-xs">
+            <h4 className="font-bold text-white uppercase tracking-wider">Company</h4>
+            <ul className="space-y-2">
+              <li><a href="#why-us" className="hover:text-white transition-colors">Why Choose Us</a></li>
+              <li><a href="#testimonials" className="hover:text-white transition-colors">Testimonials</a></li>
+              <li><Link to={ROUTES.LOGIN} className="hover:text-white transition-colors">Sign In</Link></li>
+              <li><Link to={ROUTES.PROFILE} className="hover:text-white transition-colors">Settings</Link></li>
             </ul>
           </div>
 
-          {/* Column 3: Company */}
-          <div>
-            <h5 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
-              Company
-            </h5>
-            <ul className="space-y-2.5">
-              {footerNavigation.company.map((item) => (
-                <li key={item.name}>
-                  <a
-                    href={item.href}
-                    className="text-sm text-text-secondary hover:text-primary transition-colors"
-                  >
-                    {item.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 4: Legal */}
-          <div>
-            <h5 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
-              Legal
-            </h5>
-            <ul className="space-y-2.5">
-              {footerNavigation.legal.map((item) => (
-                <li key={item.name}>
-                  <a
-                    href={item.href}
-                    className="text-sm text-text-secondary hover:text-primary transition-colors"
-                  >
-                    {item.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom Section: Copyright & Socials */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-text-muted text-center sm:text-left">
-            &copy; {new Date().getFullYear()} {APP_NAME}, Inc. All rights reserved. Built with AI precision.
-          </p>
-
-          {/* Social Icons */}
-          <div className="flex items-center gap-4">
-            {socialLinks.map((social) => {
-              const Icon = social.icon;
-              return (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={social.name}
-                  className="flex items-center justify-center w-9 h-9 rounded-xl bg-surface-light/30 border border-border/50 text-text-secondary hover:text-primary hover:border-primary/40 hover:bg-surface-light/60 transition-all duration-200"
+          {/* Newsletter Col */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-white font-mono text-xs uppercase tracking-wider">Newsletter</h4>
+            <p className="text-xs text-[#A1A8B5]">Get weekly AI financial audit reports & SaaS price hike digest.</p>
+            
+            <form onSubmit={handleSubscribe} className="space-y-2">
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@work.com"
+                  className="w-full rounded-xl border border-white/10 bg-[#171F2F] py-2 pl-3 pr-20 text-xs text-white placeholder-[#64748B] focus:border-[#5B8CFF] focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1 top-1 bottom-1 rounded-lg gradient-primary px-3 text-xs font-bold text-white shadow-glow-blue"
                 >
-                  <Icon className="w-4 h-4" />
-                </a>
-              );
-            })}
+                  Join
+                </button>
+              </div>
+              {subscribed && (
+                <div className="flex items-center gap-1 text-[11px] font-mono text-[#22C55E]">
+                  <HiOutlineCheck className="h-3.5 w-3.5" />
+                  <span>Subscribed successfully!</span>
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+          <p>© {new Date().getFullYear()} SubSense AI Inc. All rights reserved.</p>
+          <div className="flex items-center gap-6 text-[#A1A8B5]">
+            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-white transition-colors">Security</a>
           </div>
         </div>
       </div>

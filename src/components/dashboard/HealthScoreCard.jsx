@@ -6,14 +6,11 @@ import {
   HiOutlineTrash,
   HiOutlineRefresh,
   HiOutlineArrowRight,
-  HiOutlineCheckCircle,
   HiOutlineShieldCheck,
 } from 'react-icons/hi';
+import { Odometer } from '../common';
 import { cn } from '../../utils/helpers';
 
-/**
- * Default AI recommendations list if none provided as props.
- */
 const defaultSuggestions = [
   {
     id: 'sug-1',
@@ -22,8 +19,8 @@ const defaultSuggestions = [
     description: 'Streaming & entertainment spend is 24% above target budget.',
     savings: 'Save ~$45/mo',
     badge: 'High Impact',
-    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    iconBg: 'bg-indigo-500/15 text-indigo-400',
+    badgeColor: 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20',
+    iconBg: 'bg-[#8B5CF6]/15 text-[#8B5CF6]',
     actionText: 'Optimize',
   },
   {
@@ -33,8 +30,8 @@ const defaultSuggestions = [
     description: 'No active usage detected across connected accounts for 60+ days.',
     savings: 'Save $12.99/mo',
     badge: 'Unused Sub',
-    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-    iconBg: 'bg-rose-500/15 text-rose-400',
+    badgeColor: 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20',
+    iconBg: 'bg-[#EF4444]/15 text-[#EF4444]',
     actionText: 'Cancel',
   },
   {
@@ -44,19 +41,14 @@ const defaultSuggestions = [
     description: 'Switching from monthly to annual billing saves 16% annually.',
     savings: 'Save $24.00/yr',
     badge: 'Quick Win',
-    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    iconBg: 'bg-emerald-500/15 text-emerald-400',
+    badgeColor: 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20',
+    iconBg: 'bg-[#22C55E]/15 text-[#22C55E]',
     actionText: 'Switch',
   },
 ];
 
-/**
- * HealthScoreCard — Financial Health Score component for SubSense AI.
- * Displays a large circular SVG progress score indicator (89/100), status badge ("Healthy Spending"),
- * and a curated list of actionable AI suggestions with icons and savings estimates.
- */
 const HealthScoreCard = ({
-  score = 89,
+  score = 92,
   maxScore = 100,
   statusBadge = 'Healthy Spending',
   title = 'Financial Health Score',
@@ -65,75 +57,52 @@ const HealthScoreCard = ({
   onActionClick,
   className = '',
 }) => {
-  // Circular Gauge Calculations
   const radius = 64;
   const strokeWidth = 12;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = circumference - (score / maxScore) * circumference;
 
-  // Rating label & color mapping based on score
-  const getScoreRating = (val) => {
-    if (val >= 85) return { label: 'Optimal', color: 'from-emerald-400 to-teal-500', statusColor: 'bg-emerald-500' };
-    if (val >= 70) return { label: 'Good', color: 'from-blue-400 to-indigo-500', statusColor: 'bg-blue-500' };
-    if (val >= 50) return { label: 'Fair', color: 'from-amber-400 to-orange-500', statusColor: 'bg-amber-500' };
-    return { label: 'Attention Needed', color: 'from-rose-400 to-red-500', statusColor: 'bg-rose-500' };
-  };
-
-  const rating = getScoreRating(score);
-
   return (
-    <div
-      className={cn(
-        'group relative overflow-hidden rounded-2xl border border-glass-border bg-glass p-6 backdrop-blur-xl transition-all duration-300',
-        'hover:border-primary/40 hover:shadow-glow',
-        className
-      )}
-    >
+    <div className={cn('relative overflow-hidden rounded-2xl border border-white/10 bg-[#171F2F]/80 p-6 backdrop-blur-xl shadow-2xl', className)}>
       {/* Background Glow */}
-      <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
+      <div className="ambient-orb ambient-orb-1 -right-20 -top-20 h-56 w-56 opacity-30" />
 
-      {/* Header Section */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-glass-border pb-5">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <HiOutlineShieldCheck className="h-5 w-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-text-primary">{title}</h3>
+            <HiOutlineShieldCheck className="h-5 w-5 text-[#22C55E]" />
+            <h3 className="text-lg font-bold text-white">{title}</h3>
           </div>
-          <p className="mt-1 text-xs text-text-secondary">{subtitle}</p>
+          <p className="mt-1 text-xs text-[#A1A8B5]">{subtitle}</p>
         </div>
 
-        {/* Status Badge */}
-        <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 backdrop-blur-md">
+        <div className="flex items-center gap-2 rounded-full border border-[#22C55E]/30 bg-[#22C55E]/10 px-3.5 py-1.5 backdrop-blur-md">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22C55E] opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#22C55E]" />
           </span>
-          <span className="text-xs font-semibold text-emerald-400">
+          <span className="text-xs font-semibold text-[#22C55E]">
             {statusBadge}
           </span>
         </div>
       </div>
 
-      {/* Main Content Layout: Left Gauge, Right Recommendations */}
+      {/* Main Content Layout */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-center">
-        {/* Left Column: SVG Circular Score Indicator */}
+        {/* Left Column: SVG Circular Progress Indicator */}
         <div className="flex flex-col items-center justify-center lg:col-span-4">
           <div className="relative flex items-center justify-center">
-            <svg
-              height={radius * 2}
-              width={radius * 2}
-              className="-rotate-90 transform overflow-visible"
-            >
+            <svg height={radius * 2} width={radius * 2} className="-rotate-90 transform overflow-visible">
               <defs>
                 <linearGradient id="healthScoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10B981" />
-                  <stop offset="50%" stopColor="#06B6D4" />
-                  <stop offset="100%" stopColor="#3B82F6" />
+                  <stop offset="0%" stopColor="#22C55E" />
+                  <stop offset="50%" stopColor="#5B8CFF" />
+                  <stop offset="100%" stopColor="#8B5CF6" />
                 </linearGradient>
               </defs>
 
-              {/* Background Track Circle */}
               <circle
                 stroke="rgba(255, 255, 255, 0.08)"
                 fill="transparent"
@@ -142,8 +111,6 @@ const HealthScoreCard = ({
                 cx={radius}
                 cy={radius}
               />
-
-              {/* Score Progress Ring */}
               <circle
                 stroke="url(#healthScoreGrad)"
                 fill="transparent"
@@ -157,36 +124,31 @@ const HealthScoreCard = ({
               />
             </svg>
 
-            {/* Inner Center Labels */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-3xl font-black text-text-primary tracking-tight">
-                {score}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center font-mono">
+              <span className="text-3xl font-extrabold text-white">
+                <Odometer value={score} />
               </span>
-              <span className="text-[10px] font-semibold tracking-wider text-text-muted uppercase">
-                / {maxScore} Points
+              <span className="text-[10px] uppercase font-bold text-[#A1A8B5]">
+                / {maxScore} PTS
               </span>
             </div>
           </div>
 
           <div className="mt-3 text-center">
-            <span className="inline-block rounded-md bg-surface-light/60 px-2.5 py-0.5 text-xs font-semibold text-text-secondary">
-              Rating: <span className="text-emerald-400">{rating.label}</span>
+            <span className="inline-block rounded-lg bg-[#121A2F] border border-white/10 px-3 py-1 text-xs font-mono text-[#A1A8B5]">
+              RATING: <span className="text-[#22C55E] font-bold">OPTIMAL</span>
             </span>
           </div>
         </div>
 
-        {/* Right Column: Actionable AI Suggestions List */}
+        {/* Right Column: AI Recommendations List */}
         <div className="space-y-3 lg:col-span-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <HiOutlineSparkles className="h-4 w-4 text-primary" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-text-secondary">
-                Actionable AI Insights ({suggestions.length})
-              </h4>
+          <div className="flex items-center justify-between font-mono text-xs">
+            <div className="flex items-center gap-1.5 text-white font-bold">
+              <HiOutlineSparkles className="h-4 w-4 text-[#5B8CFF]" />
+              <span>ACTIONABLE INSIGHTS ({suggestions.length})</span>
             </div>
-            <span className="text-xs text-emerald-400 font-medium">
-              Potential Savings: ~$82/mo
-            </span>
+            <span className="text-[#22C55E] font-bold">~$82.00/MO SAVINGS</span>
           </div>
 
           <div className="space-y-2.5">
@@ -195,49 +157,49 @@ const HealthScoreCard = ({
               return (
                 <div
                   key={item.id || item.title}
-                  className="group/item flex items-center justify-between gap-3 rounded-xl border border-glass-border bg-surface/40 p-3 backdrop-blur-md transition-all duration-200 hover:border-primary/30 hover:bg-surface/70"
+                  className="group/item flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#121A2F]/60 p-3 backdrop-blur-md transition-all duration-200 hover:border-[#5B8CFF]/30 hover:bg-[#121A2F]"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={cn(
-                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-transform group-hover/item:scale-105',
-                        item.iconBg || 'bg-primary/10 text-primary'
+                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-transform group-hover/item:scale-105',
+                        item.iconBg || 'bg-[#5B8CFF]/10 text-[#5B8CFF]'
                       )}
                     >
-                      <ItemIcon className="h-5 w-5" />
+                      <ItemIcon className="h-4.5 w-4.5" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="truncate text-sm font-semibold text-text-primary">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-xs font-bold text-white">
                           {item.title}
                         </p>
                         {item.badge && (
                           <span
                             className={cn(
-                              'rounded-full border px-2 py-0.5 text-[10px] font-semibold',
-                              item.badgeColor || 'bg-primary/10 text-primary border-primary/20'
+                              'rounded-full border px-2 py-0.5 text-[9px] font-mono font-bold',
+                              item.badgeColor || 'bg-[#5B8CFF]/10 text-[#5B8CFF] border-[#5B8CFF]/20'
                             )}
                           >
                             {item.badge}
                           </span>
                         )}
                       </div>
-                      <p className="truncate text-xs text-text-muted">
+                      <p className="truncate text-[11px] text-[#A1A8B5]">
                         {item.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-3">
+                  <div className="flex shrink-0 items-center gap-3 font-mono">
                     {item.savings && (
-                      <span className="hidden text-xs font-bold text-emerald-400 sm:inline-block">
+                      <span className="hidden text-xs font-bold text-[#22C55E] sm:inline-block">
                         {item.savings}
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => onActionClick && onActionClick(item)}
-                      className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-all hover:bg-primary hover:text-white"
+                      className="flex items-center gap-1 rounded-lg border border-[#5B8CFF]/30 bg-[#5B8CFF]/10 px-3 py-1.5 text-xs font-bold text-[#5B8CFF] transition-all hover:bg-[#5B8CFF] hover:text-white"
                     >
                       <span>{item.actionText || 'Apply'}</span>
                       <HiOutlineArrowRight className="h-3 w-3" />
@@ -259,19 +221,7 @@ HealthScoreCard.propTypes = {
   statusBadge: PropTypes.string,
   title: PropTypes.string,
   subtitle: PropTypes.string,
-  suggestions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string,
-      icon: PropTypes.elementType,
-      title: PropTypes.string,
-      description: PropTypes.string,
-      savings: PropTypes.string,
-      badge: PropTypes.string,
-      badgeColor: PropTypes.string,
-      iconBg: PropTypes.string,
-      actionText: PropTypes.string,
-    })
-  ),
+  suggestions: PropTypes.array,
   onActionClick: PropTypes.func,
   className: PropTypes.string,
 };

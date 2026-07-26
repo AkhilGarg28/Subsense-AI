@@ -1,98 +1,298 @@
-import { HiOutlineUser, HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from 'react-icons/hi';
-import { Card, Button, Input } from '../../components/ui';
+import React, { useState } from 'react';
+import {
+  HiOutlineUser,
+  HiOutlineLink,
+  HiOutlineAdjustments,
+  HiOutlineShieldCheck,
+  HiOutlineSparkles,
+  HiOutlineRefresh,
+} from 'react-icons/hi';
+import {
+  ProfileHeader,
+  ProfileCard,
+  AccountConnections,
+  PreferencePanel,
+  SecurityPanel,
+  StatsCard,
+  AchievementCard,
+  ProfileSkeleton,
+} from '../../components/profile';
+import { mockProfileData } from '../../data/mockProfileData';
+import { authAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
+import { cn } from '../../utils/helpers';
 
-/**
- * ProfilePage — User profile and account settings.
- * Placeholder data — will connect to backend later.
- */
 const ProfilePage = () => {
+  const { user: authUser, updateUser } = useAuth();
+  const [activeTab, setActiveTab] = useState('general');
+  // Merge auth user with mock data for fields not in API (stats, achievements, etc.)
+  const [userData, setUserData] = useState({
+    ...mockProfileData.user,
+    ...(authUser || {}),
+  });
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const tabs = [
+    {
+      id: 'general',
+      label: 'General Profile',
+      description: 'Personal info, avatar, & account overview',
+      icon: HiOutlineUser,
+      badge: 'Personal',
+    },
+    {
+      id: 'connections',
+      label: 'Connected Accounts',
+      description: 'SSO, Gmail receipt auto-sync, & bank monitoring',
+      icon: HiOutlineLink,
+      badge: '3 Active',
+    },
+    {
+      id: 'preferences',
+      label: 'Preferences & Notifications',
+      description: 'Theme, currency, language & alert settings',
+      icon: HiOutlineAdjustments,
+      badge: null,
+    },
+    {
+      id: 'security',
+      label: 'Security & Auth',
+      description: 'Password, 2FA, & active sessions',
+      icon: HiOutlineShieldCheck,
+      badge: '2FA On',
+    },
+    {
+      id: 'statistics',
+      label: 'Statistics & Badges',
+      description: 'Parsing metrics & gamified rewards',
+      icon: HiOutlineSparkles,
+      badge: '4 Badges',
+    },
+  ];
+
+  const handleSaveProfile = async (updatedDetails) => {
+    setSaveError(null);
+    setSaveSuccess(false);
+    setIsLoading(true);
+    try {
+      const res = await authAPI.updateProfile(updatedDetails);
+      const savedUser = res.data?.data || res.data?.user || updatedDetails;
+      const merged = { ...userData, ...savedUser };
+      setUserData(merged);
+      // Update AuthContext user so navbar etc. reflects changes
+      if (updateUser) updateUser(merged);
+      setSaveSuccess(true);
+      setIsEditingProfile(false);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('[Profile] Save failed:', err);
+      // Optimistic local update so user isn't confused
+      const merged = { ...userData, ...updatedDetails };
+      setUserData(merged);
+      if (updateUser) updateUser(merged);
+      setSaveError('Changes saved locally — server sync failed.');
+      setIsEditingProfile(false);
+      setTimeout(() => setSaveError(null), 4000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleToggleSimulatedLoading = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary sm:text-3xl">Profile</h1>
-        <p className="mt-1 text-text-secondary">Manage your account settings and preferences.</p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Profile Card */}
-        <Card className="text-center" padding="lg">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-            <HiOutlineUser className="h-10 w-10 text-primary" />
-          </div>
-          <h2 className="text-xl font-bold text-text-primary">John Doe</h2>
-          <p className="text-sm text-text-secondary">john@example.com</p>
-          <div className="mt-4 flex justify-center gap-4">
-            <div className="text-center">
-              <p className="text-lg font-bold text-text-primary">12</p>
-              <p className="text-xs text-text-muted">Subscriptions</p>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="text-center">
-              <p className="text-lg font-bold text-text-primary">$2.4k</p>
-              <p className="text-xs text-text-muted">Monthly</p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" className="mt-6 w-full">
-            Edit Avatar
-          </Button>
-        </Card>
-
-        {/* Profile Form */}
-        <Card padding="lg" className="lg:col-span-2">
-          <Card.Header>
-            <Card.Title>Personal Information</Card.Title>
-          </Card.Header>
-          <form className="space-y-5">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Input
-                label="Full Name"
-                id="profile-name"
-                placeholder="John Doe"
-                icon={HiOutlineUser}
-              />
-              <Input
-                label="Email"
-                id="profile-email"
-                type="email"
-                placeholder="john@example.com"
-                icon={HiOutlineMail}
-              />
-              <Input
-                label="Phone"
-                id="profile-phone"
-                type="tel"
-                placeholder="+1 (555) 123-4567"
-                icon={HiOutlinePhone}
-              />
-              <Input
-                label="Location"
-                id="profile-location"
-                placeholder="New York, USA"
-                icon={HiOutlineLocationMarker}
-              />
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline">Cancel</Button>
-              <Button variant="primary">Save Changes</Button>
-            </div>
-          </form>
-        </Card>
-      </div>
-
-      {/* Danger Zone */}
-      <Card padding="lg" className="border border-danger/20">
-        <Card.Header>
-          <Card.Title className="text-danger">Danger Zone</Card.Title>
-        </Card.Header>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-text-primary">Delete Account</p>
-            <p className="text-sm text-text-secondary">Permanently delete your account and all associated data.</p>
-          </div>
-          <Button variant="danger" size="sm">Delete Account</Button>
+    <div className="space-y-6 pb-12 animate-fade-in w-full">
+      {/* Feedback Banners */}
+      {saveSuccess && (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs font-semibold text-emerald-400">
+          ✅ Profile saved successfully!
         </div>
-      </Card>
+      )}
+      {saveError && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs font-semibold text-amber-400">
+          ⚠️ {saveError}
+        </div>
+      )}
+
+      {/* Top Header Controls Bar */}
+      <div className="flex items-center justify-between font-mono text-xs">
+        <span className="text-[#A1A8B5] font-bold uppercase tracking-wider">
+          USER SETTINGS PANEL
+        </span>
+
+        <button
+          type="button"
+          onClick={handleToggleSimulatedLoading}
+          disabled={isLoading}
+          className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#171F2F] px-3.5 py-1.5 font-bold text-[#A1A8B5] hover:text-white transition-all cursor-pointer"
+        >
+          <HiOutlineRefresh className={cn('h-3.5 w-3.5 text-[#5B8CFF]', isLoading && 'animate-spin')} />
+          <span>{isLoading ? 'Loading...' : 'Simulate Loading'}</span>
+        </button>
+      </div>
+
+      {/* Main Profile Header Banner */}
+      {isLoading ? (
+        <ProfileSkeleton variant="header" />
+      ) : (
+        <ProfileHeader
+          user={userData}
+          isEditing={isEditingProfile}
+          onEditClick={() => {
+            setIsEditingProfile(!isEditingProfile);
+            setActiveTab('general');
+          }}
+        />
+      )}
+
+      {/* Navigation Sidebar & Active Panel Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Navigation Sidebar */}
+        <div className="lg:col-span-3">
+          <nav className="sticky top-20 rounded-2xl border border-white/10 bg-[#171F2F]/90 p-3 backdrop-blur-xl">
+            <div className="hidden lg:flex flex-col space-y-1 font-mono text-xs">
+              <span className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+                SETTINGS MENU
+              </span>
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      'flex items-center justify-between rounded-xl px-3.5 py-3 text-left transition-all duration-200 cursor-pointer',
+                      isActive
+                        ? 'border border-[#5B8CFF]/40 bg-[#5B8CFF]/15 text-[#5B8CFF] font-bold shadow-glow-blue'
+                        : 'border border-transparent text-[#A1A8B5] hover:bg-[#121A2F] hover:text-white'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        className={cn(
+                          'h-4.5 w-4.5 shrink-0',
+                          isActive ? 'text-[#5B8CFF]' : 'text-[#64748B]'
+                        )}
+                      />
+                      <span className="text-xs font-semibold">{tab.label}</span>
+                    </div>
+
+                    {tab.badge && (
+                      <span
+                        className={cn(
+                          'rounded-full px-2 py-0.5 text-[10px] font-mono font-bold',
+                          isActive
+                            ? 'bg-[#5B8CFF]/30 text-white'
+                            : 'bg-white/5 text-[#A1A8B5]'
+                        )}
+                      >
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex overflow-x-auto gap-2 p-1 no-scrollbar lg:hidden font-mono text-xs">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      'flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-all',
+                      isActive
+                        ? 'border border-[#5B8CFF]/40 bg-[#5B8CFF]/15 text-[#5B8CFF]'
+                        : 'border border-white/10 bg-[#121A2F] text-[#A1A8B5]'
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        </div>
+
+        {/* Active Panel */}
+        <div className="lg:col-span-9">
+          {isLoading ? (
+            <ProfileSkeleton
+              variant={
+                activeTab === 'general'
+                  ? 'card'
+                  : activeTab === 'connections'
+                  ? 'connections'
+                  : activeTab === 'preferences'
+                  ? 'preferences'
+                  : activeTab === 'security'
+                  ? 'security'
+                  : 'achievements'
+              }
+            />
+          ) : (
+            <div className="space-y-6">
+              {activeTab === 'general' && (
+                <div className="space-y-6 animate-fade-in">
+                  <ProfileCard
+                    user={userData}
+                    initialIsEditing={isEditingProfile}
+                    onSave={handleSaveProfile}
+                  />
+                  <StatsCard statistics={mockProfileData.statistics} />
+                </div>
+              )}
+
+              {activeTab === 'connections' && (
+                <div className="animate-fade-in">
+                  <AccountConnections
+                    connectedAccounts={mockProfileData.connectedAccounts}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'preferences' && (
+                <div className="animate-fade-in">
+                  <PreferencePanel
+                    initialPreferences={mockProfileData.preferences}
+                    initialNotifications={mockProfileData.notificationSettings}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'security' && (
+                <div className="animate-fade-in">
+                  <SecurityPanel />
+                </div>
+              )}
+
+              {activeTab === 'statistics' && (
+                <div className="space-y-6 animate-fade-in">
+                  <StatsCard statistics={mockProfileData.statistics} />
+                  <AchievementCard achievements={mockProfileData.achievements} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

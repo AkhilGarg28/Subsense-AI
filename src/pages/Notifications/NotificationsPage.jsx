@@ -1,84 +1,210 @@
-import { HiOutlineBell, HiOutlineExclamation, HiOutlineCheckCircle, HiOutlineInformationCircle } from 'react-icons/hi';
-import { Card } from '../../components/ui';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import {
+  FiBell,
+  FiMail,
+  FiAlertTriangle,
+  FiRefreshCw,
+  FiLayers
+} from 'react-icons/fi';
+import {
+  NotificationTabs,
+  NotificationList
+} from '../../components/notifications';
+import { notificationsAPI } from '../../services/api';
+import { mockNotificationsData } from '../../data/mockNotificationsData';
 
-/**
- * NotificationsPage — View all alerts and notifications.
- * Placeholder data — will connect to real notifications later.
- */
 const NotificationsPage = () => {
-  const placeholderNotifications = [
-    {
-      type: 'warning',
-      icon: HiOutlineExclamation,
-      title: 'Subscription renewal approaching',
-      message: 'Your Netflix subscription renews in 3 days ($15.99).',
-      time: '2 hours ago',
-      color: 'text-warning',
-      bg: 'bg-warning/10',
-    },
-    {
-      type: 'success',
-      icon: HiOutlineCheckCircle,
-      title: 'Receipt processed successfully',
-      message: 'Your uploaded receipt has been analyzed and categorized.',
-      time: '5 hours ago',
-      color: 'text-success',
-      bg: 'bg-success/10',
-    },
-    {
-      type: 'info',
-      icon: HiOutlineInformationCircle,
-      title: 'Monthly report available',
-      message: 'Your July spending report is ready to view.',
-      time: '1 day ago',
-      color: 'text-primary',
-      bg: 'bg-primary/10',
-    },
-    {
-      type: 'danger',
-      icon: HiOutlineExclamation,
-      title: 'Price increase detected',
-      message: 'Adobe CC subscription price will increase by $5.00 next month.',
-      time: '2 days ago',
-      color: 'text-danger',
-      bg: 'bg-danger/10',
-    },
-  ];
+  const [notifications, setNotifications] = useState([]);
+  const [activeTab, setActiveTab] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch notifications from backend API
+  const fetchNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const res = await notificationsAPI.getAll();
+      const data = res.data?.data || res.data?.notifications || [];
+      setNotifications(Array.isArray(data) && data.length > 0 ? data : mockNotificationsData);
+    } catch (err) {
+      console.error('[Notifications] Fetch error:', err);
+      // Fallback to mock data so UI always shows content
+      setNotifications(mockNotificationsData);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((notif) => {
+      let matchesTab = true;
+      if (activeTab === 'Unread') {
+        matchesTab = !notif.isRead;
+      } else if (activeTab !== 'All') {
+        matchesTab = notif.category === activeTab;
+      }
+
+      const q = searchQuery.toLowerCase().trim();
+      let matchesSearch = true;
+      if (q) {
+        matchesSearch =
+          notif.title?.toLowerCase().includes(q) ||
+          notif.description?.toLowerCase().includes(q) ||
+          (notif.category && notif.category.toLowerCase().includes(q));
+      }
+
+      return matchesTab && matchesSearch;
+    });
+  }, [notifications, activeTab, searchQuery]);
+
+  const totalCount = notifications.length;
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications]);
+  const highPriorityCount = useMemo(
+    () => notifications.filter((n) => n.priority === 'High' && !n.isRead).length,
+    [notifications]
+  );
+
+  const handleMarkAsRead = async (id) => {
+    // Optimistic update
+    setNotifications((prev) =>
+      prev.map((notif) =>
+        (notif._id || notif.id) === id ? { ...notif, isRead: !notif.isRead } : notif
+      )
+    );
+    try {
+      await notificationsAPI.markAsRead(id);
+    } catch (err) {
+      // Revert on error — already updated optimistically
+      console.warn('[Notifications] Mark-read failed:', err.message);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    setNotifications((prev) => prev.map((notif) => ({ ...notif, isRead: true })));
+    try {
+      await notificationsAPI.markAllRead();
+    } catch (err) {
+      console.warn('[Notifications] Mark-all-read failed:', err.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    setNotifications((prev) => prev.filter((notif) => (notif._id || notif.id) !== id));
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm('Are you sure you want to clear all notifications?')) {
+      setNotifications([]);
+      try {
+        await notificationsAPI.clearAll();
+      } catch (err) {
+        console.warn('[Notifications] Clear-all failed:', err.message);
+      }
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setActiveTab('All');
+  };
+
+  const handleRefresh = () => {
+    fetchNotifications();
+  };
+
+  const handleActionClick = (notification) => {
+    if (!notification.isRead) {
+      handleMarkAsRead(notification._id || notification.id);
+    }
+  };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary sm:text-3xl">Notifications</h1>
-          <p className="mt-1 text-text-secondary">Stay updated with your financial alerts.</p>
-        </div>
-        <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5">
-          <HiOutlineBell className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-primary">{placeholderNotifications.length} new</span>
-        </div>
+    <div className="w-full space-y-6 pb-12 animate-fade-in">
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="p-5 rounded-2xl bg-[#171F2F]/80 border border-white/10 backdrop-blur-xl flex items-center gap-4 shadow-xl"
+        >
+          <div className="w-11 h-11 rounded-xl bg-[#5B8CFF]/15 border border-[#5B8CFF]/30 flex items-center justify-center text-[#5B8CFF]">
+            <FiLayers className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-[#A1A8B5] uppercase tracking-wider">Total Feed</div>
+            <div className="text-2xl font-bold text-white">{totalCount}</div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="p-5 rounded-2xl bg-[#171F2F]/80 border border-white/10 backdrop-blur-xl flex items-center gap-4 shadow-xl"
+        >
+          <div className="w-11 h-11 rounded-xl bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 flex items-center justify-center text-[#8B5CF6]">
+            <FiMail className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-[#A1A8B5] uppercase tracking-wider">Unread Alerts</div>
+            <div className="text-2xl font-bold text-white flex items-center gap-2">
+              <span>{unreadCount}</span>
+              {unreadCount > 0 && (
+                <span className="w-2 h-2 rounded-full bg-[#5B8CFF] animate-ping" />
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="p-5 rounded-2xl bg-[#171F2F]/80 border border-white/10 backdrop-blur-xl flex items-center gap-4 shadow-xl"
+        >
+          <div className="w-11 h-11 rounded-xl bg-[#EF4444]/15 border border-[#EF4444]/30 flex items-center justify-center text-[#EF4444]">
+            <FiAlertTriangle className="w-5 h-5" />
+          </div>
+          <div className="flex-1 flex items-center justify-between">
+            <div>
+              <div className="text-[10px] font-bold text-[#A1A8B5] uppercase tracking-wider">High Priority</div>
+              <div className="text-2xl font-bold text-white">{highPriorityCount}</div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="p-2 rounded-xl bg-[#121A2F] border border-white/10 text-[#A1A8B5] hover:text-white transition-all cursor-pointer"
+              title="Refresh Feed"
+            >
+              <FiRefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#5B8CFF]' : ''}`} />
+            </button>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Notification List */}
-      <div className="space-y-3">
-        {placeholderNotifications.map((notif, index) => {
-          const Icon = notif.icon;
-          return (
-            <Card key={index} hover className="transition-all">
-              <div className="flex items-start gap-4">
-                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${notif.bg}`}>
-                  <Icon className={`h-5 w-5 ${notif.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-text-primary">{notif.title}</h3>
-                  <p className="mt-0.5 text-sm text-text-secondary">{notif.message}</p>
-                  <p className="mt-1 text-xs text-text-muted">{notif.time}</p>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Category Filter Tabs */}
+      <NotificationTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        notifications={notifications}
+      />
+
+      {/* Main Notifications List Container */}
+      <NotificationList
+        notifications={notifications}
+        filteredNotifications={filteredNotifications}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onMarkAsRead={handleMarkAsRead}
+        onDelete={handleDelete}
+        onMarkAllAsRead={handleMarkAllAsRead}
+        onClearAll={handleClearAll}
+        onActionClick={handleActionClick}
+        onResetFilters={handleResetFilters}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

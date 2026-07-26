@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   HiOutlineHome,
@@ -17,210 +17,189 @@ import { ROUTES, APP_NAME } from '../../utils/constants';
 import { mockDashboardData } from '../../data/mockDashboardData';
 import { useAuth } from '../../context/AuthContext';
 
-/**
- * Sidebar — Vertical sidebar navigation with full menu and mobile responsiveness.
- * Menu Items: Dashboard, Upload Receipt, Subscriptions, AI Chat, Notifications, Profile, Settings, Logout.
- * Includes active route highlighting, user info badge, and responsive drawer overlay for mobile screens.
- */
 const Sidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user: authUser, logout } = useAuth();
 
-  // Access auth logout safely with fallback
-  let logoutHandler = () => {
+  const user = authUser || mockDashboardData.user;
+
+  const handleLogout = () => {
+    setIsMobileOpen(false);
+    logout();
     navigate(ROUTES.LOGIN);
   };
-
-  try {
-    const auth = useAuth();
-    if (auth && auth.logout) {
-      logoutHandler = () => {
-        auth.logout();
-        navigate(ROUTES.LOGIN);
-      };
-    }
-  } catch {
-    // If rendered outside AuthProvider
-  }
 
   const menuItems = [
     { name: 'Dashboard', path: ROUTES.DASHBOARD, icon: HiOutlineHome },
     { name: 'Upload Receipt', path: ROUTES.UPLOAD, icon: HiOutlineCloudUpload },
     { name: 'Subscriptions', path: ROUTES.SUBSCRIPTIONS, icon: HiOutlineCreditCard },
-    { name: 'AI Chat', path: ROUTES.CHAT, icon: HiOutlineChatAlt2 },
+    { name: 'AI Chat', path: ROUTES.CHAT, icon: HiOutlineChatAlt2, badge: 'AI' },
     { name: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: HiOutlineBell, badge: 3 },
     { name: 'Profile', path: ROUTES.PROFILE, icon: HiOutlineUser },
     { name: 'Settings', path: '/settings', icon: HiOutlineCog },
   ];
 
   const isActive = (path) => {
-    if (path === ROUTES.DASHBOARD) {
-      return location.pathname === ROUTES.DASHBOARD || location.pathname === '/';
-    }
+    if (path === ROUTES.DASHBOARD) return location.pathname === ROUTES.DASHBOARD;
     return location.pathname.startsWith(path);
   };
 
-  const user = mockDashboardData.user;
-
-  const handleLogout = () => {
-    setIsMobileOpen(false);
-    logoutHandler();
-  };
-
   const navContent = (
-    <div className="flex h-full flex-col justify-between p-4">
-      {/* Top Header & Brand */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between px-2">
-          <Link
-            to={ROUTES.DASHBOARD}
-            onClick={() => setIsMobileOpen(false)}
-            className="flex items-center gap-3 group"
-          >
-            <div className="gradient-primary flex h-10 w-10 items-center justify-center rounded-xl font-bold text-white text-lg shadow-md shadow-primary/20 transition-transform group-hover:scale-105">
-              S
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight text-text-primary">
-                {APP_NAME}
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#121A2F]/82 shadow-glass backdrop-blur-2xl">
+      <div className="pointer-events-none absolute inset-0 rounded-[24px] bg-[linear-gradient(135deg,rgba(91,140,255,0.28),transparent_28%,rgba(139,92,246,0.16)_72%,transparent)] opacity-70" />
+      <div className="relative flex h-full min-h-0 flex-col justify-between p-5">
+        <div className="min-h-0 space-y-8 overflow-y-auto pr-1 no-scrollbar">
+          <div className="flex items-center justify-between px-1 pt-1">
+            <Link
+              to={ROUTES.DASHBOARD}
+              onClick={() => setIsMobileOpen(false)}
+              className="group flex min-w-0 items-center gap-3.5"
+            >
+              <div className="gradient-primary flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xl font-black text-white shadow-glow-blue transition-transform group-hover:scale-105">
+                S
+              </div>
+              <div className="min-w-0">
+                <span className="block truncate text-lg font-extrabold leading-tight tracking-tight text-white">
+                  {APP_NAME}
+                </span>
+                <span className="block truncate text-[10px] font-extrabold uppercase tracking-widest text-primary">
+                  Financial Copilot
+                </span>
+              </div>
+            </Link>
+
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="rounded-xl p-2 text-text-secondary transition-colors hover:bg-white/5 hover:text-white lg:hidden"
+              aria-label="Close sidebar"
+              type="button"
+            >
+              <HiOutlineX className="h-6 w-6" />
+            </button>
+          </div>
+
+          <nav className="space-y-2" aria-label="Sidebar Navigation">
+            <p className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-text-muted">
+              Copilot Menu
+            </p>
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileOpen(false)}
+                  className={`group flex min-h-14 items-center justify-between rounded-2xl px-4 text-[17px] font-bold transition-all duration-200 ${
+                    active
+                      ? 'gradient-primary text-white shadow-glow-blue'
+                      : 'text-text-secondary hover:bg-white/[0.06] hover:text-white '
+                  }`}
+                >
+                  <div className="flex min-w-0 items-center gap-3.5">
+                    <Icon
+                      className={`h-6 w-6 shrink-0 transition-transform group-hover:scale-110 ${
+                        active ? 'text-white' : 'text-text-muted group-hover:text-primary'
+                      }`}
+                    />
+                    <span className="truncate">{item.name}</span>
+                  </div>
+                  {item.badge && (
+                    <span
+                      className={`ml-3 rounded-full px-2.5 py-1 text-[11px] font-extrabold ${
+                        active
+                          ? 'bg-white/18 text-white'
+                          : 'border border-primary/30 bg-primary/[0.12] text-primary'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="relative mt-5 space-y-3 border-t border-white/10 pt-5">
+          <div className="rounded-2xl border border-white/10 bg-card/80 p-3">
+            <div className="flex items-center gap-3">
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="h-11 w-11 shrink-0 rounded-2xl object-cover ring-2 ring-primary/30"
+              />
+              <div className="min-w-0 flex-1">
+                <h4 className="truncate text-sm font-extrabold leading-tight text-white">
+                  {user.name}
+                </h4>
+                <p className="truncate text-xs text-text-secondary">{user.email}</p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-success/30 bg-success/[0.12] px-2 py-1 text-[10px] font-extrabold text-success">
+                <HiOutlineSparkles className="h-3 w-3" />
+                PRO
               </span>
-              <span className="text-[10px] font-medium text-primary tracking-wider uppercase">
-                Fintech Copilot
-              </span>
             </div>
-          </Link>
-          {/* Close button for mobile menu drawer */}
+          </div>
+
           <button
-            onClick={() => setIsMobileOpen(false)}
-            className="rounded-lg p-1.5 text-text-secondary hover:bg-surface hover:text-text-primary lg:hidden"
-            aria-label="Close sidebar"
+            onClick={handleLogout}
+            className="btn-danger min-h-12 w-full"
+            type="button"
           >
-            <HiOutlineX className="h-6 w-6" />
+            <HiOutlineLogout className="h-4 w-4" />
+            <span>Sign Out</span>
           </button>
         </div>
-
-        {/* Menu Navigation Links */}
-        <nav className="space-y-1.5" aria-label="Sidebar Navigation">
-          <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-            Main Menu
-          </p>
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsMobileOpen(false)}
-                className={`group relative flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                  active
-                    ? 'bg-primary/15 text-primary font-semibold border-l-4 border-primary shadow-sm shadow-primary/10'
-                    : 'text-text-secondary hover:bg-surface/80 hover:text-text-primary'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon
-                    className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-                      active ? 'text-primary' : 'text-text-muted group-hover:text-text-primary'
-                    }`}
-                  />
-                  <span>{item.name}</span>
-                </div>
-                {item.badge && (
-                  <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary border border-primary/30">
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Bottom User Card & Logout Button */}
-      <div className="space-y-3 pt-4 border-t border-border">
-        {/* User Card */}
-        <div className="flex items-center gap-3 rounded-xl bg-surface/50 p-2.5 border border-border/60">
-          <img
-            src={user.avatar}
-            alt={user.name}
-            className="h-9 w-9 rounded-lg object-cover ring-2 ring-primary/20"
-          />
-          <div className="flex-1 overflow-hidden">
-            <h4 className="truncate text-xs font-semibold text-text-primary">
-              {user.name}
-            </h4>
-            <p className="truncate text-[10px] text-text-muted">
-              {user.email}
-            </p>
-          </div>
-          <span className="flex items-center gap-0.5 rounded-md bg-success/15 px-1.5 py-0.5 text-[10px] font-medium text-success border border-success/30">
-            <HiOutlineSparkles className="h-2.5 w-2.5" />
-            Pro
-          </span>
-        </div>
-
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-danger/30 bg-danger/10 py-2.5 text-xs font-semibold text-danger transition-all duration-200 hover:bg-danger hover:text-white hover:shadow-md hover:shadow-danger/20"
-        >
-          <HiOutlineLogout className="h-4 w-4" />
-          <span>Logout</span>
-        </button>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Mobile Top Bar Bar Header Toggle Button (Visible < lg) */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
+      <div className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-white/10 bg-background/92 px-4 backdrop-blur-2xl lg:hidden">
         <button
           onClick={() => setIsMobileOpen(true)}
-          className="rounded-lg border border-border bg-surface/80 p-2 text-text-secondary hover:bg-surface hover:text-text-primary focus:outline-none"
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-card/80 text-text-secondary transition-colors hover:text-white"
           aria-label="Open menu"
+          type="button"
         >
           <HiOutlineMenu className="h-6 w-6" />
         </button>
 
-        <Link to={ROUTES.DASHBOARD} className="flex items-center gap-2">
-          <div className="gradient-primary flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-white">
+        <Link to={ROUTES.DASHBOARD} className="flex items-center gap-2.5">
+          <div className="gradient-primary flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black text-white">
             S
           </div>
-          <span className="text-base font-bold text-text-primary">{APP_NAME}</span>
+          <span className="text-base font-extrabold tracking-tight text-white">{APP_NAME}</span>
         </Link>
 
-        <Link
-          to={ROUTES.PROFILE}
-          className="flex items-center justify-center rounded-full ring-2 ring-primary/30"
-        >
+        <Link to={ROUTES.PROFILE} aria-label="Open profile">
           <img
             src={user.avatar}
             alt={user.name}
-            className="h-7 w-7 rounded-full object-cover"
+            className="h-9 w-9 rounded-xl object-cover ring-2 ring-primary/30"
           />
         </Link>
       </div>
 
-      {/* Mobile Overlay Backdrop Drawer */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
-          {/* Backdrop Blur */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        <div className="fixed inset-0 z-50 flex p-3 lg:hidden">
+          <button
+            aria-label="Close sidebar overlay"
+            type="button"
+            className="fixed inset-0 bg-black/72 backdrop-blur-sm"
             onClick={() => setIsMobileOpen(false)}
           />
-          {/* Slide Drawer */}
-          <aside className="relative z-10 w-72 max-w-[80vw] bg-surface/95 text-text-primary shadow-2xl border-r border-border h-full flex flex-col">
+          <aside className="relative z-10 h-full w-[280px] max-w-[calc(100vw-24px)]">
             {navContent}
           </aside>
         </div>
       )}
 
-      {/* Desktop Sticky Sidebar (Visible >= lg) */}
-      <aside className="glass hidden lg:flex w-64 flex-col border-r border-border min-h-screen sticky top-0 h-screen overflow-y-auto">
+      <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 overflow-hidden p-4 lg:block">
         {navContent}
       </aside>
     </>
@@ -228,3 +207,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+

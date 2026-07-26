@@ -1,10 +1,7 @@
 import { motion } from 'framer-motion';
+import PropTypes from 'prop-types';
 import { cn } from '../../utils/helpers';
 
-/**
- * SubmitButton — Gradient submit button with loading state.
- * Shows spinner and "Please wait..." when isLoading is true.
- */
 const SubmitButton = ({
   children,
   isLoading = false,
@@ -19,12 +16,10 @@ const SubmitButton = ({
       whileHover={!disabled && !isLoading ? { scale: 1.01 } : {}}
       whileTap={!disabled && !isLoading ? { scale: 0.99 } : {}}
       className={cn(
-        'w-full relative flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white',
-        'bg-gradient-to-r from-primary to-secondary',
-        'transition-all duration-200',
-        'hover:shadow-glow',
-        'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background',
-        'disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none',
+        'w-full h-12 relative flex items-center justify-center gap-2 rounded-[14px] px-6 text-sm font-bold text-white',
+        'gradient-primary shadow-glow-blue',
+        'transition-all duration-200 cursor-pointer',
+        'disabled:cursor-not-allowed disabled:opacity-60',
         className
       )}
       {...props}
@@ -39,6 +34,13 @@ const SubmitButton = ({
       )}
     </motion.button>
   );
+};
+
+SubmitButton.propTypes = {
+  children: PropTypes.node.isRequired,
+  isLoading: PropTypes.bool,
+  disabled: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 export default SubmitButton;
