@@ -76,8 +76,45 @@ return JSON.parse(cleanedText);
     throw error;
   }
 }
+async function generateRecommendations(financialData) {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-flash-lite-preview",
+      contents: `
+You are an AI Financial Advisor.
+
+Analyze the following financial information:
+
+${JSON.stringify(financialData)}
+
+Provide 3 practical savings recommendations.
+
+Return ONLY valid JSON.
+
+{
+  "recommendations": [
+    "",
+    "",
+    ""
+  ]
+}
+`,
+    });
+
+    const cleanedText = response.text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    return JSON.parse(cleanedText);
+  } catch (error) {
+    console.error("Recommendation Error:", error);
+    throw error;
+  }
+}
 
 module.exports = {
   analyzeBill,
   detectSubscription,
+  generateRecommendations
 };
