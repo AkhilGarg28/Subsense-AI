@@ -1,138 +1,80 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HiStar, HiOutlineBadgeCheck, HiOutlineShieldCheck, HiOutlineTrendingUp } from 'react-icons/hi';
-import { LedgerRule } from '../common';
+import { HiStar } from 'react-icons/hi';
 
-const testimonialsData = [
+const reviews = [
   {
-    id: 'marcus-chen',
-    name: 'Marcus Chen',
-    role: 'CTO at TechScale',
-    company: 'TechScale',
-    quote: "SubSense AI caught $1,200/year in forgotten SaaS seats we hadn't used in 6 months.",
-    rating: 5,
-    initials: 'MC',
-    savingsBadge: 'Saved $1,200/yr',
+    quote: "SubSense AI caught three redundant Canva seats our design team forgot to cancel after a project wrapped up. Saved us over $960 within our first 10 days.",
+    author: "Alex Rivera",
+    role: "VP of Operations, TechFlow",
+    verified: "Verified SaaS Buyer",
   },
   {
-    id: 'sarah-jenkins',
-    name: 'Sarah Jenkins',
-    role: 'Design Director',
-    company: 'Studio Create',
-    quote: 'The receipt scanner is magic. I just forward invoice emails and my spending forecast updates instantly.',
-    rating: 5,
-    initials: 'SJ',
-    savingsBadge: 'Instant Sync',
+    quote: "The LLM OCR vision scanner parsed 45 PDF receipts from my email in less than 30 seconds. No manual data entry ever again.",
+    author: "Sarah Chen",
+    role: "Founder, Apex Creative",
+    verified: "Verified Pro User",
   },
   {
-    id: 'david-k',
-    name: 'David K.',
-    role: 'Product Lead',
-    company: 'ProductPulse',
-    quote: 'The AI chat assistant answered my quarterly tax & expense breakdown in 5 seconds.',
-    rating: 5,
-    initials: 'DK',
-    savingsBadge: '5s AI Response',
+    quote: "Finally a financial copilot that looks like a Linear or Apple product rather than a boring 90s accounting database.",
+    author: "Marcus Vance",
+    role: "Design Lead, Vercel Community",
+    verified: "Verified Product Hunt Voter",
   },
-];
-
-const trustBadges = [
-  { icon: HiOutlineShieldCheck, title: 'SOC-2 Certified', desc: 'Enterprise Security' },
-  { icon: HiStar, title: '4.9/5 Rating', desc: 'Over 2,000+ Reviews' },
-  { icon: HiOutlineBadgeCheck, title: '256-bit Encryption', desc: 'Bank-Grade Safety' },
-  { icon: HiOutlineTrendingUp, title: '$4.2M+ Saved', desc: 'For Users Nationwide' },
 ];
 
 const Testimonials = () => {
   return (
-    <section className="relative py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <LedgerRule label="CLIENT VERIFICATION" />
+    <section id="testimonials" className="relative py-24 lg:py-32 overflow-hidden border-t border-white/5">
+      <div className="container-custom relative z-10">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#5B8CFF] mb-3 block">
+            USER TESTIMONIALS
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-white tracking-tight leading-tight mb-4">
+            Loved by Founders, Engineers & <span className="gradient-text-primary">Finance Teams</span>
+          </h2>
+          <p className="text-base sm:text-lg text-[#A1A8B5] leading-relaxed">
+            See how SubSense AI is helping thousands optimize their recurring subscription budgets.
+          </p>
+        </div>
 
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#F3F1EA]/10 bg-[#171A18] text-[#C2A155] text-xs font-mono tracking-widest uppercase"
-        >
-          <span>LOVED BY TEAMS & PROFESSIONALS</span>
-        </motion.div>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold text-[#F3F1EA] tracking-tight"
-        >
-          Don't just take our word for it. <br className="hidden sm:block" />
-          <span className="text-[#C2A155]">See what our users achieve.</span>
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-[#96988F] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-sans"
-        >
-          From startup executives to independent creators, SubSense AI helps thousands eliminate wasted spend and automate financial clarity.
-        </motion.p>
-      </div>
-
-      {/* Testimonials Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-16">
-        {testimonialsData.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-xl border border-[#F3F1EA]/10 bg-[#171A18] p-6 sm:p-8 flex flex-col justify-between hover:border-[#C2A155]/40 transition-colors"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-1 text-[#C2A155]">
-                  {[...Array(item.rating)].map((_, i) => (
-                    <HiStar key={i} className="w-4 h-4 fill-current" />
+        {/* Testimonials Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {reviews.map((rev, idx) => (
+            <motion.div
+              key={rev.author}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              className="flex flex-col justify-between rounded-2xl border border-white/10 bg-[#171F2F]/80 p-8 backdrop-blur-xl hover:border-[#5B8CFF]/40 transition-all"
+            >
+              <div>
+                {/* 5 Stars */}
+                <div className="flex items-center gap-1 text-[#F59E0B] mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <HiStar key={i} className="h-5 w-5" />
                   ))}
                 </div>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#0D0F0E] text-[#3FA972] border border-[#3FA972]/30">
-                  {item.savingsBadge}
+
+                <p className="text-sm text-[#A1A8B5] leading-relaxed mb-6 italic">
+                  &quot;{rev.quote}&quot;
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 flex items-center justify-between font-mono text-xs">
+                <div>
+                  <h4 className="font-bold text-white">{rev.author}</h4>
+                  <p className="text-[10px] text-[#A1A8B5]">{rev.role}</p>
+                </div>
+                <span className="px-2.5 py-0.5 rounded bg-[#22C55E]/15 border border-[#22C55E]/30 text-[10px] font-bold text-[#22C55E]">
+                  {rev.verified}
                 </span>
               </div>
-
-              <p className="text-[#F3F1EA] text-sm sm:text-base leading-relaxed mb-6 font-sans italic">
-                "{item.quote}"
-              </p>
-            </div>
-
-            <div className="pt-4 border-t border-[#F3F1EA]/10 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#0D0F0E] border border-[#F3F1EA]/10 flex items-center justify-center text-[#C2A155] font-mono font-bold text-sm">
-                {item.initials}
-              </div>
-
-              <div>
-                <h4 className="text-sm font-display font-bold text-[#F3F1EA]">{item.name}</h4>
-                <p className="text-xs text-[#96988F] font-mono">{item.role}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Trust Strip */}
-      <div className="p-6 sm:p-8 rounded-xl border border-[#F3F1EA]/10 bg-[#171A18]">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-[#F3F1EA]/10">
-          {trustBadges.map((badge, idx) => {
-            const BadgeIcon = badge.icon;
-            return (
-              <div key={idx} className={`flex flex-col items-center justify-center ${idx !== 0 ? 'pt-4 md:pt-0' : ''}`}>
-                <BadgeIcon className="w-5 h-5 text-[#C2A155] mb-2" />
-                <h5 className="text-xs font-mono font-bold text-[#F3F1EA]">{badge.title}</h5>
-                <p className="text-[11px] text-[#96988F] mt-0.5">{badge.desc}</p>
-              </div>
-            );
-          })}
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

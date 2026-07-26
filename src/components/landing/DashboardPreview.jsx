@@ -1,377 +1,190 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {
-  HiOutlineCreditCard,
-  HiOutlineRefresh,
-  HiOutlineTrendingUp,
-  HiOutlineExclamationCircle,
-  HiOutlineCheckCircle,
-  HiOutlineLockClosed,
-  HiOutlineChevronRight,
-  HiOutlineArrowNarrowUp,
-  HiOutlinePaperAirplane,
+  HiOutlineSparkles,
   HiOutlineShieldCheck,
-  HiOutlineLightBulb,
-  HiOutlineXCircle,
+  HiOutlineTrendingDown,
+  HiOutlineCreditCard,
+  HiOutlineCheck,
 } from 'react-icons/hi';
-import { FaAws, FaFigma, FaSpotify, FaCloud, FaRobot } from 'react-icons/fa';
-import { LedgerRule, Odometer } from '../common';
+import { Odometer } from '../common';
+
+const chartData = [
+  { month: 'Jan', spend: 1850, savings: 240 },
+  { month: 'Feb', spend: 1720, savings: 290 },
+  { month: 'Mar', spend: 1640, savings: 310 },
+  { month: 'Apr', spend: 1510, savings: 340 },
+  { month: 'May', spend: 1390, savings: 420 },
+  { month: 'Jun', spend: 1248, savings: 480 },
+];
 
 const DashboardPreview = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [selectedSub, setSelectedSub] = useState(null);
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: 1,
-      sender: 'ai',
-      text: 'AI Copilot: You have 2 subscriptions renewing this week totaling $84.00.',
-      timestamp: 'Just now',
-    },
-  ]);
-  const [chatInput, setChatInput] = useState('');
-
-  const subscriptions = [
-    {
-      id: 'aws',
-      name: 'AWS Cloud Services',
-      category: 'Infrastructure',
-      cost: '$420.00',
-      cycle: '/mo',
-      renewal: 'Jul 29, 2026',
-      status: 'Active',
-      statusType: 'success',
-      icon: FaAws,
-    },
-    {
-      id: 'figma',
-      name: 'Figma Enterprise',
-      category: 'Design & Collaboration',
-      cost: '$45.00',
-      cycle: '/mo',
-      renewal: 'Aug 02, 2026',
-      status: 'Price Increased',
-      statusType: 'warning',
-      badge: '+$15.00/mo spike',
-      icon: FaFigma,
-    },
-    {
-      id: 'spotify',
-      name: 'Spotify Premium',
-      category: 'Entertainment',
-      cost: '$11.99',
-      cycle: '/mo',
-      renewal: 'Aug 05, 2026',
-      status: 'Active',
-      statusType: 'success',
-      icon: FaSpotify,
-    },
-    {
-      id: 'adobe',
-      name: 'Adobe Creative Cloud',
-      category: 'Design & Video',
-      cost: '$79.99',
-      cycle: '/mo',
-      renewal: 'Jul 28, 2026',
-      status: 'Unused',
-      statusType: 'danger',
-      badge: '0 logins in 45 days',
-      icon: FaCloud,
-    },
-    {
-      id: 'openai',
-      name: 'OpenAI ChatGPT Plus',
-      category: 'AI Tools',
-      cost: '$20.00',
-      cycle: '/mo',
-      renewal: 'Aug 10, 2026',
-      status: 'Active',
-      statusType: 'success',
-      icon: FaRobot,
-    },
-  ];
-
-  const handleSendMessage = (e) => {
-    e?.preventDefault();
-    if (!chatInput.trim()) return;
-
-    const userText = chatInput;
-    setChatMessages((prev) => [
-      ...prev,
-      { id: Date.now(), sender: 'user', text: userText, timestamp: 'Just now' },
-    ]);
-    setChatInput('');
-
-    setTimeout(() => {
-      let aiResponseText = `SubSense AI processed "${userText}". All subscriptions are currently tracked and optimized.`;
-      if (userText.toLowerCase().includes('adobe') || userText.toLowerCase().includes('cancel')) {
-        aiResponseText = `AI Copilot: Adobe Creative Cloud ($79.99/mo) has had 0 logins in 45 days. Click "1-Click Cancel" in the Audit tab to save $959.88/yr immediately.`;
-      } else if (userText.toLowerCase().includes('renew') || userText.toLowerCase().includes('week')) {
-        aiResponseText = `AI Copilot: Upcoming renewals: Adobe CC ($79.99 on Jul 28) & AWS Cloud ($420.00 on Jul 29). Total: $499.99.`;
-      }
-
-      setChatMessages((prev) => [
-        ...prev,
-        { id: Date.now() + 1, sender: 'ai', text: aiResponseText, timestamp: 'Just now' },
-      ]);
-    }, 600);
-  };
-
-  const tabs = [
-    { id: 'overview', label: 'Executive Overview' },
-    { id: 'audit', label: 'AI Subscription Audit', badge: '3 Savings' },
-    { id: 'forecast', label: 'Cashflow Forecast' },
-  ];
+  const [activeTab, setActiveTab] = useState('insights');
 
   return (
-    <section id="preview" className="relative py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <LedgerRule label="INTERACTIVE DEMO" />
+    <section id="dashboard-preview" className="relative py-24 lg:py-32 overflow-hidden border-t border-white/5">
+      <div className="container-custom relative z-10">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#5B8CFF] mb-3 block">
+            LIVE PRODUCT DEMO
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-white tracking-tight leading-tight mb-4">
+            The Command Center for <span className="gradient-text-primary">Your Subscriptions</span>
+          </h2>
+          <p className="text-base sm:text-lg text-[#A1A8B5] leading-relaxed">
+            Experience real-time financial health scoring, AI Insights, and spend forecasting in one clean dashboard.
+          </p>
+        </div>
 
-      {/* Section Header */}
-      <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
+        {/* Interactive Dashboard Frame */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#F3F1EA]/10 bg-[#171A18] text-[#C2A155] text-xs font-mono uppercase tracking-wider"
+          transition={{ duration: 0.7 }}
+          className="relative rounded-2xl border border-white/10 bg-[#171F2F]/90 shadow-2xl backdrop-blur-2xl overflow-hidden p-6 sm:p-8"
         >
-          <span>INTERACTIVE PRODUCT SHOWCASE</span>
-        </motion.div>
+          {/* Top Control Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center text-white font-bold">
+                <HiOutlineSparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-extrabold text-white">SubSense AI Operating Ledger</h3>
+                <span className="text-xs font-mono text-[#A1A8B5]">Real-time spend forecast & live audit</span>
+              </div>
+            </div>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold text-[#F3F1EA] tracking-tight"
-        >
-          See SubSense AI in action <br className="hidden sm:block" />
-          <span className="text-[#C2A155]">before you even sign up</span>
-        </motion.h2>
-      </div>
-
-      {/* Feature Tab Navigation Controls */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
-        <div className="inline-flex p-1 rounded-lg bg-[#171A18] border border-[#F3F1EA]/10">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
+            <div className="flex items-center gap-2 bg-[#121A2F] p-1.5 rounded-xl border border-white/10 font-mono text-xs">
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-xs font-mono transition-all duration-200 ${
-                  isActive
-                    ? 'text-[#0D0F0E] bg-[#C2A155] font-bold'
-                    : 'text-[#96988F] hover:text-[#F3F1EA]'
+                onClick={() => setActiveTab('insights')}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                  activeTab === 'insights'
+                    ? 'bg-[#5B8CFF] text-white shadow-glow-blue'
+                    : 'text-[#A1A8B5] hover:text-white'
                 }`}
               >
-                <span>{tab.label}</span>
-                {tab.badge && (
-                  <span
-                    className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                      isActive ? 'bg-[#0D0F0E]/20 text-[#0D0F0E]' : 'bg-[#3FA972]/20 text-[#3FA972]'
-                    }`}
-                  >
-                    {tab.badge}
-                  </span>
-                )}
+                AI Insights
               </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Ledger Browser Frame */}
-      <div className="relative max-w-6xl mx-auto rounded-xl border border-[#F3F1EA]/10 bg-[#171A18] overflow-hidden shadow-2xl">
-        {/* Top Window Bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#F3F1EA]/10 bg-[#0D0F0E]">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#D65C4F]" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#3FA972]" />
-          </div>
-
-          <div className="flex items-center gap-2 px-3 py-1 rounded bg-[#171A18] border border-[#F3F1EA]/10 text-xs font-mono text-[#96988F]">
-            <HiOutlineLockClosed className="w-3.5 h-3.5 text-[#3FA972]" />
-            <span>app.subsense.ai/{activeTab}</span>
-          </div>
-
-          <div className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#3FA972]/20 text-[#3FA972] border border-[#3FA972]/30">
-            LEDGER LIVE
-          </div>
-        </div>
-
-        {/* Interior Container */}
-        <div className="p-6 space-y-6 min-h-[520px]">
-          <AnimatePresence mode="wait">
-            {activeTab === 'overview' && (
-              <motion.div
-                key="overview"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-6"
+              <button
+                onClick={() => setActiveTab('chart')}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                  activeTab === 'chart'
+                    ? 'bg-[#5B8CFF] text-white shadow-glow-blue'
+                    : 'text-[#A1A8B5] hover:text-white'
+                }`}
               >
-                {/* 3 Metric Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg bg-[#0D0F0E] border border-[#F3F1EA]/10">
-                    <span className="text-[10px] font-mono uppercase text-[#96988F]">Monthly Total</span>
-                    <div className="text-2xl font-mono font-bold text-[#F3F1EA] mt-1">
-                      <Odometer value={1248.50} prefix="$" decimals={2} />
-                    </div>
-                    <span className="text-[11px] font-mono text-[#3FA972] mt-1 block">+4.2% vs last month</span>
-                  </div>
+                Spend Forecast
+              </button>
+            </div>
+          </div>
 
-                  <div className="p-4 rounded-lg bg-[#0D0F0E] border border-[#F3F1EA]/10">
-                    <span className="text-[10px] font-mono uppercase text-[#96988F]">Active Subscriptions</span>
-                    <div className="text-2xl font-mono font-bold text-[#F3F1EA] mt-1">14 Active</div>
-                    <span className="text-[11px] font-mono text-[#D97706] mt-1 block">2 Renewing Soon</span>
+          {/* Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Metrics & Charts (8 cols) */}
+            <div className="lg:col-span-8 space-y-6">
+              {/* Stat Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
+                <div className="p-5 rounded-xl bg-[#121A2F] border border-white/10">
+                  <span className="text-xs text-[#A1A8B5] uppercase">Monthly Recurring</span>
+                  <div className="text-2xl font-bold text-white mt-1">
+                    $<Odometer value={1248.50} />
                   </div>
-
-                  <div className="p-4 rounded-lg bg-[#0D0F0E] border border-[#C2A155]/30">
-                    <span className="text-[10px] font-mono uppercase text-[#C2A155]">AI Savings Identified</span>
-                    <div className="text-2xl font-mono font-bold text-[#C2A155] mt-1">$340.00/mo</div>
-                    <span className="text-[11px] font-mono text-[#3FA972] mt-1 block">3 Action Items</span>
-                  </div>
-                </div>
-
-                {/* Subscriptions Table List */}
-                <div className="rounded-lg border border-[#F3F1EA]/10 bg-[#0D0F0E] overflow-hidden">
-                  <div className="p-3 border-b border-[#F3F1EA]/10 flex items-center justify-between text-xs font-mono text-[#96988F]">
-                    <span>TRACKED RECURRING LEDGER</span>
-                    <span>5 ITEMS SHOWN</span>
-                  </div>
-
-                  <div className="divide-y divide-[#F3F1EA]/10">
-                    {subscriptions.map((sub) => (
-                      <div key={sub.id} className="p-3.5 flex items-center justify-between hover:bg-[#171A18] transition-colors text-xs">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded bg-[#171A18] border border-[#F3F1EA]/10 flex items-center justify-center text-base text-[#F3F1EA]">
-                            <sub.icon />
-                          </div>
-                          <div>
-                            <span className="font-semibold text-[#F3F1EA] block">{sub.name}</span>
-                            <span className="font-mono text-[10px] text-[#96988F]">{sub.category} • {sub.renewal}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                          <span className="font-mono font-bold text-[#F3F1EA]">{sub.cost}</span>
-                          <span className={`font-mono text-[10px] px-2 py-0.5 rounded border ${
-                            sub.statusType === 'success' ? 'bg-[#3FA972]/15 text-[#3FA972] border-[#3FA972]/30' :
-                            sub.statusType === 'warning' ? 'bg-[#D97706]/15 text-[#D97706] border-[#D97706]/30' :
-                            'bg-[#D65C4F]/15 text-[#D65C4F] border-[#D65C4F]/30'
-                          }`}>
-                            {sub.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === 'audit' && (
-              <motion.div
-                key="audit"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-4"
-              >
-                <div className="p-4 rounded-lg bg-[#0D0F0E] border border-[#C2A155]/40 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-display font-bold text-[#F3F1EA] text-sm block">Autonomous Audit Report</span>
-                    <span className="text-[#96988F] font-mono">Invoice OCR & Transaction Price Hike Scan</span>
-                  </div>
-                  <span className="font-mono font-bold text-[#3FA972] bg-[#3FA972]/20 px-3 py-1 rounded border border-[#3FA972]/30">
-                    Savings: $340.00/mo
+                  <span className="text-[11px] text-[#22C55E] flex items-center gap-1 mt-1">
+                    <HiOutlineTrendingDown className="h-3.5 w-3.5" /> -12.4% vs last mo
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-                  <div className="p-4 rounded-lg bg-[#0D0F0E] border border-[#D65C4F]/40 space-y-2">
-                    <span className="text-[#D65C4F] font-bold block">[01] UNUSED SUBSCRIPTION</span>
-                    <h4 className="font-bold text-[#F3F1EA]">Adobe Creative Cloud</h4>
-                    <p className="text-[#96988F] text-[11px]">0 logins in 45 days. $79.99/mo</p>
-                    <button className="w-full py-1.5 rounded bg-[#D65C4F]/20 text-[#D65C4F] font-bold border border-[#D65C4F]/40 hover:bg-[#D65C4F]/30">
-                      1-Click Cancel
-                    </button>
+                <div className="p-5 rounded-xl bg-[#121A2F] border border-white/10">
+                  <span className="text-xs text-[#A1A8B5] uppercase">Active SaaS Seats</span>
+                  <div className="text-2xl font-bold text-white mt-1">
+                    <Odometer value={14} /> Seats
                   </div>
+                  <span className="text-[11px] text-[#8B5CF6] mt-1 block">3 Unused Flagged</span>
+                </div>
 
-                  <div className="p-4 rounded-lg bg-[#0D0F0E] border border-[#D97706]/40 space-y-2">
-                    <span className="text-[#D97706] font-bold block">[02] PRICE SPIKE DETECTED</span>
-                    <h4 className="font-bold text-[#F3F1EA]">Figma Enterprise</h4>
-                    <p className="text-[#96988F] text-[11px]">Increased from $30 to $45/mo</p>
-                    <button className="w-full py-1.5 rounded bg-[#D97706]/20 text-[#D97706] font-bold border border-[#D97706]/40 hover:bg-[#D97706]/30">
-                      Generate Script
-                    </button>
+                <div className="p-5 rounded-xl bg-[#121A2F] border border-white/10">
+                  <span className="text-xs text-[#A1A8B5] uppercase">Annual Savings</span>
+                  <div className="text-2xl font-bold text-[#22C55E] mt-1">
+                    $<Odometer value={4080.00} />
                   </div>
+                  <span className="text-[11px] text-[#22C55E] mt-1 block">99.4% AI Match</span>
+                </div>
+              </div>
 
-                  <div className="p-4 rounded-lg bg-[#0D0F0E] border border-[#C2A155]/40 space-y-2">
-                    <span className="text-[#C2A155] font-bold block">[03] IDLE INFRASTRUCTURE</span>
-                    <h4 className="font-bold text-[#F3F1EA]">AWS EC2 Instances</h4>
-                    <p className="text-[#96988F] text-[11px]">Unattached EBS volumes ($245/mo)</p>
-                    <button className="w-full py-1.5 rounded bg-[#C2A155]/20 text-[#C2A155] font-bold border border-[#C2A155]/40 hover:bg-[#C2A155]/30">
-                      Auto-Stop Nodes
-                    </button>
+              {/* Area Chart Component */}
+              <div className="p-6 rounded-xl bg-[#121A2F] border border-white/10 h-72">
+                <div className="flex items-center justify-between mb-4 font-mono text-xs">
+                  <span className="font-bold text-white">SPEND REDUCTION TRAJECTORY</span>
+                  <span className="text-[#22C55E]">$480.00 Saved in June</span>
+                </div>
+                <ResponsiveContainer width="100%" height="80%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorSpend" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#5B8CFF" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#5B8CFF" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="month" stroke="#64748B" fontSize={12} />
+                    <YAxis stroke="#64748B" fontSize={12} />
+                    <Tooltip contentStyle={{ backgroundColor: '#171F2F', borderColor: '#5B8CFF', color: '#fff' }} />
+                    <Area type="monotone" dataKey="spend" stroke="#5B8CFF" strokeWidth={3} fillOpacity={1} fill="url(#colorSpend)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Right Health Score Gauge & AI Feed (4 cols) */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Score Box */}
+              <div className="p-6 rounded-xl bg-[#121A2F] border border-white/10 flex flex-col items-center justify-center text-center font-mono">
+                <div className="flex items-center gap-2 mb-4">
+                  <HiOutlineShieldCheck className="h-5 w-5 text-[#22C55E]" />
+                  <span className="text-xs font-bold text-[#22C55E] uppercase">FINANCIAL HEALTH SCORE</span>
+                </div>
+
+                <div className="relative flex items-center justify-center my-2">
+                  <div className="h-28 w-28 rounded-full border-8 border-[#5B8CFF] border-t-transparent animate-spin" style={{ animationDuration: '10s' }} />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span className="text-3xl font-extrabold text-white">92</span>
+                    <span className="text-[10px] text-[#A1A8B5] uppercase">/ 100 PTS</span>
                   </div>
                 </div>
-              </motion.div>
-            )}
 
-            {activeTab === 'forecast' && (
-              <motion.div
-                key="forecast"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-4"
-              >
-                <div className="p-4 rounded-lg bg-[#0D0F0E] border border-[#F3F1EA]/10 space-y-4">
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-[#F3F1EA] font-bold">3-MONTH PREDICTIVE CASHFLOW LEDGER</span>
-                    <span className="text-[#3FA972]">$4,080.00/YR SAVINGS TARGET</span>
+                <span className="mt-3 px-3 py-1 rounded-full bg-[#22C55E]/15 border border-[#22C55E]/30 text-xs font-bold text-[#22C55E]">
+                  OPTIMAL SPENDING
+                </span>
+              </div>
+
+              {/* Feed Card */}
+              <div className="p-5 rounded-xl bg-[#121A2F] border border-white/10 space-y-3">
+                <span className="text-xs font-mono font-bold text-[#5B8CFF] uppercase block">
+                  ACTIONABLE RECS (2)
+                </span>
+
+                <div className="p-3 rounded-lg bg-[#171F2F] border border-white/5 text-xs space-y-1">
+                  <div className="flex items-center justify-between font-bold text-white">
+                    <span>Spotify Annual Switch</span>
+                    <span className="text-[#22C55E]">Save $24/yr</span>
                   </div>
-
-                  <div className="space-y-3 font-mono text-xs">
-                    <div>
-                      <div className="flex justify-between mb-1 text-[#96988F]">
-                        <span>JULY 2026 (CURRENT)</span>
-                        <span className="text-[#F3F1EA]">$1,248.50</span>
-                      </div>
-                      <div className="w-full h-2 bg-[#171A18] rounded overflow-hidden flex">
-                        <div className="h-full bg-[#C2A155]" style={{ width: '85%' }} />
-                        <div className="h-full bg-[#D65C4F]" style={{ width: '15%' }} />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between mb-1 text-[#96988F]">
-                        <span>AUGUST 2026 (UNUSED CANCELED)</span>
-                        <span className="text-[#3FA972]">$1,168.51 (-$79.99)</span>
-                      </div>
-                      <div className="w-full h-2 bg-[#171A18] rounded overflow-hidden">
-                        <div className="h-full bg-[#3FA972]" style={{ width: '74%' }} />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between mb-1 text-[#96988F]">
-                        <span>SEPTEMBER 2026 (FULLY OPTIMIZED)</span>
-                        <span className="text-[#3FA972]">$908.50 (-$340.00)</span>
-                      </div>
-                      <div className="w-full h-2 bg-[#171A18] rounded overflow-hidden">
-                        <div className="h-full bg-[#3FA972]" style={{ width: '58%' }} />
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-[11px] text-[#A1A8B5]">Switching to yearly billing reduces tier fee.</p>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+
+                <div className="p-3 rounded-lg bg-[#171F2F] border border-white/5 text-xs space-y-1">
+                  <div className="flex items-center justify-between font-bold text-white">
+                    <span>Duplicate Apple Music</span>
+                    <span className="text-[#EF4444]">Cancel Sub</span>
+                  </div>
+                  <p className="text-[11px] text-[#A1A8B5]">Overlap detected with Spotify Premium.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

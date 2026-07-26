@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import {
   HiOutlineShieldCheck,
   HiOutlineKey,
-  HiOutlineDesktopComputer,
-  HiOutlineDeviceMobile,
   HiOutlineTrash,
   HiOutlineExclamationCircle,
   HiOutlineCheckCircle,
@@ -77,13 +75,13 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
       preferences: mockProfileData.preferences,
       connectedAccounts: mockProfileData.connectedAccounts,
       exportTimestamp: new Date().toISOString(),
-      appVersion: 'SubSense AI 2.4.0 (Ledger)',
+      appVersion: 'SubSense AI 2.4.0 (Pro)',
     };
 
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `subsense-ledger-data-${Date.now()}.json`);
+    downloadAnchor.setAttribute('download', `subsense-account-data-${Date.now()}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -102,10 +100,10 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
   };
 
   return (
-    <div className={cn('rounded-xl border border-[#F3F1EA]/10 bg-[#171A18] p-6 shadow-2xl md:p-8', className)}>
-      <div className="border-b border-[#F3F1EA]/10 pb-5">
-        <h2 className="text-xl font-display font-bold text-[#F3F1EA]">Security & Authentication</h2>
-        <p className="mt-0.5 text-xs text-[#96988F] font-sans">
+    <div className={cn('rounded-2xl border border-white/10 bg-[#171F2F]/80 p-6 shadow-2xl backdrop-blur-xl md:p-8', className)}>
+      <div className="border-b border-white/10 pb-5">
+        <h2 className="text-xl font-bold text-white">Security & Authentication</h2>
+        <p className="mt-0.5 text-xs text-[#A1A8B5]">
           Manage your password, enable two-factor authentication, export data, and account deletion options.
         </p>
       </div>
@@ -113,7 +111,7 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
       <div className="mt-6 space-y-8">
         {/* Change Password */}
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#C2A155]">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#5B8CFF]">
             <HiOutlineKey className="h-4 w-4" />
             <h3>CHANGE PASSWORD</h3>
           </div>
@@ -121,10 +119,10 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
           {passwordStatus && (
             <div
               className={cn(
-                'mt-3 flex items-center gap-2 rounded p-3 text-xs font-mono',
+                'mt-3 flex items-center gap-2 rounded-xl p-3 text-xs font-mono',
                 passwordStatus.type === 'error'
-                  ? 'border border-[#D65C4F]/30 bg-[#D65C4F]/15 text-[#D65C4F]'
-                  : 'border border-[#3FA972]/30 bg-[#3FA972]/15 text-[#3FA972]'
+                  ? 'border border-[#EF4444]/30 bg-[#EF4444]/15 text-[#EF4444]'
+                  : 'border border-[#22C55E]/30 bg-[#22C55E]/15 text-[#22C55E]'
               )}
             >
               {passwordStatus.type === 'error' ? (
@@ -139,19 +137,19 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
           <form onSubmit={handlePasswordSubmit} className="mt-4 space-y-4 font-mono text-xs">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="space-y-1.5">
-                <label className="text-[#96988F]">CURRENT PASSWORD</label>
+                <label className="text-[#A1A8B5]">CURRENT PASSWORD</label>
                 <div className="relative">
                   <input
                     type={showCurrentPassword ? 'text' : 'password'}
                     value={passwords.currentPassword}
                     onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full rounded border border-[#F3F1EA]/10 bg-[#0D0F0E] py-2 pl-3 pr-8 text-[#F3F1EA] focus:border-[#C2A155] focus:outline-none"
+                    className="w-full rounded-xl border border-white/10 bg-[#121A2F] py-2 pl-3 pr-8 text-white focus:border-[#5B8CFF] focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#96988F]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A1A8B5]"
                   >
                     {showCurrentPassword ? <HiOutlineEyeOff className="h-4 w-4" /> : <HiOutlineEye className="h-4 w-4" />}
                   </button>
@@ -159,19 +157,19 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[#96988F]">NEW PASSWORD</label>
+                <label className="text-[#A1A8B5]">NEW PASSWORD</label>
                 <div className="relative">
                   <input
                     type={showNewPassword ? 'text' : 'password'}
                     value={passwords.newPassword}
                     onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
                     placeholder="MIN. 8 CHARS"
-                    className="w-full rounded border border-[#F3F1EA]/10 bg-[#0D0F0E] py-2 pl-3 pr-8 text-[#F3F1EA] focus:border-[#C2A155] focus:outline-none"
+                    className="w-full rounded-xl border border-white/10 bg-[#121A2F] py-2 pl-3 pr-8 text-white focus:border-[#5B8CFF] focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#96988F]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A1A8B5]"
                   >
                     {showNewPassword ? <HiOutlineEyeOff className="h-4 w-4" /> : <HiOutlineEye className="h-4 w-4" />}
                   </button>
@@ -179,13 +177,13 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[#96988F]">CONFIRM PASSWORD</label>
+                <label className="text-[#A1A8B5]">CONFIRM PASSWORD</label>
                 <input
                   type="password"
                   value={passwords.confirmPassword}
                   onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
                   placeholder="RE-ENTER PASSWORD"
-                  className="w-full rounded border border-[#F3F1EA]/10 bg-[#0D0F0E] py-2 px-3 text-[#F3F1EA] focus:border-[#C2A155] focus:outline-none"
+                  className="w-full rounded-xl border border-white/10 bg-[#121A2F] py-2 px-3 text-white focus:border-[#5B8CFF] focus:outline-none"
                 />
               </div>
             </div>
@@ -193,7 +191,7 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
             <div className="flex justify-end pt-1">
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded bg-[#C2A155] hover:bg-[#D4B468] px-4 py-2 text-xs font-bold text-[#0D0F0E] transition-all"
+                className="flex items-center gap-1.5 rounded-xl gradient-primary hover:brightness-110 px-5 py-2.5 text-xs font-bold text-white shadow-glow-blue transition-all cursor-pointer"
               >
                 <HiOutlineSave className="h-4 w-4" />
                 <span>Update Password</span>
@@ -203,22 +201,22 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
         </div>
 
         {/* 2FA */}
-        <div className="border-t border-[#F3F1EA]/10 pt-6">
+        <div className="border-t border-white/10 pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-[#3FA972]/15 text-[#3FA972] border border-[#3FA972]/30">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
                 <HiOutlineShieldCheck className="h-5 w-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-xs font-mono font-bold text-[#F3F1EA] uppercase">
+                  <h3 className="text-sm font-bold text-white">
                     Two-Factor Authentication (2FA)
                   </h3>
-                  <span className={cn('rounded px-2 py-0.5 text-[9px] font-mono font-bold uppercase', is2FAEnabled ? 'bg-[#3FA972]/15 text-[#3FA972] border border-[#3FA972]/30' : 'bg-[#D97706]/15 text-[#D97706] border border-[#D97706]/30')}>
+                  <span className={cn('rounded-full border px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase', is2FAEnabled ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30' : 'bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30')}>
                     {is2FAEnabled ? 'Protected' : 'Disabled'}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-[#96988F] font-sans">
+                <p className="mt-0.5 text-xs text-[#A1A8B5]">
                   Add an extra layer of security using TOTP Authenticator apps.
                 </p>
               </div>
@@ -229,7 +227,7 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
                 <button
                   type="button"
                   onClick={() => setShow2FAModal(!show2FAModal)}
-                  className="hidden sm:flex items-center gap-1 rounded bg-[#0D0F0E] border border-[#F3F1EA]/10 px-3 py-1.5 text-[#96988F] hover:text-[#F3F1EA]"
+                  className="hidden sm:flex items-center gap-1.5 rounded-xl bg-[#121A2F] border border-white/10 px-3 py-1.5 text-[#A1A8B5] hover:text-white"
                 >
                   <HiOutlineQrcode className="h-4 w-4" />
                   <span>{show2FAModal ? 'Hide Key' : 'View Key'}</span>
@@ -239,7 +237,7 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
               <button
                 type="button"
                 onClick={handle2FAToggle}
-                className={cn('px-3 py-1 rounded font-bold transition-all', is2FAEnabled ? 'bg-[#3FA972] text-[#0D0F0E]' : 'bg-[#0D0F0E] text-[#96988F] border border-[#F3F1EA]/10')}
+                className={cn('px-4 py-1.5 rounded-full font-bold transition-all cursor-pointer', is2FAEnabled ? 'bg-[#22C55E] text-white shadow-sm' : 'bg-[#121A2F] text-[#A1A8B5] border border-white/10')}
               >
                 {is2FAEnabled ? 'ENABLED' : 'ENABLE'}
               </button>
@@ -247,17 +245,17 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
           </div>
 
           {show2FAModal && is2FAEnabled && (
-            <div className="mt-4 flex flex-col items-center justify-between gap-4 rounded border border-[#F3F1EA]/10 bg-[#0D0F0E] p-4 sm:flex-row font-mono text-xs">
+            <div className="mt-4 flex flex-col items-center justify-between gap-4 rounded-xl border border-white/10 bg-[#121A2F] p-4 sm:flex-row font-mono text-xs">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded bg-[#F3F1EA] text-[#0D0F0E] font-bold text-[10px] text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white text-[#0B1020] font-bold text-[10px] text-center shadow-md">
                   [ QR CODE ]
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-[#F3F1EA]">AUTHENTICATOR SECRET KEY</h4>
-                  <p className="mt-0.5 text-xs text-[#C2A155]">JBSWY3DPEHPK3PXP</p>
+                  <h4 className="text-xs font-bold text-white">AUTHENTICATOR SECRET KEY</h4>
+                  <p className="mt-0.5 text-xs text-[#5B8CFF]">JBSWY3DPEHPK3PXP</p>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1 rounded bg-[#3FA972]/15 text-[#3FA972] px-3 py-1 border border-[#3FA972]/30">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#22C55E]/15 text-[#22C55E] px-3 py-1 border border-[#22C55E]/30">
                 <HiOutlineCheck className="h-4 w-4" /> Configured
               </span>
             </div>
@@ -265,42 +263,42 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
         </div>
 
         {/* Data Export & Danger Zone */}
-        <div className="border-t border-[#F3F1EA]/10 pt-6 space-y-6 font-mono text-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded border border-[#F3F1EA]/10 bg-[#0D0F0E] p-4">
+        <div className="border-t border-white/10 pt-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#121A2F] p-5">
             <div>
-              <h3 className="font-bold text-[#F3F1EA] flex items-center gap-2">
-                <HiOutlineDownload className="h-4 w-4 text-[#C2A155]" />
-                EXPORT ACCOUNT LEDGER
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <HiOutlineDownload className="h-4 w-4 text-[#5B8CFF]" />
+                Export Account Data
               </h3>
-              <p className="mt-0.5 text-[11px] text-[#96988F] font-sans">
+              <p className="mt-0.5 text-xs text-[#A1A8B5]">
                 Download a complete JSON export of your subscription history and receipts.
               </p>
             </div>
             <button
               type="button"
               onClick={handleExportData}
-              className="inline-flex items-center justify-center gap-2 rounded bg-[#C2A155] hover:bg-[#D4B468] px-4 py-2 font-bold text-[#0D0F0E] shrink-0"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#5B8CFF]/30 bg-[#5B8CFF]/15 px-4 py-2 font-mono text-xs font-bold text-[#5B8CFF] hover:bg-[#5B8CFF] hover:text-white transition-all shrink-0 cursor-pointer"
             >
               <HiOutlineDownload className="h-4 w-4" />
-              <span>Export JSON</span>
+              <span>Export JSON Backup</span>
             </button>
           </div>
 
-          <div className="rounded border border-[#D65C4F]/40 bg-[#D65C4F]/10 p-5 space-y-4">
+          <div className="rounded-2xl border border-[#EF4444]/30 bg-[#EF4444]/10 p-5 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="font-bold text-[#D65C4F] flex items-center gap-2">
+                <h3 className="text-sm font-bold text-[#EF4444] flex items-center gap-2">
                   <HiOutlineExclamation className="h-5 w-5" />
-                  DANGER ZONE: DELETE ACCOUNT
+                  Danger Zone: Delete Account
                 </h3>
-                <p className="mt-0.5 text-[11px] text-[#96988F] font-sans">
+                <p className="mt-0.5 text-xs text-[#EF4444]/80">
                   Permanently delete your account, connected Gmail tokens, and stored subscription ledgers.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
-                className="inline-flex items-center justify-center gap-2 rounded bg-[#D65C4F] hover:bg-[#E06D60] px-4 py-2 font-bold text-[#0D0F0E] shrink-0 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#EF4444] hover:bg-[#DC2626] px-4 py-2 font-mono text-xs font-bold text-white shadow-lg shrink-0 cursor-pointer"
               >
                 <HiOutlineTrash className="h-4 w-4" />
                 <span>Delete Account</span>
@@ -312,30 +310,30 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
 
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-mono">
-          <div className="fixed inset-0 bg-[#0D0F0E]/90" onClick={() => setShowDeleteModal(false)} />
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-[#D65C4F]/40 bg-[#171A18] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3 text-[#D65C4F]">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowDeleteModal(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-[#EF4444]/40 bg-[#171F2F] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-[#EF4444]">
               <HiOutlineTrash className="h-6 w-6" />
-              <h3 className="text-base font-bold text-[#F3F1EA]">Delete Account Permanently</h3>
+              <h3 className="text-base font-bold text-white">Delete Account Permanently</h3>
             </div>
-            <p className="text-xs text-[#96988F] font-sans leading-relaxed">
+            <p className="text-xs text-[#A1A8B5] leading-relaxed">
               This action cannot be undone. All stored ledgers and receipts will be wiped.
             </p>
             <div className="space-y-1.5 pt-2 text-xs">
-              <label className="text-[#96988F]">Type <span className="font-bold text-[#D65C4F]">DELETE</span> to confirm:</label>
+              <label className="text-[#A1A8B5]">Type <span className="font-bold text-[#EF4444]">DELETE</span> to confirm:</label>
               <input
                 type="text"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
                 placeholder="DELETE"
-                className="w-full rounded border border-[#D65C4F]/40 bg-[#0D0F0E] px-3.5 py-2 text-[#F3F1EA] uppercase focus:outline-none"
+                className="w-full rounded-xl border border-[#EF4444]/40 bg-[#121A2F] px-3.5 py-2 text-white uppercase focus:outline-none"
               />
             </div>
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F3F1EA]/10 text-xs">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10 text-xs">
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded border border-[#F3F1EA]/10 bg-[#0D0F0E] px-4 py-2 text-[#96988F]"
+                className="rounded-xl border border-white/10 bg-[#121A2F] px-4 py-2 text-[#A1A8B5]"
               >
                 Cancel
               </button>
@@ -343,7 +341,7 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
                 type="button"
                 onClick={handleDeleteAccountConfirm}
                 disabled={deleteConfirmText.toUpperCase() !== 'DELETE' || isDeleting}
-                className="rounded bg-[#D65C4F] disabled:opacity-50 px-4 py-2 font-bold text-[#0D0F0E]"
+                className="rounded-xl bg-[#EF4444] disabled:opacity-50 px-4 py-2 font-bold text-white shadow-lg"
               >
                 {isDeleting ? 'Deleting...' : 'Confirm Deletion'}
               </button>

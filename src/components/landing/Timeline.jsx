@@ -1,146 +1,100 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import {
   HiOutlineCloudUpload,
   HiOutlineChip,
-  HiOutlineTrendingUp,
-  HiOutlineLightningBolt,
-  HiOutlineCheck,
+  HiOutlineSparkles,
+  HiOutlineCheckCircle,
 } from 'react-icons/hi';
-import { LedgerRule } from '../common';
 
-const stepsList = [
+const steps = [
   {
     step: '01',
-    title: 'Upload Receipt or Connect Gmail',
-    description:
-      'Upload PDF invoices, snap a photo of physical receipts, or securely connect your Gmail for automated background sync.',
-    highlights: ['Multi-format PDF upload', 'Camera receipt snap', 'Gmail auto-sync'],
     icon: HiOutlineCloudUpload,
+    title: 'Connect & Upload Receipts',
+    description: 'Sync your Gmail inbox or drop PDF invoices and physical receipt photos into the high-precision OCR Vision drag-and-drop scanner.',
+    badge: 'Step 1 • Sync',
   },
   {
     step: '02',
-    title: 'AI Understands Bills',
-    description:
-      'Our fine-tuned AI automatically extracts vendor names, billing frequency, tax amounts, line items, and hidden renewal terms.',
-    highlights: ['Deep OCR extraction', 'Renewal terms detection', 'Auto-tax categorization'],
     icon: HiOutlineChip,
+    title: 'Vision LLM Parsing',
+    description: 'SubSense Copilot automatically extracts vendor line-items, tax breakdown, renewal intervals, and billing account metadata.',
+    badge: 'Step 2 • Parse',
   },
   {
     step: '03',
-    title: 'Predict Future Expenses',
-    description:
-      'Forecasts upcoming debits and subscription renewals 30 days in advance so you can optimize liquidity and prevent overdrafts.',
-    highlights: ['30-day debit forecast', 'Overdraft guard', 'Recurring spend trends'],
-    icon: HiOutlineTrendingUp,
+    icon: HiOutlineSparkles,
+    title: 'AI Subscription Audit',
+    description: 'Identifies duplicate streaming accounts, dormant SaaS seats, and upcoming renewal spikes to compute your Financial Health Score.',
+    badge: 'Step 3 • Audit',
   },
   {
     step: '04',
-    title: 'Receive Smart Financial Insights',
-    description:
-      'Receive one-click subscription cancellation options, trial expiration warnings, and automated bill negotiation prompts.',
-    highlights: ['1-click cancellations', 'Trial expiration alerts', 'Negotiation scripts'],
-    icon: HiOutlineLightningBolt,
+    icon: HiOutlineCheckCircle,
+    title: '1-Tap Autonomous Action',
+    description: 'Execute instant cancellations, switch to lower tier annual plans, or set automated payment liquidity alerts with a single click.',
+    badge: 'Step 4 • Optimize',
   },
 ];
 
 const Timeline = () => {
-  const [activeStep, setActiveStep] = useState(0);
-
   return (
-    <section id="how-it-works" className="relative py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <LedgerRule label="PROCEDURAL TIMELINE" />
+    <section id="how-it-works" className="relative py-24 lg:py-32 overflow-hidden border-t border-white/5 bg-[#121A2F]/40">
+      <div className="container-custom relative z-10">
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#5B8CFF] mb-3 block">
+            WORKFLOW PROTOCOL
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-white tracking-tight leading-tight mb-4">
+            How SubSense AI <span className="gradient-text-primary">Optimizes Your Money</span>
+          </h2>
+          <p className="text-base sm:text-lg text-[#A1A8B5] leading-relaxed">
+            From raw receipt ingestion to autonomous execution in 4 seamless, automated steps.
+          </p>
+        </div>
 
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#F3F1EA]/10 bg-[#171A18] text-[#C2A155] text-xs font-mono tracking-widest uppercase"
-        >
-          <span>HOW IT WORKS</span>
-        </motion.div>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold text-[#F3F1EA] tracking-tight"
-        >
-          Four simple steps to <br className="hidden sm:block" />
-          <span className="text-[#C2A155]">financial peace of mind</span>
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-[#96988F] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-sans"
-        >
-          SubSense AI automates the tedious work of reading receipts, tracking renewal dates, and forecasting your budget.
-        </motion.p>
-      </div>
-
-      {/* Sequential Ledger Line Items */}
-      <div className="max-w-4xl mx-auto space-y-6">
-        {stepsList.map((stepItem, index) => {
-          const Icon = stepItem.icon;
-          const isActive = activeStep === index;
-
-          return (
-            <motion.div
-              key={stepItem.step}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              onClick={() => setActiveStep(index)}
-              className={`rounded-xl border p-6 transition-all duration-300 cursor-pointer ${
-                isActive
-                  ? 'bg-[#171A18] border-[#C2A155] shadow-sm'
-                  : 'bg-[#171A18]/60 border-[#F3F1EA]/10 hover:border-[#F3F1EA]/20'
-              }`}
-            >
-              <div className="flex items-start gap-4 sm:gap-6">
-                {/* Monospace Step Indicator Badge */}
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0D0F0E] border border-[#F3F1EA]/10 text-[#C2A155] font-mono font-bold text-sm shrink-0 mt-0.5">
-                  [{stepItem.step}]
-                </div>
-
-                <div className="flex-1">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                    <h3 className="text-lg font-display font-bold text-[#F3F1EA]">
-                      {stepItem.title}
-                    </h3>
-                    <span className="text-[11px] font-mono text-[#96988F]">
-                      SECTION {stepItem.step} OF 04
+        {/* Timeline Items Grid with Connectors */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+          {steps.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
+                className="relative flex flex-col justify-between rounded-2xl border border-white/10 bg-[#171F2F]/90 p-6 backdrop-blur-xl hover:border-[#5B8CFF]/40 transition-all group"
+              >
+                <div>
+                  {/* Step Header Badge & Number */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-primary text-white font-bold shadow-glow-blue transition-transform group-hover:scale-110">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <span className="text-2xl font-mono font-black text-[#5B8CFF]">
+                      [{item.step}]
                     </span>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-[#96988F] leading-relaxed mb-4 font-sans">
-                    {stepItem.description}
-                  </p>
+                  <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-[10px] font-mono font-bold text-[#8B5CF6] uppercase block w-fit mb-3">
+                    {item.badge}
+                  </span>
 
-                  <div className="flex flex-wrap gap-2 pt-3 border-t border-[#F3F1EA]/10">
-                    {stepItem.highlights.map((highlight, hIdx) => (
-                      <span
-                        key={hIdx}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded bg-[#0D0F0E] text-[#96988F] border border-[#F3F1EA]/10"
-                      >
-                        <HiOutlineCheck className="w-3 h-3 text-[#3FA972]" />
-                        {highlight}
-                      </span>
-                    ))}
-                  </div>
+                  <h3 className="text-lg font-bold text-white mb-3 tracking-tight group-hover:text-[#5B8CFF] transition-colors">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-[#A1A8B5] leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

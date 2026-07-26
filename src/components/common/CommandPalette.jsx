@@ -159,19 +159,19 @@ const CommandPalette = ({ isOpen, onClose }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-[#0D0F0E]/80"
+          className="fixed inset-0 bg-black/75 backdrop-blur-md"
         />
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.98, y: -10 }}
+          initial={{ opacity: 0, scale: 0.95, y: -20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.98, y: -10 }}
-          transition={{ duration: 0.15 }}
-          className="relative z-10 w-full max-w-2xl overflow-hidden rounded-xl border border-[#F3F1EA]/10 bg-[#171A18] shadow-2xl"
+          exit={{ opacity: 0, scale: 0.95, y: -20 }}
+          transition={{ duration: 0.2 }}
+          className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#171F2F] shadow-2xl backdrop-blur-2xl"
         >
-          {/* Search Box */}
-          <div className="flex items-center border-b border-[#F3F1EA]/10 px-4 py-3.5 bg-[#0D0F0E]">
-            <HiOutlineSearch className="h-5 w-5 text-[#C2A155] shrink-0 mr-3" />
+          {/* Top Search Input Box */}
+          <div className="flex items-center border-b border-white/10 px-4 py-3.5 bg-[#121A2F]/60">
+            <HiOutlineSearch className="h-5 w-5 text-[#5B8CFF] shrink-0 mr-3" />
             <input
               ref={inputRef}
               type="text"
@@ -180,25 +180,25 @@ const CommandPalette = ({ isOpen, onClose }) => {
                 setQuery(e.target.value);
                 setSelectedIndex(0);
               }}
-              placeholder="Type a command or search ledger..."
-              className="w-full bg-transparent text-xs font-mono text-[#F3F1EA] placeholder-[#96988F] outline-none"
+              placeholder="Type a command or search subscriptions, bills..."
+              className="w-full bg-transparent text-sm text-white placeholder-[#A1A8B5] outline-none font-medium"
             />
             {query ? (
               <button
                 type="button"
                 onClick={() => setQuery('')}
-                className="text-[#96988F] hover:text-[#F3F1EA] p-1"
+                className="text-[#A1A8B5] hover:text-white p-1"
               >
                 <HiOutlineX className="h-4 w-4" />
               </button>
             ) : (
-              <kbd className="hidden sm:inline-block rounded border border-[#F3F1EA]/10 bg-[#171A18] px-1.5 py-0.5 text-[10px] font-mono text-[#96988F]">
+              <kbd className="hidden sm:inline-block rounded border border-white/10 bg-[#1E293B] px-2 py-0.5 text-[10px] font-mono text-[#A1A8B5]">
                 ESC
               </kbd>
             )}
           </div>
 
-          {/* Commands List */}
+          {/* Results List */}
           <div className="max-h-96 overflow-y-auto p-2 space-y-1">
             {filteredCommands.length > 0 ? (
               filteredCommands.map((cmd, idx) => {
@@ -214,60 +214,60 @@ const CommandPalette = ({ isOpen, onClose }) => {
                       onClose();
                     }}
                     onMouseEnter={() => setSelectedIndex(idx)}
-                    className={`w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-left transition-all ${
+                    className={`w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-left transition-all duration-150 ${
                       isSelected
-                        ? 'bg-[#0D0F0E] border border-[#C2A155]/40 text-[#F3F1EA]'
-                        : 'text-[#96988F] hover:bg-[#0D0F0E]/40 hover:text-[#F3F1EA] border border-transparent'
+                        ? 'bg-[#5B8CFF]/20 text-white border border-[#5B8CFF]/30 shadow-sm'
+                        : 'text-[#A1A8B5] hover:bg-[#121A2F] hover:text-white border border-transparent'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded ${
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
                           isSelected
-                            ? 'bg-[#C2A155] text-[#0D0F0E]'
-                            : 'bg-[#0D0F0E] text-[#96988F]'
+                            ? 'bg-[#5B8CFF] text-white shadow-glow-blue'
+                            : 'bg-[#1E293B] text-[#A1A8B5]'
                         }`}
                       >
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-display font-bold truncate text-[#F3F1EA]">
+                          <span className="text-xs font-bold truncate text-white">
                             {cmd.title}
                           </span>
-                          <span className="rounded bg-[#0D0F0E] px-1.5 py-0.5 text-[9px] font-mono uppercase text-[#96988F] border border-[#F3F1EA]/10">
+                          <span className="rounded-full bg-[#1E293B] px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-[#A1A8B5] border border-white/10">
                             {cmd.category}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#96988F] font-mono truncate mt-0.5">
+                        <p className="text-[11px] text-[#A1A8B5] truncate mt-0.5">
                           {cmd.subtitle}
                         </p>
                       </div>
                     </div>
 
                     {isSelected && (
-                      <div className="flex items-center gap-1 text-[#C2A155] text-xs font-mono shrink-0">
+                      <div className="flex items-center gap-1 text-[#5B8CFF] text-xs font-semibold shrink-0">
                         <span>Select</span>
-                        <HiOutlineArrowRight className="h-3 w-3" />
+                        <HiOutlineArrowRight className="h-3.5 w-3.5" />
                       </div>
                     )}
                   </button>
                 );
               })
             ) : (
-              <div className="p-8 text-center text-[#96988F] font-mono text-xs">
-                <p>No matching commands found</p>
+              <div className="p-8 text-center text-[#A1A8B5]">
+                <p className="text-sm font-semibold">No matching commands found</p>
               </div>
             )}
           </div>
 
-          {/* Footer Hints */}
-          <div className="flex items-center justify-between border-t border-[#F3F1EA]/10 bg-[#0D0F0E] px-4 py-2 text-[11px] font-mono text-[#96988F]">
+          {/* Footer Shortcuts hint */}
+          <div className="flex items-center justify-between border-t border-white/10 bg-[#121A2F]/60 px-4 py-2 text-[11px] font-mono text-[#A1A8B5]">
             <div className="flex items-center gap-3">
-              <span><kbd className="rounded border border-[#F3F1EA]/10 px-1">↑↓</kbd> Navigate</span>
-              <span><kbd className="rounded border border-[#F3F1EA]/10 px-1">↵</kbd> Select</span>
+              <span><kbd className="rounded border border-white/10 bg-[#171F2F] px-1.5 py-0.5 text-[10px]">↑↓</kbd> Navigate</span>
+              <span><kbd className="rounded border border-white/10 bg-[#171F2F] px-1.5 py-0.5 text-[10px]">↵</kbd> Open</span>
             </div>
-            <span className="text-[#C2A155]">SubSense AI Ledger</span>
+            <span className="text-[#5B8CFF] font-bold">SubSense AI Copilot</span>
           </div>
         </motion.div>
       </div>

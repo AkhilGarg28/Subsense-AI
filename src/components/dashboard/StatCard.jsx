@@ -26,10 +26,11 @@ const StatCard = ({
   trendDirection,
   isPositiveGood = true,
   sparklineData = defaultSparkline,
-  sparklineColor = '#C2A155',
+  sparklineColor = '#5B8CFF',
   badgeText = 'vs last month',
   description,
   className = '',
+  iconBgColor = 'bg-[#5B8CFF]/15 text-[#5B8CFF]',
 }) => {
   const isUp = trendDirection
     ? trendDirection === 'up'
@@ -37,8 +38,8 @@ const StatCard = ({
 
   const isGood = isPositiveGood ? isUp : !isUp;
   const trendBg = isGood
-    ? 'bg-[#3FA972]/15 text-[#3FA972] border-[#3FA972]/30'
-    : 'bg-[#D65C4F]/15 text-[#D65C4F] border-[#D65C4F]/30';
+    ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20'
+    : 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20';
 
   const TrendIcon = isUp ? HiOutlineTrendingUp : HiOutlineTrendingDown;
 
@@ -53,52 +54,69 @@ const StatCard = ({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-xl border border-[#F3F1EA]/10 bg-[#171A18] p-5 shadow-2xl transition-all duration-200 hover:border-[#C2A155]/40',
+        'group relative overflow-hidden rounded-2xl border border-white/10 bg-[#171F2F]/80 p-5 backdrop-blur-xl transition-all duration-300',
+        'hover:-translate-y-1 hover:border-[#5B8CFF]/40 hover:shadow-glow-blue',
         className
       )}
     >
+      {/* Background Hover Glow */}
+      <div
+        className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-20"
+        style={{ backgroundColor: sparklineColor }}
+      />
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {Icon && (
-            <div className="flex h-9 w-9 items-center justify-center rounded bg-[#0D0F0E] text-[#C2A155] border border-[#F3F1EA]/10">
+            <div
+              className={cn(
+                'flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 shadow-md',
+                iconBgColor
+              )}
+            >
               <Icon className="h-5 w-5" />
             </div>
           )}
           <div>
-            <h4 className="text-xs font-mono text-[#96988F] uppercase tracking-wider">{title}</h4>
+            <h4 className="text-sm font-medium text-[#A1A8B5]">{title}</h4>
             {description && (
-              <p className="text-[11px] text-[#96988F]">{description}</p>
+              <p className="text-xs text-[#64748B]">{description}</p>
             )}
           </div>
         </div>
 
         {trend && (
-          <div className={cn('flex items-center gap-1 rounded px-2 py-0.5 text-xs font-mono font-bold border', trendBg)}>
+          <div
+            className={cn(
+              'flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-mono font-bold backdrop-blur-md',
+              trendBg
+            )}
+          >
             <TrendIcon className="h-3.5 w-3.5" />
             <span>{trend}</span>
           </div>
         )}
       </div>
 
-      <div className="mt-4 flex items-baseline justify-between">
+      <div className="mt-4 flex items-baseline justify-between font-mono">
         <div>
-          <span className="text-2xl font-mono font-bold tracking-tight text-[#F3F1EA] sm:text-3xl">
+          <span className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
             {value}
           </span>
           {badgeText && (
-            <span className="ml-2 text-xs font-mono text-[#96988F]">
+            <span className="ml-2 text-xs font-medium text-[#A1A8B5]">
               {badgeText}
             </span>
           )}
         </div>
       </div>
 
-      <div className="mt-4 h-10 w-full overflow-hidden">
+      <div className="mt-4 h-12 w-full overflow-hidden">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={formattedSparkline} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={sparklineColor} stopOpacity={0.3} />
+                <stop offset="0%" stopColor={sparklineColor} stopOpacity={0.4} />
                 <stop offset="100%" stopColor={sparklineColor} stopOpacity={0.0} />
               </linearGradient>
             </defs>
@@ -106,7 +124,7 @@ const StatCard = ({
               type="monotone"
               dataKey="value"
               stroke={sparklineColor}
-              strokeWidth={1.5}
+              strokeWidth={2}
               fillOpacity={1}
               fill={`url(#${gradientId})`}
               isAnimationActive={true}
