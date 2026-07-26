@@ -332,7 +332,7 @@ const InsightsPanel = ({
           const isCompleted = state?.status === 'completed';
 
           // Dynamic styling based on severity & badge color
-          const colorStyles = {
+          const typeColors = {
             amber: {
               badge: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
               border: 'hover:border-amber-500/40',
@@ -361,6 +361,7 @@ const InsightsPanel = ({
               highlight: 'bg-emerald-500/20 text-emerald-300',
               btnPrimary: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold',
             },
+          };
           const defaultColor = {
             badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
             border: 'hover:border-blue-500/40',

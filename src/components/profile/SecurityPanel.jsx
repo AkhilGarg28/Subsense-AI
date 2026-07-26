@@ -14,13 +14,16 @@ import {
   HiOutlineSave,
   HiOutlineQrcode,
   HiOutlineCheck,
+  HiOutlineDownload,
+  HiOutlineExclamation,
 } from 'react-icons/hi';
 import { cn } from '../../utils/helpers';
+import { mockProfileData } from '../../data/mockProfileData';
 
 /**
- * SecurityPanel — Account Security, Password, 2FA, Active Sessions, and Danger Zone component.
+ * SecurityPanel — Account Security, Password, 2FA, Active Sessions, Data Export, and Danger Zone component.
  * Provides controls to update passwords, toggle Two-Factor Authentication (2FA),
- * manage active browser/device sessions, review security encryption standards, and initiate account deletion.
+ * manage active sessions, export account data, and initiate account deletion.
  */
 const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
   // State for Password Change Form
@@ -36,6 +39,11 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
   // State for 2FA
   const [is2FAEnabled, setIs2FAEnabled] = useState(true);
   const [show2FAModal, setShow2FAModal] = useState(false);
+
+  // State for Delete Account Modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // State for Active Sessions
   const [activeSessions, setActiveSessions] = useState([
@@ -110,6 +118,38 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
     setActiveSessions((prev) => prev.filter((s) => s.id !== sessionId));
   };
 
+  // Export Data JSON handler
+  const handleExportData = () => {
+    const exportPayload = {
+      user: mockProfileData.user,
+      preferences: mockProfileData.preferences,
+      connectedAccounts: mockProfileData.connectedAccounts,
+      exportTimestamp: new Date().toISOString(),
+      appVersion: 'SubSense AI 2.4.0',
+    };
+
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `subsense-account-data-${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  // Execute Account Deletion
+  const handleDeleteAccountConfirm = () => {
+    if (deleteConfirmText.toUpperCase() !== 'DELETE') return;
+
+    setIsDeleting(true);
+    setTimeout(() => {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      alert('Account deleted successfully. Redirecting to home...');
+      window.location.href = '/';
+    }, 1200);
+  };
+
   return (
     <div
       className={cn(
@@ -121,7 +161,7 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
       <div className="border-b border-glass-border pb-5">
         <h2 className="text-xl font-bold text-text-primary">Security & Authentication</h2>
         <p className="mt-0.5 text-xs text-text-muted">
-          Manage your password, enable two-factor authentication, and monitor connected devices.
+          Manage your password, enable two-factor authentication, export data, and account deletion options.
         </p>
       </div>
 
@@ -337,95 +377,103 @@ const SecurityPanel = ({ className = '', onPasswordChange, onToggle2FA }) => {
           )}
         </div>
 
-        {/* SECTION 3: ACTIVE SESSIONS */}
-        <div className="border-t border-glass-border pt-6">
-          <div className="flex items-center justify-between">
+        {/* SECTION 3: EXPORT DATA & DANGER ZONE */}
+        <div className="border-t border-glass-border pt-6 space-y-6">
+          {/* Export Account Data */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-glass-border bg-glass/40 p-4">
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                Active Sessions & Logged-in Devices
+              <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                <HiOutlineDownload className="h-4 w-4 text-primary" />
+                Export Account Data
               </h3>
               <p className="mt-0.5 text-xs text-text-muted">
-                Review devices currently authenticated with your SubSense AI account.
+                Download a complete JSON export of your subscription history, receipts, and settings.
               </p>
             </div>
-            <span className="rounded-md border border-glass-border bg-glass/60 px-2 py-0.5 text-xs font-medium text-text-muted">
-              {activeSessions.length} Devices
-            </span>
+            <button
+              type="button"
+              onClick={handleExportData}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-bold text-primary transition-all hover:bg-primary hover:text-white shrink-0"
+            >
+              <HiOutlineDownload className="h-4 w-4" />
+              <span>Export JSON Backup</span>
+            </button>
           </div>
 
-          <div className="mt-4 space-y-3">
-            {activeSessions.map((session) => {
-              const Icon = session.icon;
-              return (
-                <div
-                  key={session.id}
-                  className="flex flex-col gap-3 rounded-2xl border border-glass-border/60 bg-glass/30 p-3.5 transition-all sm:flex-row sm:items-center sm:justify-between hover:bg-glass/60"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-glass-border bg-background-card/80 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-semibold text-text-primary">
-                          {session.device}
-                        </h4>
-                        {session.isCurrent && (
-                          <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                            Current Session
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-0.5 text-[11px] text-text-muted">
-                        {session.location} • <span className="font-mono">{session.ip}</span> •{' '}
-                        {session.lastActive}
-                      </p>
-                    </div>
-                  </div>
-
-                  {!session.isCurrent && (
-                    <button
-                      type="button"
-                      onClick={() => handleRevokeSession(session.id)}
-                      className="self-end sm:self-auto flex items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-400 transition-all hover:bg-rose-500/20"
-                    >
-                      <HiOutlineTrash className="h-3.5 w-3.5" />
-                      <span>Revoke</span>
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* SECTION 4: SECURITY & COMPLIANCE BADGES */}
-        <div className="border-t border-glass-border pt-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="flex items-center gap-3 rounded-2xl border border-glass-border/40 bg-glass/20 p-3.5">
-              <HiOutlineLockClosed className="h-5 w-5 text-primary shrink-0" />
+          {/* Delete Account Danger Zone */}
+          <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h4 className="text-xs font-bold text-text-primary">AES-256 Encryption</h4>
-                <p className="text-[10px] text-text-muted">Bank-grade data encryption at rest</p>
+                <h3 className="text-sm font-bold text-rose-400 flex items-center gap-2">
+                  <HiOutlineExclamation className="h-5 w-5" />
+                  Danger Zone: Delete Account
+                </h3>
+                <p className="mt-0.5 text-xs text-rose-200/70">
+                  Permanently delete your account, connected Gmail tokens, subscription ledgers, and all stored data.
+                </p>
               </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-2xl border border-glass-border/40 bg-glass/20 p-3.5">
-              <HiOutlineShieldCheck className="h-5 w-5 text-emerald-400 shrink-0" />
-              <div>
-                <h4 className="text-xs font-bold text-text-primary">SOC2 Type II Ready</h4>
-                <p className="text-[10px] text-text-muted">Strict privacy compliance controls</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-2xl border border-glass-border/40 bg-glass/20 p-3.5">
-              <HiOutlineKey className="h-5 w-5 text-accent-purple shrink-0" />
-              <div>
-                <h4 className="text-xs font-bold text-text-primary">OAuth 2.0 Auth</h4>
-                <p className="text-[10px] text-text-muted">Zero plain-text password sharing</p>
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500 px-4 py-2 text-xs font-bold text-white transition-all shadow-lg shrink-0 cursor-pointer"
+              >
+                <HiOutlineTrash className="h-4 w-4" />
+                <span>Delete Account</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Delete Account Modal Dialog */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            onClick={() => setShowDeleteModal(false)}
+          />
+          <div className="relative z-10 w-full max-w-md rounded-3xl border border-rose-500/30 bg-surface p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500/20 border border-rose-500/40">
+                <HiOutlineTrash className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Delete Account Permanently</h3>
+            </div>
+            <p className="text-xs text-text-secondary leading-relaxed">
+              This action <strong className="text-rose-400">cannot be undone</strong>. All your parsed bills, linked Gmail sessions, and AI health score history will be deleted immediately.
+            </p>
+            <div className="space-y-1.5 pt-2">
+              <label className="text-xs font-semibold text-text-secondary">
+                Type <span className="font-bold text-rose-400">DELETE</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+                className="w-full rounded-xl border border-rose-500/40 bg-surface-light px-3.5 py-2 text-xs text-white uppercase placeholder-text-muted outline-none focus:ring-1 focus:ring-rose-500"
+              />
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="rounded-xl border border-border bg-surface-light px-4 py-2 text-xs font-semibold text-text-secondary hover:bg-surface"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccountConfirm}
+                disabled={deleteConfirmText.toUpperCase() !== 'DELETE' || isDeleting}
+                className="rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 px-4 py-2 text-xs font-bold text-white shadow-lg transition-all"
+              >
+                {isDeleting ? 'Deleting...' : 'Confirm Deletion'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

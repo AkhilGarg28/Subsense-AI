@@ -18,9 +18,9 @@ import NotificationSkeleton from './NotificationSkeleton';
  * List container component managing:
  * - Search query input for filtering notifications
  * - Action controls: "Mark All as Read", "Clear All"
+ * - Grouping notifications by time period: "Today", "Tomorrow", "This Week", "Earlier"
+ * - Categories: Renewals, Warnings, Price hikes, Budget alerts
  * - Rendering list of NotificationCards with Framer Motion animations
- * - Empty state feedback when no notifications match search/tab filters
- * - Skeleton loading state
  */
 const NotificationList = ({
   notifications = [],
@@ -37,8 +37,36 @@ const NotificationList = ({
 }) => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  // Helper to categorize time grouping
+  const groupNotificationsByTime = (items) => {
+    const groups = {
+      Today: [],
+      Tomorrow: [],
+      'This Week': [],
+      Earlier: [],
+    };
+
+    items.forEach((item) => {
+      const timeStr = (item.time || item.timestamp || '').toLowerCase();
+      if (timeStr.includes('today') || timeStr.includes('hour') || timeStr.includes('min') || timeStr.includes('2 hours ago') || timeStr.includes('10 minutes ago')) {
+        groups.Today.push(item);
+      } else if (timeStr.includes('tomorrow') || timeStr.includes('in 1 day') || timeStr.includes('due tomorrow')) {
+        groups.Tomorrow.push(item);
+      } else if (timeStr.includes('this week') || timeStr.includes('days ago') || timeStr.includes('yesterday') || timeStr.includes('in 3 days') || timeStr.includes('in 5 days')) {
+        groups['This Week'].push(item);
+      } else {
+        groups.Earlier.push(item);
+      }
+    });
+
+    return groups;
+  };
+
+  const grouped = groupNotificationsByTime(filteredNotifications);
+  const timePeriodKeys = ['Today', 'Tomorrow', 'This Week', 'Earlier'];
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Top Search & Actions Control Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 md:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl">
         {/* Search Bar Input */}
@@ -64,7 +92,6 @@ const NotificationList = ({
 
         {/* Global Batch Action Triggers */}
         <div className="flex items-center justify-end gap-2 shrink-0">
-          {/* Mark All Read Button */}
           <button
             type="button"
             onClick={onMarkAllAsRead}
@@ -81,7 +108,6 @@ const NotificationList = ({
             <span className="sm:hidden">Mark Read</span>
           </button>
 
-          {/* Clear All Button */}
           <button
             type="button"
             onClick={onClearAll}
@@ -100,22 +126,47 @@ const NotificationList = ({
         </div>
       </div>
 
-      {/* Notifications List Body */}
+      {/* Notifications List Grouped by Time */}
       {isLoading ? (
         <NotificationSkeleton count={4} />
       ) : filteredNotifications.length > 0 ? (
-        <div className="space-y-3">
-          <AnimatePresence mode="popLayout">
-            {filteredNotifications.map((notification) => (
-              <NotificationCard
-                key={notification.id}
-                notification={notification}
-                onMarkAsRead={onMarkAsRead}
-                onDelete={onDelete}
-                onActionClick={onActionClick}
-              />
-            ))}
-          </AnimatePresence>
+        <div className="space-y-6">
+          {timePeriodKeys.map((groupKey) => {
+            const groupItems = grouped[groupKey];
+            if (!groupItems || groupItems.length === 0) return null;
+
+            return (
+              <div key={groupKey} className="space-y-3">
+                {/* Time Group Header */}
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-blue-500" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      {groupKey}
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-500 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">
+                    {groupItems.length} {groupItems.length === 1 ? 'alert' : 'alerts'}
+                  </span>
+                </div>
+
+                {/* Grouped Notification Cards */}
+                <div className="space-y-2.5">
+                  <AnimatePresence mode="popLayout">
+                    {groupItems.map((notification) => (
+                      <NotificationCard
+                        key={notification.id}
+                        notification={notification}
+                        onMarkAsRead={onMarkAsRead}
+                        onDelete={onDelete}
+                        onActionClick={onActionClick}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         /* Empty State */
@@ -135,7 +186,7 @@ const NotificationList = ({
           <p className="text-xs md:text-sm text-slate-400 max-w-md leading-relaxed mb-6">
             {searchQuery
               ? `We couldn't find any notifications matching "${searchQuery}". Try searching with different keywords.`
-              : 'You have no notifications in this category. Important updates, bill renewals, and AI recommendations will appear here.'}
+              : 'You have no notifications in this category. Important updates, bill renewals, price hikes, and AI recommendations will appear here.'}
           </p>
 
           {searchQuery && onResetFilters && (

@@ -2,6 +2,7 @@
 
 export { default as StatCard } from './StatCard';
 export { default as HealthScoreCard } from './HealthScoreCard';
+export { default as AIInsightsPanel } from './AIInsightsPanel';
 export { default as ExpenseChart } from './ExpenseChart';
 export { default as CategoryChart } from './CategoryChart';
 export { default as BillsList } from './BillsList';
