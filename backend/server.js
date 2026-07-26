@@ -1,4 +1,5 @@
 const http = require('http');
+const path = require('path');
 const dotenv = require('dotenv');
 const { Server } = require('socket.io');
 
@@ -9,7 +10,7 @@ process.on('uncaughtException', (err) => {
 });
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = require('./app');
 const connectDB = require('./config/db');

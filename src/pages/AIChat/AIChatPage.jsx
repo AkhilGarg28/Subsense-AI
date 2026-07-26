@@ -16,14 +16,20 @@ import {
   ChatSkeleton,
 } from '../../components/chat';
 import Toast from '../../components/ui/Toast';
+import { aiAPI } from '../../services/api';
 import { mockChatData } from '../../data/mockChatData';
 
 /**
+<<<<<<< HEAD
  * AIChatPage — Autonomous AI Financial Assistant Page.
  * Pure Apple/Stripe/Linear/Notion AI interface with:
  * - 100vh precision viewport layout anchored under top navbar (no clipping/no double scroll)
  * - Independent scrolling history sidebar with pinned bottom tier card
  * - Fixed header, smooth-scrolling message thread, and pinned bottom input area
+=======
+ * AIChatPage — Complete AI Financial Assistant Page for SubSense AI.
+ * Uses real backend Gemini AI via POST /api/ai/chat.
+>>>>>>> c70c8b85ac5aed7d2bcfa256981a0e868082a169
  */
 const AIChatPage = () => {
   const [conversations, setConversations] = useState(mockChatData.conversations);
@@ -177,7 +183,14 @@ const AIChatPage = () => {
     showToast('Exported chat history transcript JSON', 'success');
   };
 
+<<<<<<< HEAD
   const handleSendMessage = ({ text, attachment }) => {
+=======
+  /**
+   * Send User Message & Call Real Gemini AI via Backend API
+   */
+  const handleSendMessage = async ({ text, attachment }) => {
+>>>>>>> c70c8b85ac5aed7d2bcfa256981a0e868082a169
     if (!text.trim() && !attachment) return;
 
     const userMsgText = text.trim() + (attachment ? `\n[Attached File: ${attachment.name}]` : '');
@@ -190,6 +203,10 @@ const AIChatPage = () => {
       timestamp: getCurrentTime(),
     };
 
+<<<<<<< HEAD
+=======
+    // Auto-title new conversation
+>>>>>>> c70c8b85ac5aed7d2bcfa256981a0e868082a169
     if (activeMessages.length === 0) {
       const generateTitle = text.slice(0, 35) + (text.length > 35 ? '...' : '');
       setConversations((prev) =>
@@ -197,64 +214,81 @@ const AIChatPage = () => {
       );
     }
 
+<<<<<<< HEAD
+=======
+    // Append User Message immediately
+>>>>>>> c70c8b85ac5aed7d2bcfa256981a0e868082a169
     setMessagesMap((prev) => ({
       ...prev,
       [activeConversationId]: [...(prev[activeConversationId] || []), userMessageObj],
     }));
 
+<<<<<<< HEAD
+=======
+    // Show typing indicator
+>>>>>>> c70c8b85ac5aed7d2bcfa256981a0e868082a169
     setIsTyping(true);
 
-    const queryLower = text.toLowerCase();
+    try {
+      // Call real backend Gemini AI endpoint
+      const res = await aiAPI.chatMessage({ question: text.trim() });
+      const aiAnswer = res.data?.data?.answer || res.data?.answer || 'I could not process your request at this time.';
+      const modelUsed = res.data?.data?.model || 'gemini-1.5-flash';
 
-    setTimeout(() => {
-      let aiResponseObj = {
+      const aiResponseObj = {
         id: `msg-${Date.now() + 1}`,
         sender: 'ai',
         role: 'assistant',
         timestamp: getCurrentTime(),
-      };
-
-      if (queryLower.includes('spend') || queryLower.includes('month') || queryLower.includes('next')) {
-        aiResponseObj.text = mockChatData.aiKnowledgeBase.spend.text;
-        aiResponseObj.metrics = {
-          projectedSpend: '$1,248.50',
-          potentialSavings: '$180.00/mo',
-          unusedCount: 2,
-        };
-        aiResponseObj.actions = [
-          { label: 'View Spending Breakdown', id: 'view-breakdown' },
-          { label: 'Set Budget Limit', id: 'set-budget' },
-        ];
-      } else if (queryLower.includes('cancel') || queryLower.includes('unused') || queryLower.includes('reduce')) {
-        aiResponseObj.text = mockChatData.aiKnowledgeBase.cancel.text;
-        aiResponseObj.metrics = {
-          potentialSavings: '$118.99/mo',
-          unusedCount: 2,
-        };
-        aiResponseObj.actions = [
-          { label: '1-Click Cancel Canva', id: 'cancel-canva', variant: 'danger' },
-          { label: 'Switch Spotify to Annual', id: 'switch-spotify' },
-        ];
-      } else {
-        aiResponseObj.text = mockChatData.aiKnowledgeBase.default.text;
-        aiResponseObj.metrics = {
-          potentialSavings: '$98.50/mo',
-          projectedSpend: '$318.50/mo',
-          unusedCount: 1,
-        };
-        aiResponseObj.actions = [
+        text: aiAnswer,
+        model: modelUsed,
+        actions: [
           { label: 'Audit All Subscriptions', id: 'audit-all' },
-          { label: 'Scan Receipt Inbox', id: 'scan-inbox' },
-        ];
-      }
+          { label: 'View Spending Breakdown', id: 'view-breakdown' },
+        ],
+      };
 
       setMessagesMap((prev) => ({
         ...prev,
         [activeConversationId]: [...(prev[activeConversationId] || []), aiResponseObj],
       }));
+    } catch (err) {
+      console.error('[AI Chat] API call failed:', err);
 
+      // Fallback: use intelligent local response engine
+      const queryLower = text.toLowerCase();
+      let fallbackText = '';
+
+      if (queryLower.includes('spend') || queryLower.includes('month') || queryLower.includes('next')) {
+        fallbackText = mockChatData.aiKnowledgeBase.spend.text;
+      } else if (queryLower.includes('cancel') || queryLower.includes('unused') || queryLower.includes('reduce')) {
+        fallbackText = mockChatData.aiKnowledgeBase.cancel.text;
+      } else {
+        fallbackText = 'SubSense AI is currently unable to reach the server. Please check your connection and try again. In the meantime, you can explore your subscriptions and upload receipts for offline analysis.';
+      }
+
+      const fallbackResponse = {
+        id: `msg-${Date.now() + 1}`,
+        sender: 'ai',
+        role: 'assistant',
+        timestamp: getCurrentTime(),
+        text: fallbackText,
+        isOffline: true,
+      };
+
+      setMessagesMap((prev) => ({
+        ...prev,
+        [activeConversationId]: [...(prev[activeConversationId] || []), fallbackResponse],
+      }));
+
+      showToast('AI is offline — using fallback responses', 'warning');
+    } finally {
       setIsTyping(false);
+<<<<<<< HEAD
     }, 1400);
+=======
+    }
+>>>>>>> c70c8b85ac5aed7d2bcfa256981a0e868082a169
   };
 
   const handleSelectPrompt = (promptText) => {
@@ -438,7 +472,7 @@ const AIChatPage = () => {
           onExportChat={handleExportChat}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
           title={activeConversation?.title || 'SubSense AI Copilot'}
-          status="Online • Financial Fine-tune v4"
+          status="Online • Gemini 1.5 Flash"
         />
 
         {/* Scrollable Messages Thread Area */}

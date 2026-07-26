@@ -194,10 +194,58 @@ const deleteSubscription = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Pause a subscription
+ * @route   PATCH /api/v1/subscriptions/:id/pause
+ * @access  Private
+ */
+const pauseSubscription = async (req, res, next) => {
+  try {
+    const subscription = await Subscription.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      { $set: { status: 'Paused' } },
+      { new: true, runValidators: true }
+    );
+
+    if (!subscription) {
+      return next(new ApiError(404, 'Subscription not found or unauthorized'));
+    }
+
+    return ApiResponse.send(res, 200, 'Subscription paused successfully', subscription);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Resume a paused subscription
+ * @route   PATCH /api/v1/subscriptions/:id/resume
+ * @access  Private
+ */
+const resumeSubscription = async (req, res, next) => {
+  try {
+    const subscription = await Subscription.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      { $set: { status: 'Active' } },
+      { new: true, runValidators: true }
+    );
+
+    if (!subscription) {
+      return next(new ApiError(404, 'Subscription not found or unauthorized'));
+    }
+
+    return ApiResponse.send(res, 200, 'Subscription resumed successfully', subscription);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createSubscription,
   getSubscriptions,
   getSubscriptionById,
   updateSubscription,
   deleteSubscription,
+  pauseSubscription,
+  resumeSubscription,
 };

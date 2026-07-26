@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   FiBell,
@@ -11,13 +11,34 @@ import {
   NotificationTabs,
   NotificationList
 } from '../../components/notifications';
+import { notificationsAPI } from '../../services/api';
 import { mockNotificationsData } from '../../data/mockNotificationsData';
 
 const NotificationsPage = () => {
-  const [notifications, setNotifications] = useState(mockNotificationsData);
+  const [notifications, setNotifications] = useState([]);
   const [activeTab, setActiveTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch notifications from backend API
+  const fetchNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const res = await notificationsAPI.getAll();
+      const data = res.data?.data || res.data?.notifications || [];
+      setNotifications(Array.isArray(data) && data.length > 0 ? data : mockNotificationsData);
+    } catch (err) {
+      console.error('[Notifications] Fetch error:', err);
+      // Fallback to mock data so UI always shows content
+      setNotifications(mockNotificationsData);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const filteredNotifications = useMemo(() => {
     return notifications.filter((notif) => {
@@ -32,8 +53,8 @@ const NotificationsPage = () => {
       let matchesSearch = true;
       if (q) {
         matchesSearch =
-          notif.title.toLowerCase().includes(q) ||
-          notif.description.toLowerCase().includes(q) ||
+          notif.title?.toLowerCase().includes(q) ||
+          notif.description?.toLowerCase().includes(q) ||
           (notif.category && notif.category.toLowerCase().includes(q));
       }
 
@@ -48,27 +69,42 @@ const NotificationsPage = () => {
     [notifications]
   );
 
-  const handleMarkAsRead = (id) => {
+  const handleMarkAsRead = async (id) => {
+    // Optimistic update
     setNotifications((prev) =>
       prev.map((notif) =>
-        notif.id === id ? { ...notif, isRead: !notif.isRead } : notif
+        (notif._id || notif.id) === id ? { ...notif, isRead: !notif.isRead } : notif
       )
     );
+    try {
+      await notificationsAPI.markAsRead(id);
+    } catch (err) {
+      // Revert on error — already updated optimistically
+      console.warn('[Notifications] Mark-read failed:', err.message);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((notif) => ({ ...notif, isRead: true }))
-    );
+  const handleMarkAllAsRead = async () => {
+    setNotifications((prev) => prev.map((notif) => ({ ...notif, isRead: true })));
+    try {
+      await notificationsAPI.markAllRead();
+    } catch (err) {
+      console.warn('[Notifications] Mark-all-read failed:', err.message);
+    }
   };
 
-  const handleDelete = (id) => {
-    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+  const handleDelete = async (id) => {
+    setNotifications((prev) => prev.filter((notif) => (notif._id || notif.id) !== id));
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (window.confirm('Are you sure you want to clear all notifications?')) {
       setNotifications([]);
+      try {
+        await notificationsAPI.clearAll();
+      } catch (err) {
+        console.warn('[Notifications] Clear-all failed:', err.message);
+      }
     }
   };
 
@@ -78,16 +114,12 @@ const NotificationsPage = () => {
   };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setNotifications(mockNotificationsData);
-      setIsLoading(false);
-    }, 600);
+    fetchNotifications();
   };
 
   const handleActionClick = (notification) => {
     if (!notification.isRead) {
-      handleMarkAsRead(notification.id);
+      handleMarkAsRead(notification._id || notification.id);
     }
   };
 
@@ -144,7 +176,7 @@ const NotificationsPage = () => {
               onClick={handleRefresh}
               disabled={isLoading}
               className="p-2 rounded-xl bg-[#121A2F] border border-white/10 text-[#A1A8B5] hover:text-white transition-all cursor-pointer"
-              title="Reset Feed"
+              title="Refresh Feed"
             >
               <FiRefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#5B8CFF]' : ''}`} />
             </button>

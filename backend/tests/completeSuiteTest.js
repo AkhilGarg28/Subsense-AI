@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+
+// Load environment variables relative to this test file
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+
 const app = require('../app');
 const User = require('../models/User');
 const Bill = require('../models/Bill');

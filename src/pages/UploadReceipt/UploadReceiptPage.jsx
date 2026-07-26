@@ -31,6 +31,7 @@ import {
   UploadQuickActions,
   UploadSkeleton,
 } from '../../components/upload';
+import { billsAPI } from '../../services/api';
 
 /**
  * Sample pre-configured demo receipt payloads for interactive testing
