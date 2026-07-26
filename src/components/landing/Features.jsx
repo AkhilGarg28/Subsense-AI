@@ -8,11 +8,8 @@ import {
   HiOutlineChartBar,
   HiOutlineChatAlt2,
 } from 'react-icons/hi';
+import { LedgerRule } from '../common';
 
-/**
- * Features — Landing page feature grid highlighting SubSense AI's core capabilities.
- * Features glassmorphism cards, subtle gradient borders on hover, icons, and staggered entrance animations.
- */
 const featureList = [
   {
     id: 'bill-scanner',
@@ -20,9 +17,6 @@ const featureList = [
     title: 'AI Bill Scanner',
     description: 'Automatically parses invoices, receipts, and PDF bills in seconds.',
     badge: 'Instant OCR',
-    gradient: 'from-blue-500/20 via-indigo-500/20 to-purple-500/20',
-    iconColor: 'text-blue-400',
-    borderColor: 'group-hover:border-blue-500/50',
   },
   {
     id: 'subscription-detection',
@@ -30,9 +24,6 @@ const featureList = [
     title: 'Subscription Detection',
     description: 'Identifies recurring charges, trial traps, and price hikes across all accounts.',
     badge: 'Auto-Audit',
-    gradient: 'from-indigo-500/20 via-sky-500/20 to-blue-500/20',
-    iconColor: 'text-indigo-400',
-    borderColor: 'group-hover:border-indigo-500/50',
   },
   {
     id: 'expense-prediction',
@@ -40,9 +31,6 @@ const featureList = [
     title: 'Expense Prediction',
     description: 'ML model forecasts your end-of-month cashflow with 98% accuracy.',
     badge: '98% Accuracy',
-    gradient: 'from-emerald-500/20 via-teal-500/20 to-cyan-500/20',
-    iconColor: 'text-emerald-400',
-    borderColor: 'group-hover:border-emerald-500/50',
   },
   {
     id: 'smart-recommendations',
@@ -50,9 +38,6 @@ const featureList = [
     title: 'Smart Recommendations',
     description: 'Get personalized actionable tips to optimize recurring bills and negotiate rates.',
     badge: 'AI Insights',
-    gradient: 'from-amber-500/20 via-orange-500/20 to-yellow-500/20',
-    iconColor: 'text-amber-400',
-    borderColor: 'group-hover:border-amber-500/50',
   },
   {
     id: 'financial-health-score',
@@ -60,9 +45,6 @@ const featureList = [
     title: 'Financial Health Score',
     description: 'Dynamic 0-100 score analyzing liquidity, recurring ratio, and savings buffer.',
     badge: 'Real-time 0-100',
-    gradient: 'from-purple-500/20 via-fuchsia-500/20 to-pink-500/20',
-    iconColor: 'text-purple-400',
-    borderColor: 'group-hover:border-purple-500/50',
   },
   {
     id: 'ai-chat-assistant',
@@ -70,9 +52,6 @@ const featureList = [
     title: 'AI Chat Assistant',
     description: 'Query your finances in natural language: "How much did I spend on SaaS this month?"',
     badge: 'Natural NLP',
-    gradient: 'from-cyan-500/20 via-blue-500/20 to-indigo-500/20',
-    iconColor: 'text-cyan-400',
-    borderColor: 'group-hover:border-cyan-500/50',
   },
 ];
 
@@ -81,66 +60,61 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
+      staggerChildren: 0.1,
       delayChildren: 0.1,
     },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.25, 0.1, 0.25, 1],
-    },
+    transition: { duration: 0.5, ease: 'easeOut' },
   },
 };
 
 const Features = () => {
   return (
-    <section className="relative py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
-      {/* Background glow accents */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+    <section id="features" className="relative py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <LedgerRule label="CORE CAPABILITIES" />
 
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase"
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#F3F1EA]/10 bg-[#171A18] text-[#C2A155] text-xs font-mono tracking-widest uppercase"
         >
-          <HiOutlineSparkles className="w-4 h-4 text-primary animate-pulse" />
-          Intelligent Financial Control
+          <span>INTELLIGENT FINANCIAL CONTROL</span>
         </motion.div>
 
         <motion.h2
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-primary tracking-tight"
+          className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold text-[#F3F1EA] tracking-tight"
         >
           Cutting-edge features for <br className="hidden sm:block" />
-          <span className="gradient-text">effortless subscription management</span>
+          <span className="text-[#C2A155]">effortless subscription management</span>
         </motion.h2>
 
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-text-secondary text-base sm:text-lg leading-relaxed max-w-2xl mx-auto"
+          className="text-[#96988F] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-sans"
         >
           SubSense AI combines deep invoice OCR, predictive cashflow modeling, and autonomous cost optimization to put your finances on autopilot.
         </motion.p>
       </div>
 
-      {/* Grid of 6 Feature Cards */}
+      {/* Grid of 6 Flat Charcoal Feature Cards */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -154,51 +128,34 @@ const Features = () => {
             <motion.div
               key={feature.id}
               variants={cardVariants}
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="group relative h-full rounded-2xl p-[1px] transition-all duration-500 bg-gradient-to-b from-border/50 via-border/20 to-transparent hover:from-primary/40 hover:via-secondary/40 hover:to-primary/20 hover:shadow-glow"
+              className="group relative h-full rounded-xl border border-[#F3F1EA]/10 bg-[#171A18] p-6 lg:p-7 transition-colors hover:border-[#C2A155]/40 flex flex-col justify-between"
             >
-              {/* Inner Glass Container */}
-              <div className="relative h-full flex flex-col justify-between rounded-[15px] bg-surface/80 backdrop-blur-xl p-6 lg:p-7 border border-glass-border/60 transition-colors group-hover:bg-surface/90">
-                {/* Background Subtle Gradient Patch */}
-                <div
-                  className={`absolute top-0 right-0 w-36 h-36 bg-gradient-to-br ${feature.gradient} rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
-                />
-
-                <div>
-                  {/* Top Bar: Icon + Badge */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className={`flex items-center justify-center w-12 h-12 rounded-xl bg-surface-light/50 border border-border/50 group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300 shadow-sm ${feature.iconColor}`}>
-                      <Icon className="w-6 h-6" />
-                    </div>
-
-                    <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-surface-light/40 text-text-secondary border border-border/40 group-hover:text-text-primary transition-colors">
-                      {feature.badge}
-                    </span>
+              <div>
+                {/* Header: Icon & Monospace Badge */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0D0F0E] border border-[#F3F1EA]/10 text-[#C2A155]">
+                    <Icon className="w-5 h-5" />
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-text-primary mb-3 group-hover:text-primary transition-colors duration-200">
-                    {feature.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                    {feature.description}
-                  </p>
+                  <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded bg-[#0D0F0E] text-[#96988F] border border-[#F3F1EA]/10">
+                    [{feature.badge}]
+                  </span>
                 </div>
 
-                {/* Subtle Interactive Footer link indicator */}
-                <div className="flex items-center text-xs font-semibold text-text-muted group-hover:text-primary transition-colors pt-4 border-t border-border/30">
-                  <span>Learn more</span>
-                  <svg
-                    className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+                {/* Title — Fraunces Serif */}
+                <h3 className="text-lg font-display font-bold text-[#F3F1EA] mb-2 group-hover:text-[#C2A155] transition-colors">
+                  {feature.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-[#96988F] text-xs sm:text-sm leading-relaxed mb-6 font-sans">
+                  {feature.description}
+                </p>
+              </div>
+
+              {/* Monospace Indicator */}
+              <div className="flex items-center text-xs font-mono text-[#96988F] group-hover:text-[#C2A155] transition-colors pt-4 border-t border-[#F3F1EA]/10">
+                <span>View Specification →</span>
               </div>
             </motion.div>
           );

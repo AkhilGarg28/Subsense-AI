@@ -14,20 +14,14 @@ import {
   HiOutlineCreditCard,
   HiOutlineExclamationCircle,
   HiOutlineArrowRight,
-  HiOutlineChartBar,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
   HiOutlineRefresh
 } from 'react-icons/hi';
-import { FaRobot } from 'react-icons/fa';
 
-/**
- * Rich Text & Basic Markdown Formatter for Chat Messages
- */
 const FormattedMessageText = ({ text }) => {
   if (!text) return null;
 
-  // Split into lines to format headers, bullet points, and code blocks
   const lines = text.split('\n');
   const formattedElements = [];
   let currentList = [];
@@ -36,10 +30,10 @@ const FormattedMessageText = ({ text }) => {
   const flushList = (key) => {
     if (currentList.length > 0) {
       formattedElements.push(
-        <ul key={`list-${key}`} className="my-2 space-y-1.5 pl-1">
+        <ul key={`list-${key}`} className="my-2 space-y-1.5 pl-1 font-sans">
           {currentList.map((item, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-sm text-slate-200">
-              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-400 shrink-0 shadow-sm shadow-cyan-400/50" />
+            <li key={idx} className="flex items-start gap-2 text-xs text-[#F3F1EA]">
+              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#C2A155] shrink-0" />
               <span className="flex-1">{parseInline(item)}</span>
             </li>
           ))}
@@ -49,19 +43,14 @@ const FormattedMessageText = ({ text }) => {
     }
   };
 
-  // Inline formatting helper for bold (**text**), code (`code`), and italics (*text*)
   const parseInline = (rawText) => {
     if (!rawText) return null;
 
-    // Pattern for bold, inline code, or key metrics highlighting
     const parts = [];
-    let remaining = rawText;
-    let keyIdx = 0;
-
-    // Replace bold **text** or inline `code`
     const regex = /(\*\*.*?\*\*|`.*?`|\$[0-9,]+(?:\.[0-9]{2})?\/[a-z]+|\$[0-9,]+(?:\.[0-9]{2})?)/g;
     let match;
     let lastIndex = 0;
+    let keyIdx = 0;
 
     while ((match = regex.exec(rawText)) !== null) {
       if (match.index > lastIndex) {
@@ -71,7 +60,7 @@ const FormattedMessageText = ({ text }) => {
       const matchText = match[0];
       if (matchText.startsWith('**') && matchText.endsWith('**')) {
         parts.push(
-          <strong key={keyIdx++} className="font-semibold text-white">
+          <strong key={keyIdx++} className="font-display font-bold text-[#F3F1EA]">
             {matchText.slice(2, -2)}
           </strong>
         );
@@ -79,7 +68,7 @@ const FormattedMessageText = ({ text }) => {
         parts.push(
           <code
             key={keyIdx++}
-            className="px-1.5 py-0.5 rounded bg-slate-800/90 text-cyan-300 font-mono text-xs border border-cyan-500/20"
+            className="px-1.5 py-0.5 rounded bg-[#0D0F0E] text-[#C2A155] font-mono text-xs border border-[#F3F1EA]/10"
           >
             {matchText.slice(1, -1)}
           </code>
@@ -88,7 +77,7 @@ const FormattedMessageText = ({ text }) => {
         parts.push(
           <span
             key={keyIdx++}
-            className="inline-flex items-center font-semibold text-emerald-400 bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-500/30 text-xs"
+            className="inline-flex items-center font-mono font-bold text-[#3FA972] bg-[#3FA972]/15 px-1.5 py-0.5 rounded border border-[#3FA972]/30 text-xs"
           >
             {matchText}
           </span>
@@ -107,7 +96,6 @@ const FormattedMessageText = ({ text }) => {
   lines.forEach((line, lineIdx) => {
     const trimmed = line.trim();
 
-    // Bullet points (* or - or numbered)
     if (trimmed.startsWith('* ') || trimmed.startsWith('- ') || /^\d+\.\s/.test(trimmed)) {
       inList = true;
       const content = trimmed.replace(/^(\* |- |\d+\.\s)/, '');
@@ -122,20 +110,19 @@ const FormattedMessageText = ({ text }) => {
         formattedElements.push(<div key={`space-${lineIdx}`} className="h-2" />);
       } else if (trimmed.startsWith('### ')) {
         formattedElements.push(
-          <h4 key={`h3-${lineIdx}`} className="text-base font-bold text-cyan-300 mt-3 mb-1 flex items-center gap-1.5">
-            <HiOutlineSparkles className="w-4 h-4 text-cyan-400" />
+          <h4 key={`h3-${lineIdx}`} className="text-xs font-mono font-bold text-[#C2A155] uppercase tracking-wider mt-3 mb-1">
             {trimmed.replace('### ', '')}
           </h4>
         );
       } else if (trimmed.startsWith('## ')) {
         formattedElements.push(
-          <h3 key={`h2-${lineIdx}`} className="text-lg font-bold text-white mt-4 mb-2">
+          <h3 key={`h2-${lineIdx}`} className="text-sm font-display font-bold text-[#F3F1EA] mt-4 mb-2">
             {trimmed.replace('## ', '')}
           </h3>
         );
       } else {
         formattedElements.push(
-          <p key={`p-${lineIdx}`} className="text-sm leading-relaxed my-1">
+          <p key={`p-${lineIdx}`} className="text-xs font-sans leading-relaxed my-1 text-[#F3F1EA]">
             {parseInline(trimmed)}
           </p>
         );
@@ -154,90 +141,58 @@ FormattedMessageText.propTypes = {
   text: PropTypes.string
 };
 
-/**
- * Embedded Financial Metrics Summary Card Component
- */
 const FinancialMetricsCard = ({ metrics }) => {
   if (!metrics) return null;
 
   const { potentialSavings, projectedSpend, unusedCount } = metrics;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="mt-3.5 mb-2 overflow-hidden rounded-xl border border-indigo-500/20 bg-slate-950/70 p-3.5 shadow-inner backdrop-blur-md"
-    >
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="p-1 rounded-md bg-indigo-500/10 text-indigo-400">
-            <HiOutlineChartBar className="w-4 h-4" />
-          </div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300">
-            SubSense Financial Summary
-          </span>
-        </div>
-        <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-medium px-2 py-0.5 rounded-full border border-indigo-500/30">
-          AI Verified
+    <div className="mt-3.5 mb-2 rounded-lg border border-[#F3F1EA]/10 bg-[#0D0F0E] p-3 font-mono">
+      <div className="flex items-center justify-between border-b border-[#F3F1EA]/10 pb-2 mb-3">
+        <span className="text-[10px] uppercase font-bold text-[#C2A155]">
+          SubSense Financial Summary
+        </span>
+        <span className="text-[9px] bg-[#3FA972]/20 text-[#3FA972] font-bold px-2 py-0.5 rounded border border-[#3FA972]/30">
+          AI VERIFIED
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        {/* Potential Savings */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
         {potentialSavings !== undefined && (
-          <div className="flex flex-col p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium mb-1">
-              <HiOutlineTrendingDown className="w-3.5 h-3.5" />
-              <span>Potential Savings</span>
-            </div>
-            <span className="text-base font-bold text-emerald-300">
+          <div className="p-2 rounded bg-[#171A18] border border-[#3FA972]/30">
+            <span className="text-[10px] text-[#3FA972] uppercase block">Savings</span>
+            <span className="font-bold text-[#3FA972]">
               {typeof potentialSavings === 'number' ? `$${potentialSavings.toFixed(2)}/mo` : potentialSavings}
             </span>
           </div>
         )}
 
-        {/* Projected Spend */}
         {projectedSpend !== undefined && (
-          <div className="flex flex-col p-2.5 rounded-lg bg-cyan-950/30 border border-cyan-500/20 hover:border-cyan-500/40 transition-colors">
-            <div className="flex items-center gap-1.5 text-xs text-cyan-400 font-medium mb-1">
-              <HiOutlineCreditCard className="w-3.5 h-3.5" />
-              <span>Projected Spend</span>
-            </div>
-            <span className="text-base font-bold text-cyan-200">
+          <div className="p-2 rounded bg-[#171A18] border border-[#F3F1EA]/10">
+            <span className="text-[10px] text-[#96988F] uppercase block">Projected Spend</span>
+            <span className="font-bold text-[#F3F1EA]">
               {typeof projectedSpend === 'number' ? `$${projectedSpend.toFixed(2)}/mo` : projectedSpend}
             </span>
           </div>
         )}
 
-        {/* Unused Count */}
         {unusedCount !== undefined && (
-          <div className="flex flex-col p-2.5 rounded-lg bg-amber-950/30 border border-amber-500/20 hover:border-amber-500/40 transition-colors">
-            <div className="flex items-center gap-1.5 text-xs text-amber-400 font-medium mb-1">
-              <HiOutlineExclamationCircle className="w-3.5 h-3.5" />
-              <span>Unused Subscriptions</span>
-            </div>
-            <span className="text-base font-bold text-amber-300">
-              {unusedCount} {typeof unusedCount === 'number' && unusedCount === 1 ? 'Service' : 'Services'}
+          <div className="p-2 rounded bg-[#171A18] border border-[#D97706]/30">
+            <span className="text-[10px] text-[#D97706] uppercase block">Unused Seats</span>
+            <span className="font-bold text-[#D97706]">
+              {unusedCount} Services
             </span>
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 FinancialMetricsCard.propTypes = {
-  metrics: PropTypes.shape({
-    potentialSavings: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    projectedSpend: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    unusedCount: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
-  })
+  metrics: PropTypes.object
 };
 
-/**
- * MessageBubble Component
- */
 const MessageBubble = ({
   message,
   onActionClick,
@@ -245,7 +200,7 @@ const MessageBubble = ({
   onCopy
 }) => {
   const [copied, setCopied] = useState(false);
-  const [feedback, setFeedback] = useState(null); // 'up' | 'down' | null
+  const [feedback, setFeedback] = useState(null);
   const [loadingActionId, setLoadingActionId] = useState(null);
 
   if (!message) return null;
@@ -268,195 +223,96 @@ const MessageBubble = ({
   const handleFeedback = (type) => {
     const newFeedback = feedback === type ? null : type;
     setFeedback(newFeedback);
-    if (onFeedback) {
-      onFeedback(message.id, newFeedback);
-    }
+    if (onFeedback) onFeedback(message.id, newFeedback);
   };
 
   const handleAction = async (action) => {
     const actionId = typeof action === 'string' ? action : action.id || action.label;
     setLoadingActionId(actionId);
-    if (onActionClick) {
-      await onActionClick(action, message);
-    }
+    if (onActionClick) await onActionClick(action, message);
     setLoadingActionId(null);
   };
 
-  const getActionIcon = (action) => {
-    const label = (typeof action === 'string' ? action : action.label || '').toLowerCase();
-    if (label.includes('cancel')) return <HiOutlineXCircle className="w-4 h-4 text-rose-400" />;
-    if (label.includes('switch') || label.includes('upgrade')) return <HiOutlineRefresh className="w-4 h-4 text-amber-400" />;
-    if (label.includes('audit') || label.includes('details')) return <HiOutlineCheckCircle className="w-4 h-4 text-emerald-400" />;
-    return <HiOutlineArrowRight className="w-4 h-4 text-cyan-400" />;
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      className={`flex items-start gap-3 my-3 w-full ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
-    >
-      {/* Avatar Container */}
+    <div className={`flex items-start gap-3 my-3 w-full ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       <div className="shrink-0 mt-0.5">
         {isUser ? (
-          <div className="relative group">
-            {message.userAvatar ? (
-              <img
-                src={message.userAvatar}
-                alt="User Avatar"
-                className="w-9 h-9 rounded-full border-2 border-indigo-500/50 object-cover shadow-md shadow-indigo-500/20"
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/30 border border-violet-400/30">
-                <HiOutlineUser className="w-5 h-5" />
-              </div>
-            )}
+          <div className="w-8 h-8 rounded bg-[#0D0F0E] border border-[#F3F1EA]/10 flex items-center justify-center text-[#F3F1EA]">
+            <HiOutlineUser className="w-4 h-4" />
           </div>
         ) : (
-          <div className="relative group">
-            {/* Glowing animated background aura */}
-            <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500 opacity-65 blur-sm group-hover:opacity-100 transition duration-500 animate-pulse" />
-            <div className="relative w-9 h-9 rounded-xl bg-slate-900 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-md shadow-cyan-500/20">
-              <FaRobot className="w-4 h-4 text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-            </div>
+          <div className="w-8 h-8 rounded bg-[#C2A155] flex items-center justify-center text-[#0D0F0E] font-bold">
+            <HiOutlineSparkles className="w-4 h-4" />
           </div>
         )}
       </div>
 
-      {/* Message Content Bubble Container */}
       <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${isUser ? 'items-end' : 'items-start'}`}>
-        {/* Header Sender Info & Timestamp */}
-        <div className={`flex items-center gap-2 mb-1 text-[11px] text-slate-400 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-          <span className="font-medium text-slate-300">{isUser ? 'You' : 'SubSense AI'}</span>
+        <div className={`flex items-center gap-2 mb-1 text-[10px] font-mono text-[#96988F] px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+          <span className="font-bold text-[#F3F1EA]">{isUser ? 'You' : 'SubSense AI'}</span>
           <span>•</span>
           <span>{timestamp}</span>
         </div>
 
-        {/* Bubble Box */}
-        <div
-          className={`relative group p-4 rounded-2xl transition-all duration-200 ${
-            isUser
-              ? 'bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 text-white rounded-tr-xs shadow-lg shadow-indigo-600/20 border border-indigo-400/30'
-              : 'bg-slate-900/85 backdrop-blur-xl border border-slate-800/90 text-slate-100 rounded-tl-xs shadow-xl shadow-cyan-950/20'
-          }`}
-        >
-          {/* Main Message Text */}
+        <div className={`p-4 rounded-xl border text-xs leading-relaxed ${
+          isUser
+            ? 'bg-[#0D0F0E] border-[#C2A155]/40 text-[#F3F1EA]'
+            : 'bg-[#171A18] border-[#F3F1EA]/10 text-[#F3F1EA]'
+        }`}>
           {isUser ? (
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">{textContent}</p>
+            <p className="whitespace-pre-wrap font-sans">{textContent}</p>
           ) : (
             <FormattedMessageText text={textContent} />
           )}
 
-          {/* Embedded Financial Metrics Summary Card if present */}
           {!isUser && metrics && <FinancialMetricsCard metrics={metrics} />}
 
-          {/* Interactive Recommendation Action Buttons */}
           {!isUser && actions && actions.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-slate-800/80 flex flex-wrap gap-2">
+            <div className="mt-3 pt-3 border-t border-[#F3F1EA]/10 flex flex-wrap gap-2 font-mono">
               {actions.map((action, idx) => {
                 const label = typeof action === 'string' ? action : action.label || action.text;
                 const actionId = typeof action === 'string' ? action : action.id || label;
                 const isLoading = loadingActionId === actionId;
 
                 return (
-                  <motion.button
+                  <button
                     key={actionId || idx}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
                     onClick={() => handleAction(action)}
                     disabled={isLoading}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-bold bg-[#C2A155] text-[#0D0F0E] hover:bg-[#D4B468] transition-colors"
                   >
-                    {isLoading ? (
-                      <span className="h-3.5 w-3.5 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
-                    ) : (
-                      getActionIcon(action)
-                    )}
                     <span>{label}</span>
-                  </motion.button>
+                    <HiOutlineArrowRight className="w-3 h-3" />
+                  </button>
                 );
               })}
             </div>
           )}
 
-          {/* Bottom Toolbar (Copy & Feedback) for AI messages */}
-          <div className={`mt-2 pt-2 flex items-center gap-2 text-xs border-t ${isUser ? 'border-indigo-500/20 justify-end' : 'border-slate-800/50 justify-between'}`}>
+          <div className="mt-2 pt-2 flex items-center justify-between border-t border-[#F3F1EA]/10 text-[10px] font-mono text-[#96988F]">
             {!isUser && (
               <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleFeedback('up')}
-                  title="Helpful response"
-                  className={`p-1 rounded transition-colors ${
-                    feedback === 'up'
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                  }`}
-                >
-                  {feedback === 'up' ? <HiThumbUp className="w-3.5 h-3.5" /> : <HiOutlineThumbUp className="w-3.5 h-3.5" />}
+                <button onClick={() => handleFeedback('up')} className="p-1 hover:text-[#C2A155]">
+                  <HiOutlineThumbUp className="w-3.5 h-3.5" />
                 </button>
-                <button
-                  onClick={() => handleFeedback('down')}
-                  title="Unhelpful response"
-                  className={`p-1 rounded transition-colors ${
-                    feedback === 'down'
-                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                  }`}
-                >
-                  {feedback === 'down' ? <HiThumbDown className="w-3.5 h-3.5" /> : <HiOutlineThumbDown className="w-3.5 h-3.5" />}
+                <button onClick={() => handleFeedback('down')} className="p-1 hover:text-[#D65C4F]">
+                  <HiOutlineThumbDown className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
 
-            {/* Copy Button & Toast notification badge */}
-            <div className="flex items-center gap-1.5 ml-auto">
-              <AnimatePresence>
-                {copied && (
-                  <motion.span
-                    initial={{ opacity: 0, x: 5 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="text-[10px] font-medium text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30"
-                  >
-                    Copied!
-                  </motion.span>
-                )}
-              </AnimatePresence>
-
-              <button
-                onClick={handleCopy}
-                title="Copy message to clipboard"
-                className={`p-1 rounded transition-colors ${
-                  isUser
-                    ? 'text-indigo-200 hover:text-white hover:bg-indigo-500/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`}
-              >
-                {copied ? <HiOutlineCheck className="w-3.5 h-3.5 text-emerald-400" /> : <HiOutlineClipboard className="w-3.5 h-3.5" />}
-              </button>
-            </div>
+            <button onClick={handleCopy} className="p-1 hover:text-[#F3F1EA] ml-auto">
+              {copied ? 'Copied' : <HiOutlineClipboard className="w-3.5 h-3.5" />}
+            </button>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 MessageBubble.propTypes = {
-  message: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    sender: PropTypes.string,
-    role: PropTypes.string,
-    text: PropTypes.string,
-    content: PropTypes.string,
-    timestamp: PropTypes.string,
-    userAvatar: PropTypes.string,
-    metrics: PropTypes.object,
-    financialMetrics: PropTypes.object,
-    actions: PropTypes.array,
-    recommendations: PropTypes.array
-  }),
+  message: PropTypes.object,
   onActionClick: PropTypes.func,
   onFeedback: PropTypes.func,
   onCopy: PropTypes.func

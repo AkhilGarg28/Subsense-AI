@@ -12,16 +12,6 @@ import {
 import NotificationCard from './NotificationCard';
 import NotificationSkeleton from './NotificationSkeleton';
 
-/**
- * NotificationList Component
- *
- * List container component managing:
- * - Search query input for filtering notifications
- * - Action controls: "Mark All as Read", "Clear All"
- * - Grouping notifications by time period: "Today", "Tomorrow", "This Week", "Earlier"
- * - Categories: Renewals, Warnings, Price hikes, Budget alerts
- * - Rendering list of NotificationCards with Framer Motion animations
- */
 const NotificationList = ({
   notifications = [],
   filteredNotifications = [],
@@ -37,7 +27,6 @@ const NotificationList = ({
 }) => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  // Helper to categorize time grouping
   const groupNotificationsByTime = (items) => {
     const groups = {
       Today: [],
@@ -67,61 +56,55 @@ const NotificationList = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Search & Actions Control Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 md:p-4 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl">
-        {/* Search Bar Input */}
+      {/* Search & Actions Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#171A18] border border-[#F3F1EA]/10 font-mono text-xs">
         <div className="relative flex-1">
-          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#96988F]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-            placeholder="Search notifications by title or description..."
-            className="w-full pl-10 pr-9 py-2 rounded-xl text-xs md:text-sm bg-slate-800/80 border border-slate-700/80 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+            placeholder="Search notifications..."
+            className="w-full pl-10 pr-9 py-2 rounded bg-[#0D0F0E] border border-[#F3F1EA]/10 text-[#F3F1EA] placeholder-[#96988F] focus:outline-none focus:border-[#C2A155]"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange && onSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#96988F] hover:text-[#F3F1EA]"
             >
               <FiXCircle className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Global Batch Action Triggers */}
         <div className="flex items-center justify-end gap-2 shrink-0">
           <button
             type="button"
             onClick={onMarkAllAsRead}
             disabled={unreadCount === 0 || isLoading}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded font-bold border transition-all ${
               unreadCount > 0 && !isLoading
-                ? 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/30 cursor-pointer'
-                : 'bg-slate-800/40 text-slate-400 border-slate-800 cursor-not-allowed opacity-50'
+                ? 'bg-[#C2A155] text-[#0D0F0E] border-[#C2A155]'
+                : 'bg-[#0D0F0E] text-[#96988F] border-[#F3F1EA]/10 opacity-50 cursor-not-allowed'
             }`}
-            title="Mark all notifications as read"
           >
             <FiCheckCircle className="w-4 h-4" />
-            <span className="hidden sm:inline">Mark All Read</span>
-            <span className="sm:hidden">Mark Read</span>
+            <span>Mark All Read</span>
           </button>
 
           <button
             type="button"
             onClick={onClearAll}
             disabled={notifications.length === 0 || isLoading}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded font-bold border transition-all ${
               notifications.length > 0 && !isLoading
-                ? 'bg-slate-800/80 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border-slate-700/80 hover:border-rose-500/30 cursor-pointer'
-                : 'bg-slate-800/40 text-slate-400 border-slate-800 cursor-not-allowed opacity-50'
+                ? 'bg-[#0D0F0E] text-[#D65C4F] border-[#D65C4F]/30 hover:bg-[#D65C4F]/20'
+                : 'bg-[#0D0F0E] text-[#96988F] border-[#F3F1EA]/10 opacity-50 cursor-not-allowed'
             }`}
-            title="Clear all notifications"
           >
             <FiTrash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Clear All</span>
-            <span className="sm:hidden">Clear</span>
+            <span>Clear All</span>
           </button>
         </div>
       </div>
@@ -137,20 +120,18 @@ const NotificationList = ({
 
             return (
               <div key={groupKey} className="space-y-3">
-                {/* Time Group Header */}
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between px-1 font-mono">
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-blue-500" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#C2A155]" />
+                    <h3 className="text-xs font-bold uppercase text-[#F3F1EA]">
                       {groupKey}
                     </h3>
                   </div>
-                  <span className="text-[11px] font-semibold text-slate-500 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">
-                    {groupItems.length} {groupItems.length === 1 ? 'alert' : 'alerts'}
+                  <span className="text-[10px] text-[#96988F] bg-[#0D0F0E] px-2 py-0.5 rounded border border-[#F3F1EA]/10">
+                    {groupItems.length} {groupItems.length === 1 ? 'ALERT' : 'ALERTS'}
                   </span>
                 </div>
 
-                {/* Grouped Notification Cards */}
                 <div className="space-y-2.5">
                   <AnimatePresence mode="popLayout">
                     {groupItems.map((notification) => (
@@ -169,36 +150,28 @@ const NotificationList = ({
           })}
         </div>
       ) : (
-        /* Empty State */
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center text-center p-8 md:p-12 rounded-3xl bg-slate-900/60 border border-slate-800/80"
-        >
-          <div className="w-16 h-16 rounded-3xl bg-slate-800/80 border border-slate-700/70 flex items-center justify-center text-slate-400 mb-4 shadow-inner">
-            {searchQuery ? <FiFilter className="w-8 h-8 text-blue-400" /> : <FiBellOff className="w-8 h-8 text-slate-400" />}
+        <div className="flex flex-col items-center justify-center text-center p-8 md:p-12 rounded-xl bg-[#171A18] border border-[#F3F1EA]/10 font-mono">
+          <div className="w-12 h-12 rounded-lg bg-[#0D0F0E] border border-[#F3F1EA]/10 flex items-center justify-center text-[#96988F] mb-3">
+            <FiBellOff className="w-6 h-6" />
           </div>
-
-          <h3 className="text-lg font-bold text-white mb-1.5">
+          <h3 className="text-sm font-bold text-[#F3F1EA] mb-1">
             {searchQuery ? 'No matching notifications found' : 'All caught up!'}
           </h3>
-
-          <p className="text-xs md:text-sm text-slate-400 max-w-md leading-relaxed mb-6">
+          <p className="text-xs text-[#96988F] max-w-md mb-4 font-sans">
             {searchQuery
-              ? `We couldn't find any notifications matching "${searchQuery}". Try searching with different keywords.`
-              : 'You have no notifications in this category. Important updates, bill renewals, price hikes, and AI recommendations will appear here.'}
+              ? `No notifications matching "${searchQuery}".`
+              : 'You have no notifications in this category. Important updates and alerts will appear here.'}
           </p>
-
           {searchQuery && onResetFilters && (
             <button
               type="button"
               onClick={onResetFilters}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-500/25 transition-all"
+              className="px-4 py-2 rounded bg-[#C2A155] text-[#0D0F0E] text-xs font-bold"
             >
               Clear Search Filter
             </button>
           )}
-        </motion.div>
+        </div>
       )}
     </div>
   );
