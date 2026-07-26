@@ -27,45 +27,27 @@ import {
 } from '../../components/subscriptions';
 import { mockSubscriptionsData } from '../../data/mockSubscriptionsData';
 
-/**
- * SubscriptionsPage — SubSense AI Subscription Management Dashboard Page
- *
- * Full responsive dashboard assembling:
- * 1. Page Header with Title, Subtitle, Currency mode, Upload CTA, & Simulated Empty State toggle
- * 2. 4 Summary Metric Cards Grid
- * 3. AI Recommendations Insights Panel & Renewal Calendar Grid
- * 4. Search, Status & Category Filter, Sort, and View Mode Controls bar
- * 5. Subscription Grid Cards / Subscription Table List view with active filtering
- * 6. Interactive Subscription Details & Manage Modal
- * 7. Recharts Monthly Spending Trend & Category Distribution Statistics Section
- */
 const SubscriptionsPage = () => {
-  // Main Data State
   const [subscriptions, setSubscriptions] = useState(
     mockSubscriptionsData.subscriptions
   );
-  const [summary, setSummary] = useState(mockSubscriptionsData.summary);
+  const [summary] = useState(mockSubscriptionsData.summary);
 
-  // Filter & View State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSort, setSelectedSort] = useState('highest-cost');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
-  const [currency, setCurrency] = useState('USD'); // 'USD' | 'INR'
+  const [viewMode, setViewMode] = useState('grid');
+  const [currency, setCurrency] = useState('USD');
 
-  // Modal State
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Testing & Demo Toggles
   const [simulateEmptyState, setSimulateEmptyState] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Toast Feedback State
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Helper to trigger toast notifications
   const showToast = (message, type = 'info') => {
     setToastMessage({ message, type });
     setTimeout(() => {
@@ -73,20 +55,17 @@ const SubscriptionsPage = () => {
     }, 4000);
   };
 
-  // Toggle currency between USD and INR
   const handleCurrencyToggle = () => {
     const nextCurrency = currency === 'USD' ? 'INR' : 'USD';
     setCurrency(nextCurrency);
     showToast(`Switched currency display to ${nextCurrency}`, 'info');
   };
 
-  // Filter & Sort Logic
   const filteredSubscriptions = useMemo(() => {
     if (simulateEmptyState) return [];
 
     let result = [...subscriptions];
 
-    // 1. Search Query Filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
@@ -98,21 +77,18 @@ const SubscriptionsPage = () => {
       );
     }
 
-    // 2. Status Filter
     if (selectedStatus && selectedStatus !== 'All') {
       result = result.filter(
         (sub) => sub.status?.toLowerCase() === selectedStatus.toLowerCase()
       );
     }
 
-    // 3. Category Filter
     if (selectedCategory && selectedCategory !== 'All') {
       result = result.filter(
         (sub) => sub.category?.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
 
-    // 4. Sort Logic
     result.sort((a, b) => {
       if (selectedSort === 'highest-cost') {
         const valA = currency === 'INR' ? a.costINR || 0 : a.costUSD || 0;
@@ -146,7 +122,6 @@ const SubscriptionsPage = () => {
     simulateEmptyState,
   ]);
 
-  // Action Handlers
   const handleOpenModal = (sub) => {
     setSelectedSubscription(sub);
     setIsModalOpen(true);
@@ -201,11 +176,11 @@ const SubscriptionsPage = () => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-    }, 1500);
+    }, 1200);
   };
 
   return (
-    <div className="app-page page-stack">
+    <div className="space-y-6 w-full animate-fade-in pb-12">
       {/* Toast Feedback Notification Banner */}
       <AnimatePresence>
         {toastMessage && (
@@ -213,83 +188,79 @@ const SubscriptionsPage = () => {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="fixed top-6 right-6 z-50 flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-900/95 px-4 py-3 shadow-2xl backdrop-blur-xl"
+            className="fixed top-6 right-6 z-50 flex items-center gap-3 rounded-2xl border border-white/10 bg-[#171F2F]/95 px-4 py-3 shadow-2xl backdrop-blur-xl"
           >
-            {toastMessage.type === 'success' && <FiCheckCircle className="h-5 w-5 text-emerald-400" />}
-            {toastMessage.type === 'warning' && <FiAlertCircle className="h-5 w-5 text-amber-400" />}
-            {toastMessage.type === 'danger' && <FiAlertCircle className="h-5 w-5 text-rose-400" />}
-            {toastMessage.type === 'info' && <FiSparkles className="h-5 w-5 text-blue-400" />}
-            <span className="text-xs font-semibold text-slate-200">{toastMessage.message}</span>
+            {toastMessage.type === 'success' && <FiCheckCircle className="h-5 w-5 text-[#22C55E]" />}
+            {toastMessage.type === 'warning' && <FiAlertCircle className="h-5 w-5 text-[#F59E0B]" />}
+            {toastMessage.type === 'danger' && <FiAlertCircle className="h-5 w-5 text-[#EF4444]" />}
+            {toastMessage.type === 'info' && <FiSparkles className="h-5 w-5 text-[#5B8CFF]" />}
+            <span className="text-xs font-semibold text-white">{toastMessage.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Page Header Section */}
-      <div className="page-hero p-6 sm:p-8 lg:p-10 flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+      {/* Hero Control Banner */}
+      <div className="rounded-[20px] border border-white/10 bg-[#171F2F]/90 p-6 sm:p-8 backdrop-blur-2xl flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between shadow-2xl">
         <div className="flex items-start gap-4">
           <div className="gradient-primary flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-glow-blue">
-            <FiCreditCard className="h-6 w-6" />
+            <FiCreditCard className="h-7 w-7" />
           </div>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="section-title">
-                Subscription Management
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Subscription Portfolio
               </h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-bold text-blue-400 border border-blue-500/20">
-                <FiSparkles className="h-3 w-3" />
-                AI Powered
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#5B8CFF]/15 px-3 py-1 text-xs font-mono font-bold text-[#5B8CFF] border border-[#5B8CFF]/30">
+                <FiSparkles className="h-3.5 w-3.5" />
+                AI Auto-Detect
               </span>
             </div>
-            <p className="section-subtitle mt-2 max-w-2xl">
-              Track, optimize, and cancel recurring debits with AI recommendations
+            <p className="mt-1 text-sm text-[#A1A8B5] max-w-2xl leading-relaxed">
+              Track, optimize, and cancel recurring debits with automated AI savings intelligence.
             </p>
           </div>
         </div>
 
-        {/* Action Controls & Demo Options */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Currency Toggle */}
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
           <button
             type="button"
             onClick={handleCurrencyToggle}
             className="btn-secondary"
             title="Toggle USD / INR Currency"
           >
-            <FiDollarSign className="h-3.5 w-3.5 text-emerald-400" />
+            <FiDollarSign className="h-4 w-4 text-[#22C55E]" />
             <span>{currency} Mode</span>
           </button>
 
-          {/* Simulate Skeleton Loader */}
           <button
             type="button"
             onClick={toggleSimulatedLoading}
             className="btn-secondary"
             title="Simulate Skeleton Loading"
           >
-            <FiRefreshCw className="h-3.5 w-3.5 text-blue-400" />
+            <FiRefreshCw className="h-4 w-4 text-[#5B8CFF]" />
             <span className="hidden sm:inline">Refresh Data</span>
           </button>
 
-          {/* Simulate Empty State Toggle */}
           <button
             type="button"
             onClick={() => setSimulateEmptyState(!simulateEmptyState)}
-            className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 rounded-[14px] border px-3.5 py-3 text-xs font-bold transition-all ${
               simulateEmptyState
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                ? 'bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B]/40'
+                : 'border-white/10 bg-[#121A2F] text-[#A1A8B5] hover:text-white'
             }`}
             title="Toggle Simulated Empty State"
           >
             {simulateEmptyState ? (
-              <FiToggleRight className="h-4 w-4 text-amber-400" />
+              <FiToggleRight className="h-4 w-4 text-[#F59E0B]" />
             ) : (
-              <FiToggleLeft className="h-4 w-4 text-slate-500" />
+              <FiToggleLeft className="h-4 w-4 text-[#64748B]" />
             )}
             <span>Empty State Demo</span>
           </button>
 
-          {/* Upload Receipt Primary Action */}
           <Link
             to="/upload"
             className="btn-primary"
@@ -315,7 +286,7 @@ const SubscriptionsPage = () => {
             onAction={handleInsightAction}
           />
         </div>
-        <div>
+        <div className="xl:col-span-4">
           <RenewalCalendar
             renewals={mockSubscriptionsData.renewalCalendar}
             onReminderClick={(item) =>
@@ -353,28 +324,28 @@ const SubscriptionsPage = () => {
 
         {/* Active Filters Summary Bar */}
         {(searchQuery || selectedStatus !== 'All' || selectedCategory !== 'All') && (
-          <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2 text-xs text-slate-400 backdrop-blur-md">
+          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#171F2F] px-4 py-2.5 text-xs text-[#A1A8B5] font-mono">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold text-slate-300">Active Filters:</span>
+              <span className="font-bold text-white">Active Filters:</span>
               {searchQuery && (
-                <span className="rounded-lg bg-blue-500/10 px-2 py-0.5 text-blue-400 border border-blue-500/20">
+                <span className="rounded-lg bg-[#5B8CFF]/15 px-2 py-0.5 text-[#5B8CFF] border border-[#5B8CFF]/30">
                   Search: &quot;{searchQuery}&quot;
                 </span>
               )}
               {selectedStatus !== 'All' && (
-                <span className="rounded-lg bg-emerald-500/10 px-2 py-0.5 text-emerald-400 border border-emerald-500/20">
+                <span className="rounded-lg bg-[#22C55E]/15 px-2 py-0.5 text-[#22C55E] border border-[#22C55E]/30">
                   Status: {selectedStatus}
                 </span>
               )}
               {selectedCategory !== 'All' && (
-                <span className="rounded-lg bg-purple-500/10 px-2 py-0.5 text-purple-400 border border-purple-500/20">
+                <span className="rounded-lg bg-[#8B5CF6]/15 px-2 py-0.5 text-[#8B5CF6] border border-[#8B5CF6]/30">
                   Category: {selectedCategory}
                 </span>
               )}
             </div>
             <button
               onClick={handleResetFilters}
-              className="text-xs text-blue-400 hover:text-blue-300 underline font-medium"
+              className="text-xs text-[#5B8CFF] hover:underline font-bold cursor-pointer"
             >
               Clear All
             </button>
@@ -438,4 +409,3 @@ const SubscriptionsPage = () => {
 };
 
 export default SubscriptionsPage;
-

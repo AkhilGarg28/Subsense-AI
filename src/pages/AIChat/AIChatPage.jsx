@@ -19,13 +19,11 @@ import Toast from '../../components/ui/Toast';
 import { mockChatData } from '../../data/mockChatData';
 
 /**
- * AIChatPage — Complete AI Financial Assistant Page for SubSense AI.
- * Assembles a Perplexity/ChatGPT/Gemini style interface with:
- * - Left Sidebar: Conversation history with search, rename, delete, and new chat triggers
- * - Header Bar: Active AI model indicator, status badge, new chat, and options dropdown
- * - Main Window: Interactive empty state with prompt suggestions, active message thread,
- *   typing indicator animation, 1-Click action modals, voice/document chat input,
- *   and responsive mobile drawer layout.
+ * AIChatPage — Autonomous AI Financial Assistant Page.
+ * Pure Apple/Stripe/Linear/Notion AI interface with:
+ * - 100vh precision viewport layout anchored under top navbar (no clipping/no double scroll)
+ * - Independent scrolling history sidebar with pinned bottom tier card
+ * - Fixed header, smooth-scrolling message thread, and pinned bottom input area
  */
 const AIChatPage = () => {
   const [conversations, setConversations] = useState(mockChatData.conversations);
@@ -59,18 +57,14 @@ const AIChatPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [toastNotification, setToastNotification] = useState(null);
-  const [actionModal, setActionModal] = useState(null); // { isOpen, title, description, confirmText, onConfirm }
-  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const [actionModal, setActionModal] = useState(null);
+  const [isLoadingPage] = useState(false);
 
   const messagesEndRef = useRef(null);
 
-  // Active messages list for current conversation
   const activeMessages = messagesMap[activeConversationId] || [];
-
-  // Active conversation metadata
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
 
-  // Auto-scroll to bottom of chat thread smoothly
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -79,7 +73,6 @@ const AIChatPage = () => {
     scrollToBottom();
   }, [activeMessages, isTyping, scrollToBottom]);
 
-  // Show auto-dismissing toast notifications
   const showToast = (message, type = 'success') => {
     setToastNotification({ message, type });
     setTimeout(() => {
@@ -87,12 +80,10 @@ const AIChatPage = () => {
     }, 4000);
   };
 
-  // Helper to format current time string
   const getCurrentTime = () => {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Trigger New Chat
   const handleNewChat = () => {
     const newId = `conv-${Date.now()}`;
     const newConv = {
@@ -110,13 +101,11 @@ const AIChatPage = () => {
     showToast('Started new financial chat session', 'info');
   };
 
-  // Select existing conversation
   const handleSelectConversation = (convId) => {
     setActiveConversationId(convId);
     setIsMobileSidebarOpen(false);
   };
 
-  // Rename existing conversation
   const handleRenameConversation = (convId, newTitle) => {
     setConversations((prev) =>
       prev.map((conv) => (conv.id === convId ? { ...conv, title: newTitle } : conv))
@@ -124,7 +113,6 @@ const AIChatPage = () => {
     showToast('Conversation renamed', 'info');
   };
 
-  // Delete conversation
   const handleDeleteConversation = (convId) => {
     const target = conversations.find((c) => c.id === convId);
     const title = target ? target.title : 'Conversation';
@@ -148,7 +136,6 @@ const AIChatPage = () => {
     showToast(`Deleted "${title}"`, 'warning');
   };
 
-  // Clear History for active conversation
   const handleClearHistory = () => {
     setActionModal({
       isOpen: true,
@@ -167,7 +154,6 @@ const AIChatPage = () => {
     });
   };
 
-  // Export Chat History transcript
   const handleExportChat = () => {
     if (activeMessages.length === 0) {
       showToast('No messages to export', 'warning');
@@ -191,7 +177,6 @@ const AIChatPage = () => {
     showToast('Exported chat history transcript JSON', 'success');
   };
 
-  // Send User Message & Simulate Streaming AI Response
   const handleSendMessage = ({ text, attachment }) => {
     if (!text.trim() && !attachment) return;
 
@@ -205,7 +190,6 @@ const AIChatPage = () => {
       timestamp: getCurrentTime(),
     };
 
-    // Update active conversation title if default
     if (activeMessages.length === 0) {
       const generateTitle = text.slice(0, 35) + (text.length > 35 ? '...' : '');
       setConversations((prev) =>
@@ -213,13 +197,11 @@ const AIChatPage = () => {
       );
     }
 
-    // Append User Message
     setMessagesMap((prev) => ({
       ...prev,
       [activeConversationId]: [...(prev[activeConversationId] || []), userMessageObj],
     }));
 
-    // Trigger AI Typing & Intelligent Response Generator
     setIsTyping(true);
 
     const queryLower = text.toLowerCase();
@@ -272,15 +254,13 @@ const AIChatPage = () => {
       }));
 
       setIsTyping(false);
-    }, 1600);
+    }, 1400);
   };
 
-  // Handle Prompt Selection (from Empty State or Suggestions)
   const handleSelectPrompt = (promptText) => {
     handleSendMessage({ text: promptText });
   };
 
-  // Handle Quick Action Clicks (from bottom Quick Actions Bar)
   const handleQuickAction = (actionId, actionObj) => {
     if (actionId === 'upload-receipt') {
       handleSendMessage({ text: 'I want to upload a receipt for AI OCR parsing and auto-logging.' });
@@ -295,7 +275,6 @@ const AIChatPage = () => {
     }
   };
 
-  // Handle Interactive Action Button Triggers inside Message Bubbles
   const handleActionClick = (action, _messageObj) => {
     const actionLabel = typeof action === 'string' ? action : action.label || action.id;
     const actionId = typeof action === 'string' ? action : action.id;
@@ -311,7 +290,6 @@ const AIChatPage = () => {
         onConfirm: () => {
           showToast('Canva Pro subscription cancelled! Saved $79.99/mo.', 'success');
 
-          // Append confirmation AI bubble
           const confirmMsg = {
             id: `msg-${Date.now()}`,
             sender: 'ai',
@@ -350,13 +328,12 @@ const AIChatPage = () => {
     }
   };
 
-  // If page loading state is active (e.g. skeleton test)
   if (isLoadingPage) {
     return <ChatSkeleton viewMode="full" />;
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] sm:h-[calc(100vh-6rem)] w-full flex-col lg:flex-row -m-4 sm:-m-6 lg:-m-8 bg-background overflow-hidden animate-fade-in relative">
+    <div className="flex h-[calc(100vh-128px)] min-h-[580px] w-full flex-col lg:flex-row bg-[#171F2F]/90 border border-white/10 rounded-[20px] shadow-2xl overflow-hidden relative">
       {/* Toast Notification Container */}
       <AnimatePresence>
         {toastNotification && (
@@ -379,21 +356,21 @@ const AIChatPage = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setActionModal(null)}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/80 backdrop-blur-md"
             />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl backdrop-blur-xl"
+              className="relative z-10 w-full max-w-md rounded-[20px] border border-white/10 bg-[#171F2F] p-6 shadow-2xl backdrop-blur-xl font-mono text-xs"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl border ${
                     actionModal.confirmVariant === 'danger'
-                      ? 'bg-danger/20 text-danger border border-danger/30'
-                      : 'bg-primary/20 text-primary border border-primary/30'
+                      ? 'bg-[#EF4444]/20 text-[#EF4444] border-[#EF4444]/30'
+                      : 'bg-[#5B8CFF]/20 text-[#5B8CFF] border-[#5B8CFF]/30'
                   }`}
                 >
                   {actionModal.icon ? (
@@ -403,20 +380,20 @@ const AIChatPage = () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-text-primary">{actionModal.title}</h3>
-                  <p className="text-xs text-text-muted">SubSense AI Copilot Action</p>
+                  <h3 className="text-base font-bold text-white">{actionModal.title}</h3>
+                  <p className="text-[10px] text-[#A1A8B5]">SubSense AI Action</p>
                 </div>
               </div>
 
-              <p className="text-sm text-text-secondary leading-relaxed mb-6">
+              <p className="text-xs text-[#A1A8B5] leading-relaxed mb-6 font-sans">
                 {actionModal.description}
               </p>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setActionModal(null)}
-                  className="rounded-xl border border-border bg-surface-light px-4 py-2 text-xs font-semibold text-text-secondary hover:bg-surface hover:text-text-primary transition-colors"
+                  className="rounded-xl border border-white/10 bg-[#121A2F] px-4 py-2 font-bold text-white hover:bg-white/5 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -426,10 +403,10 @@ const AIChatPage = () => {
                     if (actionModal.onConfirm) actionModal.onConfirm();
                     setActionModal(null);
                   }}
-                  className={`rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-lg transition-all active:scale-95 ${
+                  className={`rounded-xl px-4 py-2 font-bold text-white shadow-lg transition-all cursor-pointer ${
                     actionModal.confirmVariant === 'danger'
-                      ? 'bg-danger hover:bg-danger-hover shadow-danger/20'
-                      : 'bg-primary hover:bg-primary-hover shadow-primary/20'
+                      ? 'bg-[#EF4444] hover:bg-[#EF4444]/90'
+                      : 'gradient-primary shadow-glow-blue'
                   }`}
                 >
                   {actionModal.confirmText || 'Confirm'}
@@ -453,8 +430,8 @@ const AIChatPage = () => {
       />
 
       {/* Main Chat Interface Window */}
-      <div className="flex flex-1 flex-col h-full min-w-0 bg-background overflow-hidden relative">
-        {/* Sticky Header Bar */}
+      <div className="flex flex-1 flex-col h-full min-w-0 bg-[#0B1020] overflow-hidden relative">
+        {/* Pinned Top Header Bar */}
         <ChatHeader
           onNewChat={handleNewChat}
           onClearHistory={handleClearHistory}
@@ -465,21 +442,19 @@ const AIChatPage = () => {
         />
 
         {/* Scrollable Messages Thread Area */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {activeMessages.length === 0 ? (
-            /* Empty State Hero with Prompt Cards */
             <div className="flex min-h-full items-center justify-center py-6">
               <ChatEmptyState onSelectPrompt={handleSelectPrompt} />
             </div>
           ) : (
-            /* Active Thread Messages */
-            <div className="max-w-4xl mx-auto space-y-4">
+            <div className="max-w-4xl mx-auto space-y-6">
               {activeMessages.map((msg) => (
                 <MessageBubble
                   key={msg.id}
                   message={msg}
                   onActionClick={handleActionClick}
-                  onFeedback={(msgId, feedbackType) => {
+                  onFeedback={(_msgId, feedbackType) => {
                     showToast(
                       feedbackType ? `Thank you for your feedback!` : 'Feedback removed',
                       'info'
@@ -489,24 +464,19 @@ const AIChatPage = () => {
                 />
               ))}
 
-              {/* Streaming Typing Indicator */}
               <AnimatePresence>
                 {isTyping && <TypingIndicator key="typing-indicator" />}
               </AnimatePresence>
 
-              {/* Scroll Anchor */}
               <div ref={messagesEndRef} />
             </div>
           )}
         </div>
 
-        {/* Bottom Input Area & Quick Actions Bar */}
-        <div className="border-t border-border bg-surface/60 backdrop-blur-xl p-3 sm:p-4 space-y-3 z-20">
+        {/* Pinned Bottom Input Area & Quick Actions */}
+        <div className="shrink-0 border-t border-white/10 bg-[#171F2F]/90 backdrop-blur-xl p-4 space-y-3 z-20">
           <div className="max-w-4xl mx-auto space-y-3">
-            {/* Quick Actions Bar */}
             <ChatQuickActions onActionClick={handleQuickAction} />
-
-            {/* Chat Input Box */}
             <ChatInput
               onSendMessage={handleSendMessage}
               disabled={isTyping}

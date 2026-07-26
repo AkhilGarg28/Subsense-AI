@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { PublicLayout, ProtectedLayout } from '../components/layout';
 
-// Page imports
 import LandingPage from '../pages/Landing';
 import LoginPage from '../pages/Login';
 import SignupPage from '../pages/Signup';
@@ -12,10 +11,6 @@ import AIChatPage from '../pages/AIChat';
 import NotificationsPage from '../pages/Notifications';
 import ProfilePage from '../pages/Profile';
 
-/**
- * AppRoutes — Central routing configuration for SubSense AI.
- * Handles public pages, protected app dashboard routes, and wildcard redirects.
- */
 const AppRoutes = () => {
   return (
     <Routes>
@@ -31,6 +26,7 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/upload" element={<UploadReceiptPage />} />
         <Route path="/subscriptions" element={<SubscriptionsPage />} />
+        <Route path="/subscription" element={<SubscriptionsPage />} />
         <Route path="/chat" element={<AIChatPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />

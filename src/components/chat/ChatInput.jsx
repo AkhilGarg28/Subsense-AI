@@ -10,11 +10,6 @@ import {
   HiOutlineStop
 } from 'react-icons/hi';
 
-/**
- * ChatInput — Interactive Chat Input Box for SubSense AI.
- * Includes auto-resizing textarea, voice input simulation, file attachments,
- * character counter, keyboard shortcut badge, and gradient glow send button.
- */
 const ChatInput = ({
   onSendMessage,
   disabled = false,
@@ -32,7 +27,6 @@ const ChatInput = ({
   const fileInputRef = useRef(null);
   const recordingTimerRef = useRef(null);
 
-  // Auto-resize textarea height based on content
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -45,7 +39,6 @@ const ChatInput = ({
     adjustTextareaHeight();
   }, [text, adjustTextareaHeight]);
 
-  // Voice recording timer effect
   useEffect(() => {
     if (isListening) {
       setRecordingSeconds(0);
@@ -66,12 +59,10 @@ const ChatInput = ({
     };
   }, [isListening]);
 
-  // Handle voice simulation toggle
   const toggleVoiceInput = () => {
     if (disabled) return;
 
     if (isListening) {
-      // Stop listening and insert simulated voice query
       setIsListening(false);
       if (!text.trim()) {
         const sampleQueries = [
@@ -88,19 +79,16 @@ const ChatInput = ({
     }
   };
 
-  // Format recording seconds into mm:ss
   const formatTime = (totalSec) => {
     const mins = Math.floor(totalSec / 60);
     const secs = totalSec % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // Handle file selection
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size limit (10MB)
     if (file.size > 10 * 1024 * 1024) {
       setFileError('File size exceeds 10MB limit');
       setTimeout(() => setFileError(''), 3000);
@@ -109,7 +97,6 @@ const ChatInput = ({
 
     setAttachedFile(file);
     setFileError('');
-    // Reset file input value so re-selecting same file triggers onChange
     e.target.value = '';
   };
 
@@ -117,7 +104,6 @@ const ChatInput = ({
     setAttachedFile(null);
   };
 
-  // Handle form submission
   const handleSend = () => {
     if (disabled) return;
     const trimmed = text.trim();
@@ -137,7 +123,6 @@ const ChatInput = ({
     }
   };
 
-  // Handle key press (Enter sends, Shift+Enter new line)
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -150,8 +135,7 @@ const ChatInput = ({
   const canSend = (text.trim().length > 0 || attachedFile !== null) && !disabled;
 
   return (
-    <div className={`relative w-full ${className}`}>
-      {/* Hidden file input */}
+    <div className={`relative w-full font-mono text-xs ${className}`}>
       <input
         type="file"
         ref={fileInputRef}
@@ -160,35 +144,30 @@ const ChatInput = ({
         className="hidden"
       />
 
-      {/* Main Container */}
-      <div className="group relative rounded-2xl border border-border bg-surface/90 backdrop-blur-xl shadow-xl transition-all duration-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-        
-        {/* Active Voice Input Overlay / Banner */}
+      <div className="group relative rounded-[14px] border border-white/10 bg-[#121A2F] shadow-2xl transition-all duration-300 focus-within:border-[#5B8CFF] focus-within:ring-1 focus-within:ring-[#5B8CFF]">
+        {/* Active Voice Overlay */}
         <AnimatePresence>
           {isListening && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden border-b border-primary/20 bg-primary/10 px-4 py-2.5 rounded-t-2xl flex items-center justify-between"
+              className="overflow-hidden border-b border-[#EF4444]/30 bg-[#EF4444]/10 px-4 py-2 rounded-t-[14px] flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EF4444] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#EF4444]"></span>
                 </span>
-                <span className="text-xs font-semibold text-text-primary tracking-wide flex items-center gap-1.5">
-                  <HiOutlineMicrophone className="h-4 w-4 text-red-400 animate-pulse" />
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <HiOutlineMicrophone className="h-4 w-4 text-[#EF4444] animate-pulse" />
                   Listening... ({formatTime(recordingSeconds)})
-                </span>
-                <span className="text-xs text-text-secondary hidden sm:inline">
-                  Speak clearly into your microphone
                 </span>
               </div>
               <button
                 type="button"
                 onClick={toggleVoiceInput}
-                className="flex items-center gap-1 text-xs font-medium text-red-400 hover:text-red-300 transition-colors bg-red-500/10 px-2.5 py-1 rounded-lg border border-red-500/20"
+                className="flex items-center gap-1 text-xs font-bold text-[#EF4444] bg-[#EF4444]/20 px-2.5 py-1 rounded-lg border border-[#EF4444]/30 cursor-pointer"
               >
                 <HiOutlineStop className="h-3.5 w-3.5" />
                 Done
@@ -197,24 +176,24 @@ const ChatInput = ({
           )}
         </AnimatePresence>
 
-        {/* Attached File Preview Pill */}
+        {/* Attached File Preview */}
         <AnimatePresence>
           {attachedFile && (
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              className="p-3 border-b border-border/60 flex items-center justify-between bg-surface-light/30 rounded-t-2xl"
+              className="p-3 border-b border-white/10 flex items-center justify-between bg-[#171F2F] rounded-t-[14px]"
             >
               <div className="flex items-center gap-2.5 overflow-hidden">
-                <div className="p-1.5 rounded-lg bg-primary/20 text-primary">
+                <div className="p-1.5 rounded-lg bg-[#5B8CFF]/20 text-[#5B8CFF]">
                   <HiOutlineDocumentText className="h-4 w-4" />
                 </div>
                 <div className="truncate text-xs">
-                  <p className="font-medium text-text-primary truncate max-w-[200px] sm:max-w-[320px]">
+                  <p className="font-bold text-white truncate max-w-[200px] sm:max-w-[320px]">
                     {attachedFile.name}
                   </p>
-                  <p className="text-[10px] text-text-muted">
+                  <p className="text-[10px] text-[#A1A8B5]">
                     {(attachedFile.size / 1024).toFixed(1)} KB
                   </p>
                 </div>
@@ -222,7 +201,7 @@ const ChatInput = ({
               <button
                 type="button"
                 onClick={handleRemoveFile}
-                className="p-1 text-text-muted hover:text-text-primary hover:bg-surface-light rounded-lg transition-colors"
+                className="p-1 text-[#A1A8B5] hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                 title="Remove attachment"
               >
                 <HiOutlineX className="h-4 w-4" />
@@ -231,14 +210,13 @@ const ChatInput = ({
           )}
         </AnimatePresence>
 
-        {/* File Error Notification */}
         {fileError && (
-          <div className="px-4 py-1.5 bg-danger/10 text-danger text-xs font-medium border-b border-danger/20">
+          <div className="px-4 py-1.5 bg-[#EF4444]/15 text-[#EF4444] text-xs font-bold border-b border-[#EF4444]/20">
             {fileError}
           </div>
         )}
 
-        {/* Text Input Area */}
+        {/* Text Area */}
         <div className="p-3 sm:p-4 pb-2">
           <textarea
             ref={textareaRef}
@@ -252,84 +230,73 @@ const ChatInput = ({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled}
-            className="w-full resize-none bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none min-h-[44px] max-h-[180px] leading-relaxed transition-all"
+            className="w-full resize-none bg-transparent text-sm text-white placeholder-[#64748B] focus:outline-none min-h-[44px] max-h-[180px] leading-relaxed transition-all font-sans"
           />
         </div>
 
-        {/* Footer Actions & Shortcut Row */}
-        <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-t border-border/40 bg-surface/40 rounded-b-2xl">
-          {/* Left Action Buttons */}
+        {/* Action Controls Footer */}
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 border-t border-white/10 bg-[#171F2F]/60 rounded-b-[14px]">
           <div className="flex items-center gap-1.5">
-            {/* Attach Document Button */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled}
               title="Attach receipt or document"
-              className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-xl transition-all duration-200 disabled:opacity-50 group/btn"
+              className="p-2 text-[#A1A8B5] hover:text-[#5B8CFF] hover:bg-[#5B8CFF]/10 rounded-xl transition-all disabled:opacity-50 cursor-pointer"
             >
-              <HiOutlinePaperClip className="h-5 w-5 transition-transform group-hover/btn:rotate-45" />
+              <HiOutlinePaperClip className="h-5 w-5" />
             </button>
 
-            {/* Simulated Voice Button */}
             <button
               type="button"
               onClick={toggleVoiceInput}
               disabled={disabled}
-              title={isListening ? 'Stop listening' : 'Voice search simulation'}
-              className={`p-2 rounded-xl transition-all duration-200 ${
+              title={isListening ? 'Stop listening' : 'Voice input simulation'}
+              className={`p-2 rounded-xl transition-all cursor-pointer ${
                 isListening
-                  ? 'bg-red-500 text-white shadow-lg shadow-red-500/30 animate-pulse'
-                  : 'text-text-secondary hover:text-secondary hover:bg-secondary/10'
+                  ? 'bg-[#EF4444] text-white shadow-lg shadow-[#EF4444]/30 animate-pulse'
+                  : 'text-[#A1A8B5] hover:text-[#8B5CF6] hover:bg-[#8B5CF6]/10'
               } disabled:opacity-50`}
             >
               <HiOutlineMicrophone className="h-5 w-5" />
             </button>
 
-            {/* Keyboard Shortcut Helper Badge */}
-            <div className="hidden md:flex items-center gap-1.5 text-[11px] text-text-muted ml-2 pl-2 border-l border-border/60">
-              <span className="px-1.5 py-0.5 rounded bg-surface-light border border-border text-text-secondary font-mono text-[10px]">
+            <div className="hidden md:flex items-center gap-1.5 text-[10px] text-[#A1A8B5] ml-2 pl-2 border-l border-white/10">
+              <span className="px-1.5 py-0.5 rounded bg-[#171F2F] border border-white/10 text-white font-mono">
                 Enter ↵
               </span>
               <span>to send</span>
-              <span className="text-text-muted/60">•</span>
-              <span className="px-1.5 py-0.5 rounded bg-surface-light border border-border text-text-secondary font-mono text-[10px]">
+              <span className="text-[#A1A8B5]/60">•</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#171F2F] border border-white/10 text-white font-mono">
                 Shift + ↵
               </span>
               <span>new line</span>
             </div>
           </div>
 
-          {/* Right Action Controls: Character Count & Send Button */}
           <div className="flex items-center gap-3">
-            {/* Character Counter */}
             <span
-              className={`text-[11px] font-mono transition-colors ${
-                isNearLimit ? 'text-warning font-semibold' : 'text-text-muted'
+              className={`text-[10px] font-mono ${
+                isNearLimit ? 'text-[#F59E0B] font-bold' : 'text-[#A1A8B5]'
               }`}
             >
               {charCount} / {maxLength}
             </span>
 
-            {/* Send Button with Gradient Glow */}
             <button
               type="button"
               onClick={handleSend}
               disabled={!canSend}
               title="Send Message"
-              className={`relative flex items-center justify-center p-2.5 sm:px-4 sm:py-2.5 rounded-xl font-medium text-white transition-all duration-300 ${
+              className={`relative flex items-center justify-center h-10 px-4 rounded-xl font-bold text-white transition-all cursor-pointer ${
                 canSend
-                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0'
-                  : 'bg-surface-light text-text-muted cursor-not-allowed opacity-50'
+                  ? 'gradient-primary shadow-glow-blue hover:opacity-95'
+                  : 'bg-[#171F2F] text-[#64748B] cursor-not-allowed border border-white/10'
               }`}
             >
-              {/* Subtle spark glow background effect */}
-              {canSend && (
-                <span className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 opacity-30 blur-sm group-hover:opacity-60 transition duration-300"></span>
-              )}
-              <span className="relative flex items-center gap-1.5 text-xs font-semibold tracking-wide">
+              <span className="relative flex items-center gap-1.5 text-xs font-bold">
                 <span className="hidden sm:inline">Send</span>
-                <HiOutlinePaperAirplane className="h-4 w-4 rotate-90 transform transition-transform group-hover:translate-x-0.5" />
+                <HiOutlinePaperAirplane className="h-4 w-4 rotate-90" />
               </span>
             </button>
           </div>
