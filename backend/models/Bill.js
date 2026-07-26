@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+// bill schema
+
 const billSchema = new mongoose.Schema(
   {
     title: {
