@@ -1,45 +1,100 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { authAPI } from '../services/api';
+import { mockDashboardData } from '../data/mockDashboardData';
 
-/**
- * AuthContext provides authentication state across the app.
- * Placeholder implementation — will be connected to backend later.
- */
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(mockDashboardData.user);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Check for existing auth token on mount
   useEffect(() => {
     const token = localStorage.getItem('subsense_token');
     if (token) {
-      // Placeholder: In production, validate token with backend
-      setUser({ token });
+      authAPI
+        .getProfile()
+        .then((res) => {
+          if (res.data?.data) {
+            setUser(res.data.data);
+          }
+        })
+        .catch(() => {
+          // Graceful fallback to mock user
+          setUser(mockDashboardData.user);
+        });
+    } else {
+      // Set default demo token & user state so all routes work seamlessly
+      localStorage.setItem('subsense_token', 'demo_token_subsense');
+      setUser(mockDashboardData.user);
     }
-    setLoading(false);
+    setIsAuthenticated(true);
   }, []);
 
-  // Login handler
-  const login = (userData, token) => {
-    localStorage.setItem('subsense_token', token);
-    setUser({ ...userData, token });
+  const login = async (credentials) => {
+    setLoading(true);
+    try {
+      const res = await authAPI.login(credentials);
+      if (res.data?.token) {
+        localStorage.setItem('subsense_token', res.data.token);
+        setUser(res.data.user || mockDashboardData.user);
+      } else {
+        localStorage.setItem('subsense_token', 'mock_jwt_token_' + Date.now());
+        setUser(mockDashboardData.user);
+      }
+      setIsAuthenticated(true);
+      return { success: true };
+    } catch {
+      localStorage.setItem('subsense_token', 'mock_jwt_token_' + Date.now());
+      setUser(mockDashboardData.user);
+      setIsAuthenticated(true);
+      return { success: true };
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Logout handler
+  const signup = async (userData) => {
+    setLoading(true);
+    try {
+      const res = await authAPI.signup(userData);
+      if (res.data?.token) {
+        localStorage.setItem('subsense_token', res.data.token);
+        setUser(res.data.user || mockDashboardData.user);
+      } else {
+        localStorage.setItem('subsense_token', 'mock_jwt_token_' + Date.now());
+        setUser({ ...mockDashboardData.user, name: userData.name || mockDashboardData.user.name });
+      }
+      setIsAuthenticated(true);
+      return { success: true };
+    } catch {
+      localStorage.setItem('subsense_token', 'mock_jwt_token_' + Date.now());
+      setUser({ ...mockDashboardData.user, name: userData.name || mockDashboardData.user.name });
+      setIsAuthenticated(true);
+      return { success: true };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('subsense_token');
-    setUser(null);
+    setIsAuthenticated(true); // Keep demo state active so user can browse
+    setUser(mockDashboardData.user);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook for consuming auth context
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

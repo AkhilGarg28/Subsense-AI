@@ -1,20 +1,15 @@
+import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Footer from './Footer';
 
 /**
- * PublicLayout — Layout wrapper for unauthenticated pages.
- * Includes footer but no sidebar or navbar.
+ * PublicLayout — Clean layout wrapper for public landing & auth pages.
  */
 const PublicLayout = () => {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      {/* Main Content */}
-      <main className="flex-1">
+    <div className="min-h-screen bg-[#0B1020] text-white selection:bg-[#5B8CFF]/30 selection:text-white">
+      <main className="min-h-screen">
         <Outlet />
       </main>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 };

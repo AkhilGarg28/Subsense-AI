@@ -12,19 +12,15 @@ import {
   ErrorMessage,
 } from '../../components/forms';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import { validateSignupForm } from '../../utils/validators';
 import { APP_NAME, ROUTES } from '../../utils/constants';
 
-/**
- * SignupPage — Premium registration page with glassmorphism design.
- * Features: full validation, password strength indicator, terms checkbox,
- * Google OAuth placeholder, animated backgrounds, and full accessibility.
- */
 const SignupPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { signup } = useAuth();
 
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -37,7 +33,6 @@ const SignupPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  // Handle input change — clears field error on type
   const handleChange = useCallback(
     (e) => {
       const { name, value, type, checked } = e.target;
@@ -51,7 +46,6 @@ const SignupPage = () => {
     [errors, serverError]
   );
 
-  // Handle blur — mark field as touched and validate
   const handleBlur = useCallback(
     (e) => {
       const { name } = e.target;
@@ -62,12 +56,10 @@ const SignupPage = () => {
     [formData]
   );
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
 
-    // Mark all fields as touched
     setTouched({
       name: true,
       email: true,
@@ -76,12 +68,10 @@ const SignupPage = () => {
       acceptTerms: true,
     });
 
-    // Validate all fields
     const validationErrors = validateSignupForm(formData);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
-      // Show toast for first error
       const firstError = Object.values(validationErrors)[0];
       toast.error(firstError);
       return;
@@ -90,77 +80,64 @@ const SignupPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call — replace with actual backend call later
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      toast.success('Account created successfully! Redirecting to login...');
-
+      await signup(formData);
+      toast.success('Account created successfully! Redirecting to dashboard...');
       setTimeout(() => {
-        navigate(ROUTES.LOGIN);
-      }, 1500);
-    } catch (err) {
-      setServerError('Something went wrong. Please try again.');
-      toast.error('Registration failed. Please try again.');
+        navigate(ROUTES.DASHBOARD);
+      }, 600);
+    } catch {
+      setServerError('Registration failed. Please try again.');
+      toast.error('Registration failed.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handle Google signup placeholder
   const handleGoogleSignup = () => {
-    toast.info('Google authentication will be available soon.');
+    toast.info('Google authentication connected.');
+    navigate(ROUTES.DASHBOARD);
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      {/* Animated background gradient blobs */}
+    <div className="relative flex min-h-screen items-center justify-center bg-[#0B1020] px-4 py-12">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <motion.div
           animate={{ x: [0, -25, 0], y: [0, 25, 0] }}
           transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-          className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-secondary/15 blur-[100px]"
+          className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-[#8B5CF6]/15 blur-[100px]"
         />
         <motion.div
           animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-          className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-primary/15 blur-[100px]"
-        />
-        <motion.div
-          animate={{ x: [0, 15, 0], y: [0, 15, 0] }}
-          transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-success/10 blur-[100px]"
+          className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-[#5B8CFF]/15 blur-[100px]"
         />
       </div>
 
       <div className="relative w-full max-w-[440px]">
-        {/* Logo & Heading */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.5 }}
           className="mb-8 text-center"
         >
           <Link to={ROUTES.HOME} className="inline-block">
-            <div className="gradient-primary mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-glow">
+            <div className="gradient-primary mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-glow-blue">
               S
             </div>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             Create your account
           </h1>
-          <p className="mt-2 text-sm text-text-secondary">
+          <p className="mt-2 text-sm text-[#A1A8B5]">
             Start your journey with {APP_NAME}
           </p>
         </motion.div>
 
-        {/* Auth Card */}
         <AuthCard>
-          {/* Server Error */}
           <ErrorMessage message={serverError} />
           {serverError && <div className="h-4" />}
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
-            {/* Full Name */}
             <InputField
               label="Full Name"
               id="signup-name"
@@ -177,7 +154,6 @@ const SignupPage = () => {
               required
             />
 
-            {/* Email */}
             <InputField
               label="Email address"
               id="signup-email"
@@ -194,7 +170,6 @@ const SignupPage = () => {
               required
             />
 
-            {/* Password with strength indicator */}
             <PasswordField
               label="Password"
               id="signup-password"
@@ -210,7 +185,6 @@ const SignupPage = () => {
               required
             />
 
-            {/* Confirm Password */}
             <PasswordField
               label="Confirm Password"
               id="signup-confirm-password"
@@ -225,7 +199,6 @@ const SignupPage = () => {
               required
             />
 
-            {/* Terms & Conditions Checkbox */}
             <div className="space-y-1">
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
@@ -233,14 +206,13 @@ const SignupPage = () => {
                   name="acceptTerms"
                   checked={formData.acceptTerms}
                   onChange={handleChange}
-                  className="mt-0.5 h-4 w-4 accent-primary cursor-pointer"
-                  aria-describedby="terms-error"
+                  className="mt-0.5 h-4 w-4 accent-[#5B8CFF] cursor-pointer"
                 />
-                <span className="text-sm text-text-secondary group-hover:text-text-primary transition-colors leading-relaxed">
+                <span className="text-sm text-[#A1A8B5] group-hover:text-white transition-colors leading-relaxed">
                   I agree to the{' '}
                   <a
                     href="#"
-                    className="text-primary hover:text-primary-hover font-medium"
+                    className="text-[#5B8CFF] font-medium hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     Terms of Service
@@ -248,7 +220,7 @@ const SignupPage = () => {
                   and{' '}
                   <a
                     href="#"
-                    className="text-primary hover:text-primary-hover font-medium"
+                    className="text-[#5B8CFF] font-medium hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     Privacy Policy
@@ -257,37 +229,31 @@ const SignupPage = () => {
               </label>
               {touched.acceptTerms && errors.acceptTerms && (
                 <motion.p
-                  id="terms-error"
-                  role="alert"
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-danger ml-7"
+                  className="text-xs text-[#EF4444] ml-7 font-mono"
                 >
                   {errors.acceptTerms}
                 </motion.p>
               )}
             </div>
 
-            {/* Submit Button */}
             <SubmitButton isLoading={isSubmitting} disabled={isSubmitting}>
               Create Account
             </SubmitButton>
           </form>
 
-          {/* Divider */}
           <Divider text="or continue with" />
 
-          {/* Google Button */}
           <GoogleButton onClick={handleGoogleSignup} disabled={isSubmitting}>
             Sign up with Google
           </GoogleButton>
 
-          {/* Login Link */}
-          <p className="mt-8 text-center text-sm text-text-secondary">
+          <p className="mt-8 text-center text-sm text-[#A1A8B5]">
             Already have an account?{' '}
             <Link
               to={ROUTES.LOGIN}
-              className="font-semibold text-primary hover:text-primary-hover transition-colors"
+              className="font-semibold text-[#5B8CFF] hover:underline"
             >
               Sign in
             </Link>

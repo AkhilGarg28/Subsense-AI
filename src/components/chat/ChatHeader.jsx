@@ -10,10 +10,6 @@ import {
   HiOutlineCheckCircle,
 } from 'react-icons/hi';
 
-/**
- * ChatHeader — Header bar for SubSense AI Financial Copilot Chat.
- * Features title, pulsing status dot, New Chat button, dropdown options menu, and mobile drawer toggle.
- */
 const ChatHeader = ({
   onNewChat,
   onClearHistory,
@@ -25,7 +21,6 @@ const ChatHeader = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -42,90 +37,81 @@ const ChatHeader = ({
   };
 
   return (
-    <header className="glass sticky top-0 z-30 flex items-center justify-between border-b border-border px-4 py-3 sm:px-6">
-      {/* Left: Mobile Sidebar Toggle + AI Title & Pulsing Status */}
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#171F2F]/90 px-4 py-3 sm:px-6 backdrop-blur-xl">
       <div className="flex items-center gap-3">
-        {/* Mobile Sidebar Toggle Drawer Button */}
         {onToggleMobileSidebar && (
           <button
             onClick={onToggleMobileSidebar}
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface/80 text-text-secondary transition-all hover:bg-surface hover:text-text-primary lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-[#121A2F] text-[#A1A8B5] hover:text-white transition-all lg:hidden"
             aria-label="Open conversation history"
-            title="Open conversation history"
           >
             <HiOutlineMenu className="h-5 w-5" />
           </button>
         )}
 
-        {/* AI Copilot Badge & Status */}
         <div className="flex items-center gap-3">
-          <div className="gradient-primary relative flex h-10 w-10 items-center justify-center rounded-xl font-bold text-white shadow-md shadow-primary/20">
-            <HiOutlineSparkles className="h-5 w-5" />
-            {/* Pulsing status indicator dot */}
-            <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-              <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-background bg-success" />
+          <div className="gradient-primary relative flex h-9 w-9 items-center justify-center rounded-xl font-bold text-white shadow-glow-blue">
+            <HiOutlineSparkles className="h-4.5 w-4.5" />
+            <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22C55E] opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-[#121A2F] bg-[#22C55E]" />
             </span>
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-text-primary sm:text-lg">
+              <h2 className="text-sm font-bold text-white sm:text-base">
                 {title}
               </h2>
-              <span className="hidden items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-semibold text-success border border-success/30 sm:inline-flex">
+              <span className="hidden items-center gap-1 rounded-full bg-[#22C55E]/15 px-2 py-0.5 text-[10px] font-mono font-bold text-[#22C55E] border border-[#22C55E]/30 sm:inline-flex">
                 <HiOutlineCheckCircle className="h-3 w-3" />
                 Active
               </span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-text-muted">
-              <span className="inline-block h-2 w-2 rounded-full bg-success animate-pulse" />
+            <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#A1A8B5]">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#22C55E] animate-pulse" />
               <span>{status}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right: New Chat Button + Actions Dropdown Menu */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* New Chat Button */}
+      <div className="flex items-center gap-2 sm:gap-3 font-mono text-xs">
         <button
           onClick={onNewChat}
           type="button"
-          className="flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-white shadow-md shadow-primary/20 transition-all duration-200 hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/30 active:scale-95 sm:text-sm"
+          className="flex items-center gap-1.5 rounded-xl gradient-primary px-3.5 py-2 font-bold text-white shadow-glow-blue transition-all cursor-pointer"
         >
           <HiOutlinePlus className="h-4 w-4" />
           <span className="hidden sm:inline">New Chat</span>
         </button>
 
-        {/* Actions Dropdown Menu (Clear History / Export Chat) */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen((prev) => !prev)}
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface/80 text-text-secondary transition-all hover:border-primary/40 hover:bg-surface hover:text-text-primary"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-[#121A2F] text-[#A1A8B5] hover:text-white transition-all cursor-pointer"
             aria-label="Chat options"
-            aria-expanded={isDropdownOpen}
           >
-            <HiOutlineDotsVertical className="h-5 w-5" />
+            <HiOutlineDotsVertical className="h-4.5 w-4.5" />
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-xl border border-border bg-surface p-1.5 shadow-xl backdrop-blur-lg animate-in fade-in zoom-in-95 z-50">
+            <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/10 bg-[#171F2F] p-1.5 shadow-2xl backdrop-blur-xl z-50">
               <button
                 onClick={() => handleAction(onExportChat)}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-text-primary hover:bg-surface-light hover:text-primary transition-colors"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-white hover:bg-[#121A2F] transition-colors"
               >
-                <HiOutlineDownload className="h-4 w-4 text-text-muted" />
-                <span>Export Chat History</span>
+                <HiOutlineDownload className="h-4 w-4 text-[#5B8CFF]" />
+                <span>Export Chat JSON</span>
               </button>
 
-              <div className="my-1 border-t border-border" />
+              <div className="my-1 border-t border-white/10" />
 
               <button
                 onClick={() => handleAction(onClearHistory)}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-danger hover:bg-danger/10 transition-colors"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-[#EF4444] hover:bg-[#EF4444]/15 transition-colors"
               >
                 <HiOutlineTrash className="h-4 w-4" />
                 <span>Clear History</span>

@@ -205,7 +205,7 @@ const SubscriptionsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-16 pt-4 sm:pt-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+    <div className="app-page page-stack">
       {/* Toast Feedback Notification Banner */}
       <AnimatePresence>
         {toastMessage && (
@@ -225,14 +225,14 @@ const SubscriptionsPage = () => {
       </AnimatePresence>
 
       {/* Page Header Section */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-800/80 pb-6">
+      <div className="page-hero p-6 sm:p-8 lg:p-10 flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20 shrink-0">
+          <div className="gradient-primary flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-glow-blue">
             <FiCreditCard className="h-6 w-6" />
           </div>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+              <h1 className="section-title">
                 Subscription Management
               </h1>
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-bold text-blue-400 border border-blue-500/20">
@@ -240,7 +240,7 @@ const SubscriptionsPage = () => {
                 AI Powered
               </span>
             </div>
-            <p className="mt-1 text-xs sm:text-sm text-slate-400">
+            <p className="section-subtitle mt-2 max-w-2xl">
               Track, optimize, and cancel recurring debits with AI recommendations
             </p>
           </div>
@@ -252,7 +252,7 @@ const SubscriptionsPage = () => {
           <button
             type="button"
             onClick={handleCurrencyToggle}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-300 hover:border-slate-700 hover:text-white transition-colors"
+            className="btn-secondary"
             title="Toggle USD / INR Currency"
           >
             <FiDollarSign className="h-3.5 w-3.5 text-emerald-400" />
@@ -263,7 +263,7 @@ const SubscriptionsPage = () => {
           <button
             type="button"
             onClick={toggleSimulatedLoading}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+            className="btn-secondary"
             title="Simulate Skeleton Loading"
           >
             <FiRefreshCw className="h-3.5 w-3.5 text-blue-400" />
@@ -292,7 +292,7 @@ const SubscriptionsPage = () => {
           {/* Upload Receipt Primary Action */}
           <Link
             to="/upload"
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-blue-500/25 hover:from-blue-500 hover:to-indigo-500 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="btn-primary"
           >
             <FiUploadCloud className="h-4 w-4" />
             <span>Upload Receipt</span>
@@ -308,8 +308,8 @@ const SubscriptionsPage = () => {
       />
 
       {/* 2. AI Insights Panel & Renewal Calendar Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-8">
           <InsightsPanel
             insights={mockSubscriptionsData.aiInsights}
             onAction={handleInsightAction}
@@ -400,7 +400,7 @@ const SubscriptionsPage = () => {
           currencyMode={currency}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredSubscriptions.map((sub) => (
             <SubscriptionCard
               key={sub.id}
@@ -416,7 +416,7 @@ const SubscriptionsPage = () => {
       )}
 
       {/* 5. Recharts Statistics Section */}
-      <div className="pt-4">
+      <div className="pt-2">
         <StatisticsCharts
           statistics={mockSubscriptionsData.statistics}
           currency={currency}
@@ -438,3 +438,4 @@ const SubscriptionsPage = () => {
 };
 
 export default SubscriptionsPage;
+

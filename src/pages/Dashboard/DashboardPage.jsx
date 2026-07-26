@@ -21,19 +21,10 @@ import {
   DashboardSkeleton,
 } from '../../components/dashboard';
 
-/**
- * DashboardPage — Core dashboard overview page for SubSense AI.
- * Assembles all analytical modules, AI Insights hero card, quick action bar, charts,
- * subscriptions table, AI recommendations, and activity timeline into a modern responsive layout.
- */
 const DashboardPage = () => {
-  // State for Time Filter ('This Month' | 'Last 3 Months' | 'Year to Date')
   const [timeFilter, setTimeFilter] = useState('This Month');
-
-  // State for simulated skeleton loading state
   const [isLoading, setIsLoading] = useState(false);
 
-  // Toggle simulated loading for testing skeletons
   const handleToggleLoading = () => {
     setIsLoading(true);
     setTimeout(() => {
@@ -41,7 +32,6 @@ const DashboardPage = () => {
     }, 1200);
   };
 
-  // Adjust metrics data dynamically based on selected time filter
   const getFilteredMetrics = () => {
     switch (timeFilter) {
       case 'Last 3 Months':
@@ -119,78 +109,66 @@ const DashboardPage = () => {
 
   const currentMetrics = getFilteredMetrics();
 
-  // If loading skeleton state is active, render DashboardSkeleton
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
   return (
-    <div className="space-y-6 w-full animate-fade-in pb-8">
-      {/* Top Header Greeting Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-glass-border bg-glass p-6 backdrop-blur-xl shadow-glass">
-        {/* Glow Accent Circles */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-secondary/10 blur-3xl" />
-
-        <div className="relative z-10 space-y-6">
-          {/* Header Title & Controls Row */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
-                  Good Evening, {mockDashboardData.user.name.split(' ')[0]}! 👋
-                </h1>
-                <span className="hidden rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary sm:inline-block">
-                  {mockDashboardData.user.plan}
-                </span>
-              </div>
-              <p className="mt-1 text-sm text-text-secondary">
-                Your autonomous AI copilot has audited your financial activity.
-              </p>
+    <div className="app-page page-stack">
+      <section className="page-hero p-6 sm:p-8 lg:p-10">
+        <div className="relative z-10 grid gap-8 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div className="max-w-3xl">
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.12] px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary">
+                <HiOutlineSparkles className="h-4 w-4" />
+                {mockDashboardData.user.plan}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-bold text-text-secondary">
+                Updated just now
+              </span>
             </div>
-
-            {/* Controls Bar: Time Filter & Skeleton Simulator */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              {/* Time Filter Pills */}
-              <div className="flex items-center rounded-xl border border-slate-700/80 bg-slate-900/90 p-1 backdrop-blur-md shadow-inner">
-                {['This Month', 'Last 3 Months', 'Year to Date'].map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setTimeFilter(filter)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
-                      timeFilter === filter
-                        ? 'bg-primary text-white shadow-md'
-                        : 'text-text-muted hover:text-text-primary hover:bg-slate-800/60'
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-
-              {/* Skeleton Loading Simulator Button */}
-              <button
-                type="button"
-                onClick={handleToggleLoading}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 px-3 py-2 text-xs font-semibold text-text-secondary transition-all hover:border-primary/40 hover:bg-slate-800 hover:text-white"
-                title="Test smooth shimmering loading skeletons"
-              >
-                <HiOutlineRefresh className="h-3.5 w-3.5 text-primary" />
-                <span className="hidden sm:inline">Simulate Loading</span>
-              </button>
-            </div>
+            <h1 className="section-title">Autonomous Portfolio Summary</h1>
+            <p className="section-subtitle mt-3 max-w-2xl">
+              Real-time audit of recurring spend, upcoming renewals, financial health, and AI savings recommendations.
+            </p>
           </div>
 
-          {/* Embedded QuickActions Bar */}
-          <div className="pt-2 border-t border-glass-border">
-            <QuickActions />
+          <div className="flex flex-col gap-3 sm:flex-row xl:justify-end">
+            <div className="flex rounded-2xl border border-white/10 bg-background/50 p-1">
+              {['This Month', 'Last 3 Months', 'Year to Date'].map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setTimeFilter(filter)}
+                  className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-all ${
+                    timeFilter === filter
+                      ? 'gradient-primary text-white shadow-glow-blue'
+                      : 'text-text-secondary hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleToggleLoading}
+              className="btn-secondary shrink-0"
+              title="Test loading skeleton"
+            >
+              <HiOutlineRefresh className="h-4 w-4 text-primary" />
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* 4 StatCards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative z-10 mt-8 border-t border-white/10 pt-6">
+          <QuickActions />
+        </div>
+      </section>
+
+      <section className="kpi-grid">
         <StatCard
           title="Monthly Spending"
           value={currentMetrics.spending.value}
@@ -199,9 +177,9 @@ const DashboardPage = () => {
           trendDirection="up"
           isPositiveGood={false}
           sparklineData={currentMetrics.spending.sparkline}
-          sparklineColor="#3B82F6"
+          sparklineColor="#5B8CFF"
           badgeText={`vs ${timeFilter.toLowerCase()}`}
-          iconBgColor="bg-blue-500/15 text-blue-400"
+          iconBgColor="bg-primary/[0.15] text-primary"
         />
 
         <StatCard
@@ -212,9 +190,9 @@ const DashboardPage = () => {
           trendDirection="up"
           isPositiveGood={true}
           sparklineData={currentMetrics.subscriptions.sparkline}
-          sparklineColor="#10B981"
+          sparklineColor="#22C55E"
           badgeText="in auto-detect"
-          iconBgColor="bg-emerald-500/15 text-emerald-400"
+          iconBgColor="bg-success/[0.15] text-success"
         />
 
         <StatCard
@@ -227,7 +205,7 @@ const DashboardPage = () => {
           sparklineData={currentMetrics.upcomingBills.sparkline}
           sparklineColor="#F59E0B"
           badgeText="due in 14 days"
-          iconBgColor="bg-amber-500/15 text-amber-400"
+          iconBgColor="bg-warning/[0.15] text-warning"
         />
 
         <StatCard
@@ -240,92 +218,79 @@ const DashboardPage = () => {
           sparklineData={currentMetrics.savingsOpportunity.sparkline}
           sparklineColor="#8B5CF6"
           badgeText="identified by AI"
-          iconBgColor="bg-purple-500/15 text-purple-400"
+          iconBgColor="bg-secondary/[0.15] text-secondary"
         />
-      </div>
+      </section>
 
-      {/* Hero Central AI Insights Panel */}
-      <div className="w-full">
-        <AIInsightsPanel />
-      </div>
+      <AIInsightsPanel />
 
-      {/* Row 1: HealthScoreCard + ExpenseChart */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1 flex flex-col">
-          <HealthScoreCard
-            score={92}
-            maxScore={100}
-            statusBadge="Excellent"
-            suggestions={[
-              {
-                id: 'h-sug-1',
-                title: 'Low subscription waste',
-                description: '92% of your active subscriptions show regular monthly usage.',
-                savings: 'Optimal',
-                badge: 'Healthy',
-                actionText: 'View Report',
-              },
-              {
-                id: 'h-sug-2',
-                title: 'Cancel unused Canva seat',
-                description: '0 logins detected in last 45 days.',
-                savings: 'Save $79.99/mo',
-                badge: 'Unused Sub',
-                actionText: 'Cancel',
-              },
-              {
-                id: 'h-sug-3',
-                title: 'Switch Spotify to Annual Plan',
-                description: 'Switching saves 16% on annual billing.',
-                savings: 'Save $24.00/yr',
-                badge: 'Quick Win',
-                actionText: 'Switch',
-              },
-            ]}
-            className="h-full"
-          />
-        </div>
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <HealthScoreCard
+          score={92}
+          maxScore={100}
+          statusBadge="Excellent"
+          suggestions={[
+            {
+              id: 'h-sug-1',
+              title: 'Low subscription waste',
+              description: '92% of active subscriptions show regular monthly usage.',
+              savings: 'Optimal',
+              badge: 'Healthy',
+              actionText: 'View Report',
+            },
+            {
+              id: 'h-sug-2',
+              title: 'Cancel unused Canva seat',
+              description: '0 logins detected in last 45 days.',
+              savings: 'Save $79.99/mo',
+              badge: 'Unused Sub',
+              actionText: 'Cancel',
+            },
+            {
+              id: 'h-sug-3',
+              title: 'Switch Spotify to annual',
+              description: 'Switching saves 16% on annual billing.',
+              savings: 'Save $24.00/yr',
+              badge: 'Quick Win',
+              actionText: 'Switch',
+            },
+          ]}
+          className="xl:col-span-5"
+        />
 
-        <div className="lg:col-span-2 flex flex-col">
-          <ExpenseChart
-            data={mockDashboardData.expenseHistory}
-            timeFilter={timeFilter}
-            className="h-full"
-          />
-        </div>
-      </div>
+        <ExpenseChart
+          data={mockDashboardData.expenseHistory}
+          timeFilter={timeFilter}
+          className="xl:col-span-7"
+        />
+      </section>
 
-      {/* Row 2: CategoryChart + BillsList */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <CategoryChart
           data={mockDashboardData.categoryBreakdown}
           title="Expense Category Breakdown"
+          className="xl:col-span-6"
         />
 
-        <BillsList
-          bills={mockDashboardData.upcomingBills}
-        />
-      </div>
+        <div className="xl:col-span-6">
+          <BillsList bills={mockDashboardData.upcomingBills} />
+        </div>
+      </section>
 
-      {/* Row 3: SubscriptionsTable Section */}
-      <div className="w-full">
-        <SubscriptionsTable
-          subscriptions={mockDashboardData.subscriptions}
-        />
-      </div>
+      <SubscriptionsTable subscriptions={mockDashboardData.subscriptions} />
 
-      {/* Row 4: AI Recommendations + ActivityTimeline Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RecommendationCard
-          recommendations={mockDashboardData.aiRecommendations}
-        />
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-6">
+          <RecommendationCard recommendations={mockDashboardData.aiRecommendations} />
+        </div>
 
-        <ActivityTimeline
-          activities={mockDashboardData.recentActivity}
-        />
-      </div>
+        <div className="xl:col-span-6">
+          <ActivityTimeline activities={mockDashboardData.recentActivity} />
+        </div>
+      </section>
     </div>
   );
 };
 
 export default DashboardPage;
+

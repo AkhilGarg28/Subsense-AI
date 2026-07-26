@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { PublicLayout, ProtectedLayout } from '../components/layout';
 
 // Page imports
@@ -14,8 +14,7 @@ import ProfilePage from '../pages/Profile';
 
 /**
  * AppRoutes — Central routing configuration for SubSense AI.
- * Public routes use PublicLayout (no sidebar/navbar).
- * Protected routes use ProtectedLayout (with sidebar/navbar).
+ * Handles public pages, protected app dashboard routes, and wildcard redirects.
  */
 const AppRoutes = () => {
   return (
@@ -35,7 +34,11 @@ const AppRoutes = () => {
         <Route path="/chat" element={<AIChatPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<ProfilePage />} />
       </Route>
+
+      {/* Fallback Wildcard Redirect */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

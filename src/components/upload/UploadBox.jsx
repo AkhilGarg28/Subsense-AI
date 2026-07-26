@@ -109,11 +109,11 @@ const UploadBox = ({
         onDrop={handleDrop}
         onClick={handleBrowseClick}
         className={cn(
-          'relative flex flex-col items-center justify-center rounded-2xl border p-8 sm:p-12 text-center transition-all duration-300 bg-[#171F2F]/80 backdrop-blur-xl select-none shadow-2xl',
+          'app-card relative flex min-h-[360px] flex-col items-center justify-center border-2 p-10 text-center select-none transition-all duration-300 sm:p-14',
           disabled || isUploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
           isDragging
-            ? 'border-[#5B8CFF] bg-[#5B8CFF]/10 shadow-glow-blue'
-            : 'border-white/10 hover:border-[#5B8CFF]/40 hover:shadow-glow-blue'
+            ? 'border-primary bg-primary/[0.15] shadow-glow-blue'
+            : 'border-dashed border-primary/40 hover:border-primary hover:shadow-glow-blue'
         )}
       >
         <input
@@ -135,29 +135,29 @@ const UploadBox = ({
           className="hidden"
         />
 
-        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary text-white shadow-glow-blue">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary text-white shadow-glow-blue">
           <HiOutlineCloudUpload className="h-8 w-8 animate-bounce" style={{ animationDuration: '2.5s' }} />
         </div>
 
-        <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
+        <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-2 tracking-tight">
           {isDragging ? (
-            <span className="text-[#5B8CFF]">Drop receipt or invoice to scan</span>
+            <span className="text-primary">Drop receipt or invoice to scan</span>
           ) : (
             'Drag & drop your document here to analyze'
           )}
         </h3>
-        <p className="text-sm text-[#A1A8B5] max-w-md mb-6 leading-relaxed">
-          Upload physical receipts, PDF statements, or digital invoices for AI expense extraction.
+        <p className="text-base text-text-secondary max-w-lg mb-8 leading-relaxed">
+          Upload physical receipts, PDF statements, or digital invoices for AI vision expense extraction.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6 font-mono">
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
           <button
             type="button"
             onClick={handleBrowseClick}
             disabled={disabled || isUploading}
-            className="inline-flex items-center gap-2 rounded-xl gradient-primary px-6 py-3 text-xs font-bold text-white shadow-glow-blue hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            className="btn-primary"
           >
-            <HiOutlineFolderOpen className="h-4 w-4" />
+            <HiOutlineFolderOpen className="h-5 w-5" />
             <span>Choose File</span>
           </button>
 
@@ -165,31 +165,31 @@ const UploadBox = ({
             type="button"
             onClick={handleCameraClick}
             disabled={disabled || isUploading}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-[#121A2F] hover:bg-[#1E293B] px-6 py-3 text-xs font-bold text-white transition-all cursor-pointer"
+            className="btn-secondary"
           >
-            <HiOutlineCamera className="h-4 w-4 text-[#5B8CFF]" />
+            <HiOutlineCamera className="h-5 w-5 text-primary" />
             <span>Camera Upload</span>
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-[10px]">
+        <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-xs">
           {['PDF DOCUMENT', 'IMAGE FILE', 'RECEIPT PHOTO', 'VENDOR INVOICE'].map((fmt) => (
             <span
               key={fmt}
-              className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#121A2F] px-3 py-1 text-[#A1A8B5]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-surface px-3.5 py-1.5 text-text-secondary"
             >
-              <HiOutlineDocumentText className="h-3.5 w-3.5 text-[#5B8CFF]" />
+              <HiOutlineDocumentText className="h-4 w-4 text-primary" />
               {fmt}
             </span>
           ))}
 
-          <span className="inline-flex items-center rounded-full border border-[#22C55E]/30 bg-[#22C55E]/15 px-3 py-1 font-bold text-[#22C55E]">
+          <span className="inline-flex items-center rounded-full border border-success/30 bg-success/[0.15] px-3.5 py-1.5 font-bold text-success">
             MAX 10 MB
           </span>
         </div>
 
         {errorMessage && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#EF4444]/15 border border-[#EF4444]/30 px-4 py-2 text-xs font-mono text-[#EF4444]">
+          <div className="mt-4 flex items-center gap-2 rounded-xl bg-danger/[0.15] border border-danger/30 px-4 py-2 text-xs font-mono text-danger">
             <HiOutlineExclamationCircle className="h-4 w-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -209,3 +209,4 @@ UploadBox.propTypes = {
 };
 
 export default UploadBox;
+

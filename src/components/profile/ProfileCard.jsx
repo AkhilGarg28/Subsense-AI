@@ -15,11 +15,6 @@ import {
 import { cn } from '../../utils/helpers';
 import { mockProfileData } from '../../data/mockProfileData';
 
-/**
- * ProfileCard — Personal Information card with interactive inline edit form mode.
- * Displays user profile fields (Full Name, Email, Phone, Country, Currency, Occupation)
- * and permits editing with Save/Cancel controls.
- */
 const ProfileCard = ({
   user = mockProfileData.user,
   onSave,
@@ -37,7 +32,6 @@ const ProfileCard = ({
   });
   const [savedNotification, setSavedNotification] = useState(false);
 
-  // Sync state if user prop changes externally
   useEffect(() => {
     setFormData({
       name: user?.name || '',
@@ -152,15 +146,14 @@ const ProfileCard = ({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-3xl border border-glass-border bg-glass p-6 backdrop-blur-xl transition-all duration-300 md:p-8',
+        'rounded-2xl border border-white/10 bg-[#171F2F]/80 p-6 shadow-2xl backdrop-blur-xl md:p-8',
         className
       )}
     >
-      {/* Header section with title and edit button */}
-      <div className="flex items-center justify-between border-b border-glass-border pb-4">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-text-primary">Personal Details</h2>
-          <p className="mt-0.5 text-xs text-text-muted">
+          <h2 className="text-xl font-bold text-white">Personal Details</h2>
+          <p className="mt-0.5 text-xs text-[#A1A8B5]">
             Manage your personal profile information and regional preferences
           </p>
         </div>
@@ -169,21 +162,20 @@ const ProfileCard = ({
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-1.5 rounded-xl border border-glass-border bg-glass/80 px-3.5 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#121A2F] px-3.5 py-1.5 text-xs font-mono font-bold text-[#5B8CFF] hover:border-[#5B8CFF]/40 transition-all cursor-pointer"
           >
             <HiOutlinePencil className="h-3.5 w-3.5" />
             <span>Edit Info</span>
           </button>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400">
+          <span className="inline-flex items-center gap-1 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/15 px-2.5 py-1 text-xs font-mono font-bold text-[#F59E0B]">
             Editing Mode
           </span>
         )}
       </div>
 
-      {/* Success Notification Toast */}
       {savedNotification && (
-        <div className="mt-4 flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-400">
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-[#22C55E]/30 bg-[#22C55E]/15 p-3 text-xs font-mono text-[#22C55E]">
           <div className="flex items-center gap-2">
             <HiOutlineCheck className="h-4 w-4" />
             <span>Personal details updated successfully!</span>
@@ -191,25 +183,24 @@ const ProfileCard = ({
           <button
             type="button"
             onClick={() => setSavedNotification(false)}
-            className="text-emerald-400 hover:text-emerald-300"
+            className="text-[#22C55E] hover:text-white"
           >
             <HiOutlineX className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
 
-      {/* Profile Form / Detail Grid */}
       <form onSubmit={handleSave} className="mt-6">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {fields.map((field) => {
             const Icon = field.icon;
             return (
               <div key={field.id} className="space-y-1.5">
                 <label
                   htmlFor={field.id}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-text-muted"
+                  className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#A1A8B5]"
                 >
-                  <Icon className="h-4 w-4 text-primary" />
+                  <Icon className="h-4 w-4 text-[#5B8CFF]" />
                   <span>{field.label}</span>
                 </label>
 
@@ -220,13 +211,13 @@ const ProfileCard = ({
                       name={field.id}
                       value={field.value}
                       onChange={handleChange}
-                      className="w-full rounded-xl border border-glass-border bg-background-card/80 px-3.5 py-2 text-sm font-medium text-text-primary backdrop-blur-md focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-xl border border-white/10 bg-[#121A2F] px-3.5 py-2 text-sm text-white focus:border-[#5B8CFF] focus:outline-none"
                     >
                       {field.options.map((opt) => (
                         <option
                           key={opt}
                           value={opt}
-                          className="bg-background-card text-text-primary"
+                          className="bg-[#121A2F] text-white"
                         >
                           {opt}
                         </option>
@@ -240,13 +231,13 @@ const ProfileCard = ({
                       value={field.value}
                       onChange={handleChange}
                       placeholder={field.placeholder}
-                      className="w-full rounded-xl border border-glass-border bg-background-card/80 px-3.5 py-2 text-sm font-medium text-text-primary backdrop-blur-md focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-xl border border-white/10 bg-[#121A2F] px-3.5 py-2 text-sm text-white focus:border-[#5B8CFF] focus:outline-none"
                     />
                   )
                 ) : (
-                  <div className="rounded-xl border border-glass-border/40 bg-glass/40 px-3.5 py-2 text-sm font-medium text-text-primary">
+                  <div className="rounded-xl border border-white/10 bg-[#121A2F] px-3.5 py-2.5 text-sm font-medium text-white">
                     {field.displayValue || (
-                      <span className="italic text-text-muted">Not specified</span>
+                      <span className="italic text-[#64748B]">Not specified</span>
                     )}
                   </div>
                 )}
@@ -255,20 +246,19 @@ const ProfileCard = ({
           })}
         </div>
 
-        {/* Action Controls when in Edit Mode */}
         {isEditing && (
-          <div className="mt-8 flex items-center justify-end gap-3 border-t border-glass-border pt-5">
+          <div className="mt-8 flex items-center justify-end gap-3 border-t border-white/10 pt-5">
             <button
               type="button"
               onClick={handleCancel}
-              className="flex items-center gap-1.5 rounded-xl border border-glass-border bg-glass/50 px-4 py-2 text-xs font-semibold text-text-secondary transition-all hover:bg-glass hover:text-text-primary"
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#121A2F] px-4 py-2 text-xs font-mono font-bold text-[#A1A8B5] hover:text-white"
             >
               <HiOutlineX className="h-4 w-4" />
               <span>Cancel</span>
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 rounded-xl border border-primary/40 bg-primary/20 px-5 py-2 text-xs font-semibold text-primary transition-all hover:bg-primary/30 hover:shadow-glow"
+              className="flex items-center gap-1.5 rounded-xl gradient-primary px-5 py-2 text-xs font-bold text-white shadow-glow-blue cursor-pointer"
             >
               <HiOutlineSave className="h-4 w-4" />
               <span>Save Changes</span>

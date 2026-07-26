@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   HiOutlineSearch,
   HiOutlineBell,
@@ -9,20 +9,36 @@ import {
 import { mockDashboardData } from '../../data/mockDashboardData';
 import { ROUTES } from '../../utils/constants';
 import CommandPalette from '../common/CommandPalette';
+import { useAuth } from '../../context/AuthContext';
+
+const pageTitles = {
+  '/dashboard': 'Dashboard Overview',
+  '/upload': 'AI Receipt Scanner',
+  '/subscriptions': 'Subscription Portfolio',
+  '/chat': 'SubSense AI Chat',
+  '/notifications': 'Notifications Center',
+  '/profile': 'Profile & Settings',
+  '/settings': 'Profile & Settings',
+};
+
+const pageSubtitles = {
+  '/dashboard': 'Monitor spend, renewals, savings, and autonomous recommendations.',
+  '/upload': 'Parse receipts, invoices, and PDF bills with AI vision extraction.',
+  '/subscriptions': 'Track recurring products, renewal dates, and cancellation opportunities.',
+  '/chat': 'Ask your financial copilot to audit, forecast, and act.',
+  '/notifications': 'Review upcoming renewals, price changes, and account activity.',
+  '/profile': 'Manage your account, integrations, security, and preferences.',
+  '/settings': 'Manage your account, integrations, security, and preferences.',
+};
 
 const TopNavbar = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [unreadCount] = useState(3);
-  const [greeting, setGreeting] = useState('Good Evening');
+  const location = useLocation();
+  const { user: authUser } = useAuth();
+  const user = authUser || mockDashboardData.user;
 
-  const { user } = mockDashboardData;
-
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 18) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
-  }, []);
+  const currentTitle = pageTitles[location.pathname] || 'SubSense AI';
+  const currentSubtitle = pageSubtitles[location.pathname] || 'Autonomous financial workspace';
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -37,87 +53,64 @@ const TopNavbar = () => {
 
   return (
     <>
-      <header className="glass-nav sticky top-0 z-40 w-full border-b border-white/10 px-4 py-3 sm:px-6 lg:px-8 backdrop-blur-xl">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Greeting */}
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold text-white sm:text-xl tracking-tight">
-                  {greeting}, {user.name.split(' ')[0]} 👋
-                </h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#5B8CFF]/15 px-2.5 py-0.5 text-xs font-bold text-[#5B8CFF] border border-[#5B8CFF]/30">
-                  <HiOutlineSparkles className="h-3 w-3" />
-                  {user.plan || 'Pro Copilot'}
-                </span>
-              </div>
-              <p className="text-xs text-[#A1A8B5] sm:text-sm">
-                Your autonomous AI copilot has audited your financial activity.
-              </p>
+      <header className="glass-nav sticky top-0 z-30 hidden h-[88px] w-full items-center lg:flex">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-6 px-8 xl:px-10">
+          <div className="min-w-0">
+            <div className="flex items-center gap-3">
+              <h1 className="truncate text-[28px] font-extrabold leading-tight tracking-tight text-white">
+                {currentTitle}
+              </h1>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/[0.12] px-3 py-1 text-xs font-extrabold text-primary">
+                <HiOutlineSparkles className="h-3.5 w-3.5" />
+                {user.plan || 'Pro Copilot'}
+              </span>
             </div>
+            <p className="mt-1 truncate text-sm text-text-secondary">{currentSubtitle}</p>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center justify-between gap-3 sm:justify-end">
-            {/* Command Search Trigger */}
-            <div
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              type="button"
               onClick={() => setIsCommandPaletteOpen(true)}
-              className="relative flex-1 max-w-xs sm:w-64 md:w-72 cursor-pointer group"
+              className="group relative hidden h-12 w-[320px] items-center rounded-[14px] border border-white/10 bg-card/[0.86] px-4 text-left transition-all hover:border-primary/40 xl:flex"
             >
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <HiOutlineSearch className="h-4 w-4 text-[#A1A8B5] group-hover:text-[#5B8CFF] transition-colors" />
-              </div>
-              <div className="w-full rounded-xl border border-white/10 bg-[#171F2F]/80 py-2 pl-9 pr-12 text-xs text-[#A1A8B5] group-hover:border-[#5B8CFF]/40 transition-all flex items-center justify-between">
-                <span className="truncate">Search subscriptions, commands...</span>
-              </div>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5">
-                <kbd className="hidden rounded border border-white/10 bg-[#1E293B] px-1.5 py-0.5 text-[10px] font-mono text-[#A1A8B5] md:inline-block">
-                  ⌘K
-                </kbd>
-              </div>
-            </div>
+              <HiOutlineSearch className="mr-3 h-5 w-5 shrink-0 text-text-secondary transition-colors group-hover:text-primary" />
+              <span className="min-w-0 flex-1 truncate text-sm text-text-secondary">
+                Search commands, subscriptions...
+              </span>
+              <kbd className="ml-3 rounded-lg border border-white/10 bg-surface px-2 py-1 text-[11px] font-extrabold text-text-secondary">
+                Ctrl K
+              </kbd>
+            </button>
 
-            {/* Quick Upload Button */}
-            <Link
-              to={ROUTES.UPLOAD}
-              className="inline-flex items-center gap-2 rounded-xl gradient-primary px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-glow-blue hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0"
-            >
-              <HiOutlineCloudUpload className="h-4.5 w-4.5" />
-              <span className="hidden sm:inline">Quick Upload</span>
+            <Link to={ROUTES.UPLOAD} className="btn-primary shrink-0">
+              <HiOutlineCloudUpload className="h-5 w-5" />
+              <span>Quick Upload</span>
             </Link>
 
-            {/* Notification Bell */}
             <Link
               to={ROUTES.NOTIFICATIONS}
-              className="relative rounded-xl border border-white/10 bg-[#171F2F]/80 p-2.5 text-[#A1A8B5] hover:text-white transition-all"
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] border border-white/10 bg-card/[0.86] text-text-secondary transition-all hover:border-primary/40 hover:text-white"
               aria-label="Notifications"
             >
               <HiOutlineBell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#EF4444] text-[10px] font-bold text-white shadow-sm animate-pulse">
-                  {unreadCount}
-                </span>
-              )}
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] font-extrabold text-white shadow-lg">
+                3
+              </span>
             </Link>
 
-            {/* User Profile Badge */}
             <Link
               to={ROUTES.PROFILE}
-              className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-[#171F2F]/80 p-1.5 pr-3 hover:border-[#5B8CFF]/40 transition-all"
+              className="flex h-12 shrink-0 items-center gap-3 rounded-[14px] border border-white/10 bg-card/[0.86] p-1.5 pr-4 transition-all hover:border-primary/40"
             >
               <img
                 src={user.avatar}
                 alt={user.name}
-                className="h-8 w-8 rounded-lg object-cover ring-2 ring-[#5B8CFF]/30"
+                className="h-9 w-9 rounded-xl object-cover ring-2 ring-primary/30"
               />
-              <div className="hidden text-left sm:block">
-                <div className="text-xs font-bold text-white leading-tight">
-                  {user.name}
-                </div>
-                <div className="text-[10px] font-mono text-[#A1A8B5] leading-tight">
-                  {user.email}
-                </div>
-              </div>
+              <span className="max-w-24 truncate text-sm font-bold text-white">
+                {user.name.split(' ')[0]}
+              </span>
             </Link>
           </div>
         </div>
@@ -132,3 +125,4 @@ const TopNavbar = () => {
 };
 
 export default TopNavbar;
+

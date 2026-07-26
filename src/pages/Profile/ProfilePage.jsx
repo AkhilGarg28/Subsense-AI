@@ -6,8 +6,6 @@ import {
   HiOutlineShieldCheck,
   HiOutlineSparkles,
   HiOutlineRefresh,
-  HiOutlineCog,
-  HiOutlineCheckCircle,
 } from 'react-icons/hi';
 import {
   ProfileHeader,
@@ -22,29 +20,12 @@ import {
 import { mockProfileData } from '../../data/mockProfileData';
 import { cn } from '../../utils/helpers';
 
-/**
- * ProfilePage — Complete User Profile & Settings Page for SubSense AI.
- * Assembles profile components into a GitHub/Notion style settings dashboard layout:
- * - Top Header: ProfileHeader with avatar, name, health score badge, edit triggers
- * - Navigation Sidebar / Tabs: "General Profile", "Connected Accounts", "Preferences & Notifications", "Security", "Statistics & Badges"
- * - Active Tab Panels
- * - Simulated loading toggle option to preview shimmer skeleton loaders
- * - Full responsive layout for Mobile, Tablet, and Desktop
- */
 const ProfilePage = () => {
-  // Navigation active tab state
   const [activeTab, setActiveTab] = useState('general');
-
-  // Interactive profile data state
   const [userData, setUserData] = useState(mockProfileData.user);
-
-  // Edit Mode toggle state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-
-  // Simulated Loading state toggle to demonstrate skeleton loader
   const [isLoading, setIsLoading] = useState(false);
 
-  // Navigation tab definitions
   const tabs = [
     {
       id: 'general',
@@ -83,7 +64,6 @@ const ProfilePage = () => {
     },
   ];
 
-  // Handler for ProfileCard updates
   const handleSaveProfile = (updatedDetails) => {
     setUserData((prev) => ({
       ...prev,
@@ -92,49 +72,30 @@ const ProfilePage = () => {
     setIsEditingProfile(false);
   };
 
-  // Toggle simulated skeleton loader
   const handleToggleSimulatedLoading = () => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-    }, 1500);
+    }, 1200);
   };
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
-      {/* Page Title Bar & Skeleton Demo Toggle */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <HiOutlineCog className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
-              Account Settings & Profile
-            </h1>
-          </div>
-          <p className="mt-1 text-xs text-text-secondary sm:text-sm">
-            Manage your SubSense AI account details, connected services, and preferences.
-          </p>
-        </div>
+    <div className="space-y-6 pb-12 animate-fade-in w-full">
+      {/* Top Header Controls Bar */}
+      <div className="flex items-center justify-between font-mono text-xs">
+        <span className="text-[#A1A8B5] font-bold uppercase tracking-wider">
+          USER SETTINGS PANEL
+        </span>
 
-        {/* Skeleton Preview Control */}
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={handleToggleSimulatedLoading}
-            disabled={isLoading}
-            className={cn(
-              'flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold backdrop-blur-md transition-all duration-200',
-              isLoading
-                ? 'border-primary/40 bg-primary/20 text-primary cursor-wait'
-                : 'border-glass-border bg-glass/80 text-text-secondary hover:border-primary/30 hover:bg-primary/10 hover:text-primary'
-            )}
-          >
-            <HiOutlineRefresh
-              className={cn('h-4 w-4', isLoading && 'animate-spin text-primary')}
-            />
-            <span>{isLoading ? 'Loading Skeleton...' : 'Simulate Loading'}</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleToggleSimulatedLoading}
+          disabled={isLoading}
+          className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#171F2F] px-3.5 py-1.5 font-bold text-[#A1A8B5] hover:text-white transition-all cursor-pointer"
+        >
+          <HiOutlineRefresh className={cn('h-3.5 w-3.5 text-[#5B8CFF]', isLoading && 'animate-spin')} />
+          <span>{isLoading ? 'Loading...' : 'Simulate Loading'}</span>
+        </button>
       </div>
 
       {/* Main Profile Header Banner */}
@@ -151,15 +112,14 @@ const ProfilePage = () => {
         />
       )}
 
-      {/* GitHub/Notion Style Navigation Sidebar & Content Layout */}
+      {/* Navigation Sidebar & Active Panel Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Navigation Sidebar (Desktop) / Horizontal Scrollable Tabs (Mobile & Tablet) */}
+        {/* Navigation Sidebar */}
         <div className="lg:col-span-3">
-          <nav className="sticky top-20 rounded-3xl border border-glass-border bg-glass p-3 backdrop-blur-xl">
-            {/* Desktop Navigation List */}
-            <div className="hidden lg:flex flex-col space-y-1">
-              <span className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-text-muted">
-                Settings Menu
+          <nav className="sticky top-20 rounded-2xl border border-white/10 bg-[#171F2F]/90 p-3 backdrop-blur-xl">
+            <div className="hidden lg:flex flex-col space-y-1 font-mono text-xs">
+              <span className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+                SETTINGS MENU
               </span>
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -171,31 +131,29 @@ const ProfilePage = () => {
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      'flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-all duration-200',
+                      'flex items-center justify-between rounded-xl px-3.5 py-3 text-left transition-all duration-200 cursor-pointer',
                       isActive
-                        ? 'border border-primary/40 bg-primary/20 text-primary font-bold shadow-glow'
-                        : 'border border-transparent text-text-secondary hover:border-glass-border hover:bg-glass/60 hover:text-text-primary'
+                        ? 'border border-[#5B8CFF]/40 bg-[#5B8CFF]/15 text-[#5B8CFF] font-bold shadow-glow-blue'
+                        : 'border border-transparent text-[#A1A8B5] hover:bg-[#121A2F] hover:text-white'
                     )}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
                         className={cn(
-                          'h-5 w-5 shrink-0',
-                          isActive ? 'text-primary' : 'text-text-muted'
+                          'h-4.5 w-4.5 shrink-0',
+                          isActive ? 'text-[#5B8CFF]' : 'text-[#64748B]'
                         )}
                       />
-                      <div>
-                        <span className="block text-xs font-semibold">{tab.label}</span>
-                      </div>
+                      <span className="text-xs font-semibold">{tab.label}</span>
                     </div>
 
                     {tab.badge && (
                       <span
                         className={cn(
-                          'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                          'rounded-full px-2 py-0.5 text-[10px] font-mono font-bold',
                           isActive
-                            ? 'bg-primary/30 text-primary-light'
-                            : 'bg-glass-border/50 text-text-muted'
+                            ? 'bg-[#5B8CFF]/30 text-white'
+                            : 'bg-white/5 text-[#A1A8B5]'
                         )}
                       >
                         {tab.badge}
@@ -206,8 +164,7 @@ const ProfilePage = () => {
               })}
             </div>
 
-            {/* Mobile & Tablet Horizontal Tab Pills */}
-            <div className="flex overflow-x-auto gap-2 p-1 no-scrollbar lg:hidden">
+            <div className="flex overflow-x-auto gap-2 p-1 no-scrollbar lg:hidden font-mono text-xs">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -218,10 +175,10 @@ const ProfilePage = () => {
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      'flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all',
+                      'flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-all',
                       isActive
-                        ? 'border border-primary/40 bg-primary/20 text-primary shadow-glow'
-                        : 'border border-glass-border bg-glass/40 text-text-secondary hover:bg-glass'
+                        ? 'border border-[#5B8CFF]/40 bg-[#5B8CFF]/15 text-[#5B8CFF]'
+                        : 'border border-white/10 bg-[#121A2F] text-[#A1A8B5]'
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -233,7 +190,7 @@ const ProfilePage = () => {
           </nav>
         </div>
 
-        {/* Active Tab Panel Content */}
+        {/* Active Panel */}
         <div className="lg:col-span-9">
           {isLoading ? (
             <ProfileSkeleton
@@ -251,7 +208,6 @@ const ProfilePage = () => {
             />
           ) : (
             <div className="space-y-6">
-              {/* TAB 1: GENERAL PROFILE */}
               {activeTab === 'general' && (
                 <div className="space-y-6 animate-fade-in">
                   <ProfileCard
@@ -263,7 +219,6 @@ const ProfilePage = () => {
                 </div>
               )}
 
-              {/* TAB 2: CONNECTED ACCOUNTS */}
               {activeTab === 'connections' && (
                 <div className="animate-fade-in">
                   <AccountConnections
@@ -272,7 +227,6 @@ const ProfilePage = () => {
                 </div>
               )}
 
-              {/* TAB 3: PREFERENCES & NOTIFICATIONS */}
               {activeTab === 'preferences' && (
                 <div className="animate-fade-in">
                   <PreferencePanel
@@ -282,14 +236,12 @@ const ProfilePage = () => {
                 </div>
               )}
 
-              {/* TAB 4: SECURITY */}
               {activeTab === 'security' && (
                 <div className="animate-fade-in">
                   <SecurityPanel />
                 </div>
               )}
 
-              {/* TAB 5: STATISTICS & BADGES */}
               {activeTab === 'statistics' && (
                 <div className="space-y-6 animate-fade-in">
                   <StatsCard statistics={mockProfileData.statistics} />
