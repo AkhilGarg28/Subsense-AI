@@ -106,6 +106,22 @@ const syncGmailInvoices = async (userId) => {
     }
   }
 
+  try {
+    const EmailScan = require('../models/EmailScan');
+    await EmailScan.create({
+      user: userId,
+      emailSubject: 'Gmail Invoices Sync',
+      sender: 'user.financial.sync@gmail.com',
+      scanDate: new Date(),
+      importedBillsCount: syncedBillsCount,
+      importedSubscriptionsCount: syncedSubscriptionsCount,
+      status: 'Success',
+      message: `Gmail sync completed with ${syncedBillsCount} bill(s) and ${syncedSubscriptionsCount} subscription(s) imported.`,
+    });
+  } catch (err) {
+    console.warn('[EmailScan Log Warning] Could not record email scan log:', err.message);
+  }
+
   return {
     syncedBillsCount,
     syncedSubscriptionsCount,
@@ -120,3 +136,4 @@ module.exports = {
   handleGmailCallback,
   syncGmailInvoices,
 };
+

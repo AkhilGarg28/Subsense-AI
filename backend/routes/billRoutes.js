@@ -6,13 +6,33 @@ const {
   getBillById,
   updateBill,
   deleteBill,
+  uploadBill,
 } = require('../controllers/billController');
 const { createBillValidation, updateBillValidation } = require('../utils/billValidation');
 const validate = require('../middleware/validate');
 const { protect } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 // All bill routes require authentication
 router.use(protect);
+
+/**
+ * @route   POST /api/v1/bills/upload (or /api/bills/upload)
+ * @desc    Upload bill receipt/invoice file and extract via OCR
+ * @access  Private
+ */
+router.post(
+  '/upload',
+  (req, res, next) => {
+    upload.single('receipt')(req, res, (err) => {
+      if (err) {
+        return upload.single('file')(req, res, next);
+      }
+      next();
+    });
+  },
+  uploadBill
+);
 
 /**
  * @route   POST /api/v1/bills
@@ -48,3 +68,4 @@ router
   .delete(deleteBill);
 
 module.exports = router;
+

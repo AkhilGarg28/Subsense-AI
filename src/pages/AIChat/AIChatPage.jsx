@@ -1,80 +1,520 @@
-import { useState } from 'react';
-import { HiOutlinePaperAirplane, HiOutlineSparkles } from 'react-icons/hi';
-import { Card, Button } from '../../components/ui';
-import { APP_NAME } from '../../utils/constants';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  HiOutlineExclamationCircle,
+  HiOutlineTrash,
+  HiOutlineCreditCard
+} from 'react-icons/hi';
+import {
+  ChatHeader,
+  ChatSidebar,
+  MessageBubble,
+  TypingIndicator,
+  ChatInput,
+  ChatQuickActions,
+  ChatEmptyState,
+  ChatSkeleton,
+} from '../../components/chat';
+import Toast from '../../components/ui/Toast';
+import { mockChatData } from '../../data/mockChatData';
 
 /**
- * AIChatPage — AI financial assistant chat interface.
- * Placeholder UI — AI integration will be added later.
+ * AIChatPage — Complete AI Financial Assistant Page for SubSense AI.
+ * Assembles a Perplexity/ChatGPT/Gemini style interface with:
+ * - Left Sidebar: Conversation history with search, rename, delete, and new chat triggers
+ * - Header Bar: Active AI model indicator, status badge, new chat, and options dropdown
+ * - Main Window: Interactive empty state with prompt suggestions, active message thread,
+ *   typing indicator animation, 1-Click action modals, voice/document chat input,
+ *   and responsive mobile drawer layout.
  */
 const AIChatPage = () => {
-  const [message, setMessage] = useState('');
+  const [conversations, setConversations] = useState(mockChatData.conversations);
+  const [activeConversationId, setActiveConversationId] = useState('conv-1');
+  const [messagesMap, setMessagesMap] = useState({
+    'conv-1': mockChatData.initialMessages,
+    'conv-2': [
+      {
+        id: 'm-2-1',
+        sender: 'user',
+        text: 'How can I cancel SaaS subscriptions that trick you into auto-renewing?',
+        timestamp: 'Yesterday 4:15 PM',
+      },
+      {
+        id: 'm-2-2',
+        sender: 'ai',
+        text: 'SubSense AI can automatically send legal opt-out notices and virtual card auto-block rules for hidden recurring charges. Here is your audit summary:',
+        timestamp: 'Yesterday 4:16 PM',
+        metrics: {
+          potentialSavings: '$149.00/mo',
+          unusedCount: 3,
+        },
+        actions: [
+          { label: 'Auto-Block Virtual Card', id: 'block-card', variant: 'danger' },
+          { label: 'Send Opt-out Email', id: 'send-optout', variant: 'primary' },
+        ],
+      },
+    ],
+  });
 
-  const placeholderMessages = [
-    { role: 'assistant', content: `Hi! I'm your ${APP_NAME} assistant. How can I help you manage your finances today?` },
-    { role: 'user', content: 'What are my top subscriptions by cost?' },
-    { role: 'assistant', content: 'Based on your data, your top 3 subscriptions by cost are:\n1. AWS - $120.00/mo\n2. Adobe CC - $54.99/mo\n3. Netflix - $15.99/mo\n\nTotal: $190.98/month' },
-  ];
+  const [isTyping, setIsTyping] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [toastNotification, setToastNotification] = useState(null);
+  const [actionModal, setActionModal] = useState(null); // { isOpen, title, description, confirmText, onConfirm }
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Connect to AI backend
-    console.log('Message sent:', message);
-    setMessage('');
+  const messagesEndRef = useRef(null);
+
+  // Active messages list for current conversation
+  const activeMessages = messagesMap[activeConversationId] || [];
+
+  // Active conversation metadata
+  const activeConversation = conversations.find((c) => c.id === activeConversationId);
+
+  // Auto-scroll to bottom of chat thread smoothly
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [activeMessages, isTyping, scrollToBottom]);
+
+  // Show auto-dismissing toast notifications
+  const showToast = (message, type = 'success') => {
+    setToastNotification({ message, type });
+    setTimeout(() => {
+      setToastNotification(null);
+    }, 4000);
   };
 
+  // Helper to format current time string
+  const getCurrentTime = () => {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Trigger New Chat
+  const handleNewChat = () => {
+    const newId = `conv-${Date.now()}`;
+    const newConv = {
+      id: newId,
+      title: 'New Financial Audit',
+      date: 'Today',
+      messagesCount: 0,
+      lastUpdated: getCurrentTime(),
+    };
+
+    setConversations((prev) => [newConv, ...prev]);
+    setMessagesMap((prev) => ({ ...prev, [newId]: [] }));
+    setActiveConversationId(newId);
+    setIsMobileSidebarOpen(false);
+    showToast('Started new financial chat session', 'info');
+  };
+
+  // Select existing conversation
+  const handleSelectConversation = (convId) => {
+    setActiveConversationId(convId);
+    setIsMobileSidebarOpen(false);
+  };
+
+  // Rename existing conversation
+  const handleRenameConversation = (convId, newTitle) => {
+    setConversations((prev) =>
+      prev.map((conv) => (conv.id === convId ? { ...conv, title: newTitle } : conv))
+    );
+    showToast('Conversation renamed', 'info');
+  };
+
+  // Delete conversation
+  const handleDeleteConversation = (convId) => {
+    const target = conversations.find((c) => c.id === convId);
+    const title = target ? target.title : 'Conversation';
+
+    setConversations((prev) => prev.filter((conv) => conv.id !== convId));
+    setMessagesMap((prev) => {
+      const nextMap = { ...prev };
+      delete nextMap[convId];
+      return nextMap;
+    });
+
+    if (activeConversationId === convId) {
+      const remaining = conversations.filter((c) => c.id !== convId);
+      if (remaining.length > 0) {
+        setActiveConversationId(remaining[0].id);
+      } else {
+        handleNewChat();
+      }
+    }
+
+    showToast(`Deleted "${title}"`, 'warning');
+  };
+
+  // Clear History for active conversation
+  const handleClearHistory = () => {
+    setActionModal({
+      isOpen: true,
+      title: 'Clear Chat History?',
+      description: 'Are you sure you want to clear all messages in this conversation thread? This action cannot be undone.',
+      confirmText: 'Clear Messages',
+      confirmVariant: 'danger',
+      icon: HiOutlineTrash,
+      onConfirm: () => {
+        setMessagesMap((prev) => ({
+          ...prev,
+          [activeConversationId]: [],
+        }));
+        showToast('Chat history cleared', 'info');
+      },
+    });
+  };
+
+  // Export Chat History transcript
+  const handleExportChat = () => {
+    if (activeMessages.length === 0) {
+      showToast('No messages to export', 'warning');
+      return;
+    }
+
+    const exportData = {
+      title: activeConversation?.title || 'SubSense AI Chat',
+      exportDate: new Date().toISOString(),
+      messages: activeMessages,
+    };
+
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `subsense-chat-${activeConversationId}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+
+    showToast('Exported chat history transcript JSON', 'success');
+  };
+
+  // Send User Message & Simulate Streaming AI Response
+  const handleSendMessage = ({ text, attachment }) => {
+    if (!text.trim() && !attachment) return;
+
+    const userMsgText = text.trim() + (attachment ? `\n[Attached File: ${attachment.name}]` : '');
+
+    const userMessageObj = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      role: 'user',
+      text: userMsgText,
+      timestamp: getCurrentTime(),
+    };
+
+    // Update active conversation title if default
+    if (activeMessages.length === 0) {
+      const generateTitle = text.slice(0, 35) + (text.length > 35 ? '...' : '');
+      setConversations((prev) =>
+        prev.map((c) => (c.id === activeConversationId ? { ...c, title: generateTitle } : c))
+      );
+    }
+
+    // Append User Message
+    setMessagesMap((prev) => ({
+      ...prev,
+      [activeConversationId]: [...(prev[activeConversationId] || []), userMessageObj],
+    }));
+
+    // Trigger AI Typing & Intelligent Response Generator
+    setIsTyping(true);
+
+    const queryLower = text.toLowerCase();
+
+    setTimeout(() => {
+      let aiResponseObj = {
+        id: `msg-${Date.now() + 1}`,
+        sender: 'ai',
+        role: 'assistant',
+        timestamp: getCurrentTime(),
+      };
+
+      if (queryLower.includes('spend') || queryLower.includes('month') || queryLower.includes('next')) {
+        aiResponseObj.text = mockChatData.aiKnowledgeBase.spend.text;
+        aiResponseObj.metrics = {
+          projectedSpend: '$1,248.50',
+          potentialSavings: '$180.00/mo',
+          unusedCount: 2,
+        };
+        aiResponseObj.actions = [
+          { label: 'View Spending Breakdown', id: 'view-breakdown' },
+          { label: 'Set Budget Limit', id: 'set-budget' },
+        ];
+      } else if (queryLower.includes('cancel') || queryLower.includes('unused') || queryLower.includes('reduce')) {
+        aiResponseObj.text = mockChatData.aiKnowledgeBase.cancel.text;
+        aiResponseObj.metrics = {
+          potentialSavings: '$118.99/mo',
+          unusedCount: 2,
+        };
+        aiResponseObj.actions = [
+          { label: '1-Click Cancel Canva', id: 'cancel-canva', variant: 'danger' },
+          { label: 'Switch Spotify to Annual', id: 'switch-spotify' },
+        ];
+      } else {
+        aiResponseObj.text = mockChatData.aiKnowledgeBase.default.text;
+        aiResponseObj.metrics = {
+          potentialSavings: '$98.50/mo',
+          projectedSpend: '$318.50/mo',
+          unusedCount: 1,
+        };
+        aiResponseObj.actions = [
+          { label: 'Audit All Subscriptions', id: 'audit-all' },
+          { label: 'Scan Receipt Inbox', id: 'scan-inbox' },
+        ];
+      }
+
+      setMessagesMap((prev) => ({
+        ...prev,
+        [activeConversationId]: [...(prev[activeConversationId] || []), aiResponseObj],
+      }));
+
+      setIsTyping(false);
+    }, 1600);
+  };
+
+  // Handle Prompt Selection (from Empty State or Suggestions)
+  const handleSelectPrompt = (promptText) => {
+    handleSendMessage({ text: promptText });
+  };
+
+  // Handle Quick Action Clicks (from bottom Quick Actions Bar)
+  const handleQuickAction = (actionId, actionObj) => {
+    if (actionId === 'upload-receipt') {
+      handleSendMessage({ text: 'I want to upload a receipt for AI OCR parsing and auto-logging.' });
+    } else if (actionId === 'connect-gmail') {
+      handleSendMessage({ text: 'Check my connected Gmail inbox for new subscription invoices and price hikes.' });
+    } else if (actionId === 'go-dashboard') {
+      handleSendMessage({ text: 'Summarize my complete financial health score and active monthly commitments.' });
+    } else if (actionId === 'view-subscriptions') {
+      handleSendMessage({ text: 'List all active recurring subscriptions sorted by monthly price.' });
+    } else if (actionObj?.prompt) {
+      handleSendMessage({ text: actionObj.prompt });
+    }
+  };
+
+  // Handle Interactive Action Button Triggers inside Message Bubbles
+  const handleActionClick = (action, _messageObj) => {
+    const actionLabel = typeof action === 'string' ? action : action.label || action.id;
+    const actionId = typeof action === 'string' ? action : action.id;
+
+    if (actionId === 'cancel-canva' || actionLabel.includes('Cancel Canva')) {
+      setActionModal({
+        isOpen: true,
+        title: 'Confirm 1-Click Cancellation',
+        description: 'SubSense AI will issue an automated cancellation request for your Canva Pro seat ($79.99/mo). Save $960.00 per year.',
+        confirmText: 'Execute Cancellation',
+        confirmVariant: 'danger',
+        icon: HiOutlineCreditCard,
+        onConfirm: () => {
+          showToast('Canva Pro subscription cancelled! Saved $79.99/mo.', 'success');
+
+          // Append confirmation AI bubble
+          const confirmMsg = {
+            id: `msg-${Date.now()}`,
+            sender: 'ai',
+            role: 'assistant',
+            text: '### Canva Pro Seat Cancelled Successfully\n\nSubSense AI agent has verified the cancellation receipt. Your recurring ledger has been updated.\n\n* **Monthly Savings Added:** $79.99/mo (₹6,640/mo)\n* **Annual Impact:** $959.88 saved',
+            timestamp: getCurrentTime(),
+            metrics: {
+              potentialSavings: '$0.00 (Captured!)',
+              projectedSpend: '$238.51/mo',
+            },
+          };
+
+          setMessagesMap((prev) => ({
+            ...prev,
+            [activeConversationId]: [...(prev[activeConversationId] || []), confirmMsg],
+          }));
+        },
+      });
+    } else if (actionId === 'switch-spotify' || actionLabel.includes('Switch Spotify')) {
+      showToast('Switched Spotify to Annual plan! Saved $44.88/year.', 'success');
+
+      const confirmMsg = {
+        id: `msg-${Date.now()}`,
+        sender: 'ai',
+        role: 'assistant',
+        text: '### Spotify Plan Updated to Annual Billing\n\nYour plan is now locked in at $99.00/yr instead of $143.88/yr.',
+        timestamp: getCurrentTime(),
+      };
+
+      setMessagesMap((prev) => ({
+        ...prev,
+        [activeConversationId]: [...(prev[activeConversationId] || []), confirmMsg],
+      }));
+    } else {
+      showToast(`Triggered AI action: ${actionLabel}`, 'info');
+    }
+  };
+
+  // If page loading state is active (e.g. skeleton test)
+  if (isLoadingPage) {
+    return <ChatSkeleton viewMode="full" />;
+  }
+
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col animate-fade-in">
-      {/* Page Header */}
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-text-primary sm:text-3xl">AI Chat</h1>
-        <p className="mt-1 text-text-secondary">Chat with your AI financial assistant.</p>
-      </div>
-
-      {/* Chat Area */}
-      <Card className="flex flex-1 flex-col overflow-hidden" padding="none">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {placeholderMessages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-white'
-                    : 'bg-surface text-text-primary'
-                }`}
-              >
-                {msg.role === 'assistant' && (
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <HiOutlineSparkles className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-xs font-medium text-primary">{APP_NAME}</span>
-                  </div>
-                )}
-                <p className="text-sm whitespace-pre-line">{msg.content}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t border-border p-4">
-          <form onSubmit={handleSubmit} className="flex gap-3">
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Ask about your finances..."
-              className="flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+    <div className="flex h-[calc(100vh-5rem)] sm:h-[calc(100vh-6rem)] w-full flex-col lg:flex-row -m-4 sm:-m-6 lg:-m-8 bg-background overflow-hidden animate-fade-in relative">
+      {/* Toast Notification Container */}
+      <AnimatePresence>
+        {toastNotification && (
+          <div className="fixed top-6 right-6 z-50 pointer-events-auto">
+            <Toast
+              message={toastNotification.message}
+              type={toastNotification.type}
+              onClose={() => setToastNotification(null)}
             />
-            <Button type="submit" variant="primary" className="rounded-xl px-4">
-              <HiOutlinePaperAirplane className="h-5 w-5 rotate-90" />
-            </Button>
-          </form>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Confirmation Action Modal */}
+      <AnimatePresence>
+        {actionModal?.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActionModal(null)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl backdrop-blur-xl"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${
+                    actionModal.confirmVariant === 'danger'
+                      ? 'bg-danger/20 text-danger border border-danger/30'
+                      : 'bg-primary/20 text-primary border border-primary/30'
+                  }`}
+                >
+                  {actionModal.icon ? (
+                    <actionModal.icon className="h-6 w-6" />
+                  ) : (
+                    <HiOutlineExclamationCircle className="h-6 w-6" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-text-primary">{actionModal.title}</h3>
+                  <p className="text-xs text-text-muted">SubSense AI Copilot Action</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-text-secondary leading-relaxed mb-6">
+                {actionModal.description}
+              </p>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setActionModal(null)}
+                  className="rounded-xl border border-border bg-surface-light px-4 py-2 text-xs font-semibold text-text-secondary hover:bg-surface hover:text-text-primary transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (actionModal.onConfirm) actionModal.onConfirm();
+                    setActionModal(null);
+                  }}
+                  className={`rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-lg transition-all active:scale-95 ${
+                    actionModal.confirmVariant === 'danger'
+                      ? 'bg-danger hover:bg-danger-hover shadow-danger/20'
+                      : 'bg-primary hover:bg-primary-hover shadow-primary/20'
+                  }`}
+                >
+                  {actionModal.confirmText || 'Confirm'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Left Sidebar History Component */}
+      <ChatSidebar
+        conversations={conversations}
+        activeConversationId={activeConversationId}
+        onSelectConversation={handleSelectConversation}
+        onNewChat={handleNewChat}
+        onDeleteConversation={handleDeleteConversation}
+        onRenameConversation={handleRenameConversation}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+      />
+
+      {/* Main Chat Interface Window */}
+      <div className="flex flex-1 flex-col h-full min-w-0 bg-background overflow-hidden relative">
+        {/* Sticky Header Bar */}
+        <ChatHeader
+          onNewChat={handleNewChat}
+          onClearHistory={handleClearHistory}
+          onExportChat={handleExportChat}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          title={activeConversation?.title || 'SubSense AI Copilot'}
+          status="Online • Financial Fine-tune v4"
+        />
+
+        {/* Scrollable Messages Thread Area */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4">
+          {activeMessages.length === 0 ? (
+            /* Empty State Hero with Prompt Cards */
+            <div className="flex min-h-full items-center justify-center py-6">
+              <ChatEmptyState onSelectPrompt={handleSelectPrompt} />
+            </div>
+          ) : (
+            /* Active Thread Messages */
+            <div className="max-w-4xl mx-auto space-y-4">
+              {activeMessages.map((msg) => (
+                <MessageBubble
+                  key={msg.id}
+                  message={msg}
+                  onActionClick={handleActionClick}
+                  onFeedback={(msgId, feedbackType) => {
+                    showToast(
+                      feedbackType ? `Thank you for your feedback!` : 'Feedback removed',
+                      'info'
+                    );
+                  }}
+                  onCopy={() => showToast('Copied message to clipboard', 'info')}
+                />
+              ))}
+
+              {/* Streaming Typing Indicator */}
+              <AnimatePresence>
+                {isTyping && <TypingIndicator key="typing-indicator" />}
+              </AnimatePresence>
+
+              {/* Scroll Anchor */}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
-      </Card>
+
+        {/* Bottom Input Area & Quick Actions Bar */}
+        <div className="border-t border-border bg-surface/60 backdrop-blur-xl p-3 sm:p-4 space-y-3 z-20">
+          <div className="max-w-4xl mx-auto space-y-3">
+            {/* Quick Actions Bar */}
+            <ChatQuickActions onActionClick={handleQuickAction} />
+
+            {/* Chat Input Box */}
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              disabled={isTyping}
+              placeholder="Ask SubSense AI about subscriptions, bills, savings, or receipts..."
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,6 @@
+const http = require('http');
 const dotenv = require('dotenv');
+const { Server } = require('socket.io');
 
 // Handle Uncaught Exceptions before loading application dependencies
 process.on('uncaughtException', (err) => {
@@ -11,6 +13,7 @@ dotenv.config();
 
 const app = require('./app');
 const connectDB = require('./config/db');
+const initNotificationSocket = require('./sockets/notificationSocket');
 
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -18,13 +21,26 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 // Initialize Database Connection
 connectDB();
 
-// Start Express HTTP Server
-const server = app.listen(PORT, () => {
+// Create HTTP Server & Attach Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true,
+  },
+});
+
+// Initialize Socket.IO Real-time Notification Engine
+initNotificationSocket(io);
+
+// Start HTTP Server
+server.listen(PORT, () => {
   console.log(`===========================================`);
   console.log(` SubSense AI Backend Server Started`);
   console.log(` Environment: ${NODE_ENV}`);
   console.log(` Port       : ${PORT}`);
   console.log(` Health Check: http://localhost:${PORT}/api/v1/health`);
+  console.log(` Socket.IO  : Enabled`);
   console.log(`===========================================`);
 });
 

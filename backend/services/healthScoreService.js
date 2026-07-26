@@ -81,6 +81,29 @@ const calculateHealthScore = async (userId) => {
     suggestions.push('Great job! Your financial bill hygiene is excellent.');
   }
 
+  // Save HealthScore record to database for historical trend tracking
+  try {
+    const HealthScore = require('../models/HealthScore');
+    await HealthScore.create({
+      user: userId,
+      score: finalScore,
+      grade,
+      status,
+      explanation: `Your financial health score is ${finalScore}/100 (${grade}). ${overdueCount > 0 ? `You have ${overdueCount} overdue bill(s).` : 'No overdue bills detected.'}`,
+      metrics: {
+        totalBills,
+        paidCount,
+        pendingCount,
+        overdueCount,
+        activeSubscriptionsCount: activeSubsCount,
+        paidRatioPercentage: Math.round(paidRatio * 100),
+      },
+      suggestions,
+    });
+  } catch (err) {
+    console.warn('[HealthScore Warning] Failed to log snapshot:', err.message);
+  }
+
   return {
     score: finalScore,
     grade,
@@ -101,3 +124,4 @@ const calculateHealthScore = async (userId) => {
 module.exports = {
   calculateHealthScore,
 };
+

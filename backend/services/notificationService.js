@@ -38,6 +38,18 @@ const generateNotificationsForUser = async (userId) => {
         priority: 'High',
       });
       generatedNotifications.push(notif);
+
+      const ReminderLog = require('../models/ReminderLog');
+      await ReminderLog.create({
+        user: userId,
+        targetType: 'Bill',
+        targetId: bill._id,
+        reminderType: 'OverdueAlert',
+        channel: 'InApp',
+        sentAt: new Date(),
+        status: 'Sent',
+        message: notif.message,
+      });
     }
   }
 
@@ -62,6 +74,18 @@ const generateNotificationsForUser = async (userId) => {
         priority: 'Medium',
       });
       generatedNotifications.push(notif);
+
+      const ReminderLog = require('../models/ReminderLog');
+      await ReminderLog.create({
+        user: userId,
+        targetType: 'Bill',
+        targetId: bill._id,
+        reminderType: 'UpcomingDue',
+        channel: 'InApp',
+        sentAt: new Date(),
+        status: 'Sent',
+        message: notif.message,
+      });
     }
   }
 
@@ -86,6 +110,18 @@ const generateNotificationsForUser = async (userId) => {
         priority: 'Medium',
       });
       generatedNotifications.push(notif);
+
+      const ReminderLog = require('../models/ReminderLog');
+      await ReminderLog.create({
+        user: userId,
+        targetType: 'Subscription',
+        targetId: sub._id,
+        reminderType: 'RenewalAlert',
+        channel: 'InApp',
+        sentAt: new Date(),
+        status: 'Sent',
+        message: notif.message,
+      });
     }
   }
 
@@ -115,3 +151,4 @@ const generateNotificationsForUser = async (userId) => {
 module.exports = {
   generateNotificationsForUser,
 };
+

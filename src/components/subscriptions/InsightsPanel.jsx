@@ -361,7 +361,14 @@ const InsightsPanel = ({
               highlight: 'bg-emerald-500/20 text-emerald-300',
               btnPrimary: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold',
             },
-          }[insight.badgeColor || 'blue'];
+          const defaultColor = {
+            badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+            border: 'hover:border-blue-500/40',
+            iconBg: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+            highlight: 'bg-blue-500/20 text-blue-300',
+            btnPrimary: 'bg-blue-600 hover:bg-blue-500 text-white font-semibold',
+          };
+          const colorStyles = typeColors[insight.type] || typeColors[insight.color] || defaultColor;
 
           return (
             <motion.div

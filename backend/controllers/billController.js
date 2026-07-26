@@ -217,10 +217,50 @@ const deleteBill = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Upload bill file (image/PDF) & process via OCR
+ * @route   POST /api/v1/bills/upload (or /api/bills/upload)
+ * @access  Private
+ */
+const uploadBill = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return next(new ApiError(400, 'Please upload a valid bill file (image or PDF)'));
+    }
+
+    const { extractOCRData } = require('../services/ocrService');
+    const ocrResult = await extractOCRData(req.file.path);
+
+    const newBill = await Bill.create({
+      user: req.user._id,
+      title: ocrResult.invoiceNumber ? `Invoice #${ocrResult.invoiceNumber}` : `${ocrResult.merchant} Bill`,
+      merchant: ocrResult.merchant,
+      category: ocrResult.category,
+      amount: ocrResult.amount,
+      currency: ocrResult.currency || 'USD',
+      dueDate: ocrResult.dueDate,
+      status: 'Pending',
+      paymentMethod: ocrResult.paymentMethod || 'Credit Card',
+      ocrText: ocrResult.ocrText,
+      billImage: req.file.path,
+      notes: `Uploaded file: ${req.file.originalname}`,
+    });
+
+    return ApiResponse.send(res, 201, 'Bill file uploaded and parsed via OCR successfully', {
+      bill: newBill,
+      ocrExtractedData: ocrResult,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createBill,
   getBills,
   getBillById,
   updateBill,
   deleteBill,
+  uploadBill,
 };
+

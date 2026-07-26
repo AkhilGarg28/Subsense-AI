@@ -162,10 +162,13 @@ const BillsList = ({
 
   // Filter bills based on search and selected tab
   const filteredBills = billsData.filter((bill) => {
+    const title = (bill.name || bill.title || '').toLowerCase();
+    const provider = (bill.merchant || bill.provider || '').toLowerCase();
+    const category = (bill.category || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+
     const matchesSearch =
-      bill.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.category.toLowerCase().includes(searchQuery.toLowerCase());
+      title.includes(query) || provider.includes(query) || category.includes(query);
 
     if (!matchesSearch) return false;
 
