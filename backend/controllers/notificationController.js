@@ -79,8 +79,72 @@ const markAsRead = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Create a custom reminder / notification
+ * @route   POST /api/v1/notifications/reminder
+ * @access  Private
+ */
+const createReminder = async (req, res, next) => {
+  try {
+    const { title, message, type, priority, scheduledFor } = req.body;
+
+    if (!title || !message) {
+      return next(new ApiError(400, 'Title and message are required for reminder'));
+    }
+
+    const notification = await Notification.create({
+      user: req.user._id,
+      title: title.trim(),
+      message: message.trim(),
+      type: type && ['Bill', 'Subscription', 'System', 'AI'].includes(type) ? type : 'Bill',
+      priority: priority && ['Low', 'Medium', 'High'].includes(priority) ? priority : 'Medium',
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : Date.now(),
+    });
+
+    const ReminderLog = require('../models/ReminderLog');
+    await ReminderLog.create({
+      user: req.user._id,
+      targetType: type || 'Custom',
+      reminderType: 'CustomReminder',
+      channel: 'InApp',
+      sentAt: new Date(),
+      status: 'Sent',
+      message: message.trim(),
+    });
+
+    return ApiResponse.send(res, 201, 'Reminder notification created successfully', notification);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete notification
+ * @route   DELETE /api/v1/notifications/:id
+ * @access  Private
+ */
+const deleteNotification = async (req, res, next) => {
+  try {
+    const notification = await Notification.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!notification) {
+      return next(new ApiError(404, 'Notification not found or unauthorized'));
+    }
+
+    return ApiResponse.send(res, 200, 'Notification deleted successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getNotifications,
   generateNotifications,
   markAsRead,
+  createReminder,
+  deleteNotification,
 };
+
