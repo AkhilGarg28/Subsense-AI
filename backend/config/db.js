@@ -2,15 +2,20 @@ const mongoose = require('mongoose');
 
 /**
  * Connect to MongoDB database asynchronously.
- * Exits process with failure code 1 if connection fails.
+ * Supports cloud MongoDB Atlas URI in production with graceful error logging.
  */
 const connectDB = async () => {
+  const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/subsense_ai';
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`[Database] MongoDB Connected: ${conn.connection.host}`);
+    const conn = await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+    });
+    console.log(`[Database] MongoDB Connected Successfully: ${conn.connection.host}`);
   } catch (error) {
     console.error(`[Database Error] Connection failed: ${error.message}`);
-    process.exit(1);
+    if (process.env.NODE_ENV === 'production' && uri.includes('127.0.0.1')) {
+      console.warn('[Database Notice] Deployed on cloud (Render). Please set MONGO_URI environment variable to your MongoDB Atlas connection string in Render Dashboard -> Environment.');
+    }
   }
 };
 
