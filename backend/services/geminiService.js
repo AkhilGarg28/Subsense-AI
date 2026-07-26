@@ -112,9 +112,43 @@ Return ONLY valid JSON.
     throw error;
   }
 }
+async function predictExpenses(expenseHistory) {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-flash-lite-preview",
+      contents: `
+You are an AI Financial Forecasting Assistant.
+
+A user has the following monthly expenses:
+
+${JSON.stringify(expenseHistory)}
+
+Predict the user's next month's expense based on the trend.
+
+Return ONLY valid JSON.
+
+{
+  "predictedExpense": 0,
+  "reason": ""
+}
+`,
+    });
+
+    const cleanedText = response.text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    return JSON.parse(cleanedText);
+  } catch (error) {
+    console.error("Expense Prediction Error:", error);
+    throw error;
+  }
+}
 
 module.exports = {
   analyzeBill,
   detectSubscription,
-  generateRecommendations
+  generateRecommendations,
+  predictExpenses
 };
