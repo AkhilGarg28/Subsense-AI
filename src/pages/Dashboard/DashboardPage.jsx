@@ -5,14 +5,12 @@ import {
   HiOutlineCalendar,
   HiOutlineSparkles,
   HiOutlineRefresh,
-  HiOutlineCheckCircle,
-  HiOutlineClock,
-  HiOutlineFilter,
 } from 'react-icons/hi';
 import { mockDashboardData } from '../../data/mockDashboardData';
 import {
   StatCard,
   HealthScoreCard,
+  AIInsightsPanel,
   ExpenseChart,
   CategoryChart,
   BillsList,
@@ -25,9 +23,8 @@ import {
 
 /**
  * DashboardPage — Core dashboard overview page for SubSense AI.
- * Assembles all analytical modules, quick action bar, charts, subscriptions table,
- * AI recommendations, and activity timeline into a modern responsive layout.
- * Features time filter state and simulated loading skeleton toggle.
+ * Assembles all analytical modules, AI Insights hero card, quick action bar, charts,
+ * subscriptions table, AI recommendations, and activity timeline into a modern responsive layout.
  */
 const DashboardPage = () => {
   // State for Time Filter ('This Month' | 'Last 3 Months' | 'Year to Date')
@@ -141,14 +138,14 @@ const DashboardPage = () => {
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
-                  Good evening, {mockDashboardData.user.name.split(' ')[0]}! 👋
+                  Good Evening, {mockDashboardData.user.name.split(' ')[0]}! 👋
                 </h1>
                 <span className="hidden rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary sm:inline-block">
                   {mockDashboardData.user.plan}
                 </span>
               </div>
               <p className="mt-1 text-sm text-text-secondary">
-                Here is your real-time financial intelligence and SaaS subscription overview.
+                Your autonomous AI copilot has audited your financial activity.
               </p>
             </div>
 
@@ -247,21 +244,44 @@ const DashboardPage = () => {
         />
       </div>
 
+      {/* Hero Central AI Insights Panel */}
+      <div className="w-full">
+        <AIInsightsPanel />
+      </div>
+
       {/* Row 1: HealthScoreCard + ExpenseChart */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1 flex flex-col">
           <HealthScoreCard
-            score={mockDashboardData.healthScore.score}
-            maxScore={mockDashboardData.healthScore.maxScore}
-            statusBadge={mockDashboardData.healthScore.status}
-            suggestions={mockDashboardData.healthScore.suggestions.map((item, idx) => ({
-              id: `h-sug-${idx}`,
-              title: item,
-              description: 'AI recommendation based on recent transactions',
-              savings: idx === 0 ? 'Save $45/mo' : idx === 1 ? 'Save $72/yr' : 'Save $24/yr',
-              badge: idx === 1 ? 'Unused' : 'Optimization',
-              actionText: 'Apply',
-            }))}
+            score={92}
+            maxScore={100}
+            statusBadge="Excellent"
+            suggestions={[
+              {
+                id: 'h-sug-1',
+                title: 'Low subscription waste',
+                description: '92% of your active subscriptions show regular monthly usage.',
+                savings: 'Optimal',
+                badge: 'Healthy',
+                actionText: 'View Report',
+              },
+              {
+                id: 'h-sug-2',
+                title: 'Cancel unused Canva seat',
+                description: '0 logins detected in last 45 days.',
+                savings: 'Save $79.99/mo',
+                badge: 'Unused Sub',
+                actionText: 'Cancel',
+              },
+              {
+                id: 'h-sug-3',
+                title: 'Switch Spotify to Annual Plan',
+                description: 'Switching saves 16% on annual billing.',
+                savings: 'Save $24.00/yr',
+                badge: 'Quick Win',
+                actionText: 'Switch',
+              },
+            ]}
             className="h-full"
           />
         </div>
