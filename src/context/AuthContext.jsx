@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { authAPI } from '../services/api';
-import { mockDashboardData } from '../data/mockDashboardData';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(mockDashboardData.user);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // On app load, check for saved token and validate it
   useEffect(() => {
     const token = localStorage.getItem('subsense_token');
     if (token) {
@@ -18,38 +18,48 @@ export const AuthProvider = ({ children }) => {
         .then((res) => {
           if (res.data?.data) {
             setUser(res.data.data);
+            setIsAuthenticated(true);
+          } else if (res.data?.user) {
+            setUser(res.data.user);
+            setIsAuthenticated(true);
+          } else {
+            // Token invalid — clear it
+            localStorage.removeItem('subsense_token');
+            setIsAuthenticated(false);
           }
         })
         .catch(() => {
-          // Graceful fallback to mock user
-          setUser(mockDashboardData.user);
+          // Token expired or invalid
+          localStorage.removeItem('subsense_token');
+          setIsAuthenticated(false);
+        })
+        .finally(() => {
+          setLoading(false);
         });
     } else {
-      // Set default demo token & user state so all routes work seamlessly
-      localStorage.setItem('subsense_token', 'demo_token_subsense');
-      setUser(mockDashboardData.user);
+      setLoading(false);
+      setIsAuthenticated(false);
     }
-    setIsAuthenticated(true);
   }, []);
 
   const login = async (credentials) => {
     setLoading(true);
     try {
       const res = await authAPI.login(credentials);
-      if (res.data?.token) {
-        localStorage.setItem('subsense_token', res.data.token);
-        setUser(res.data.user || mockDashboardData.user);
+      const token = res.data?.token || res.data?.data?.token;
+      const userData = res.data?.user || res.data?.data?.user || res.data?.data;
+
+      if (token) {
+        localStorage.setItem('subsense_token', token);
+        setUser(userData || null);
+        setIsAuthenticated(true);
+        return { success: true };
       } else {
-        localStorage.setItem('subsense_token', 'mock_jwt_token_' + Date.now());
-        setUser(mockDashboardData.user);
+        return { success: false, message: 'Login failed. No token received.' };
       }
-      setIsAuthenticated(true);
-      return { success: true };
-    } catch {
-      localStorage.setItem('subsense_token', 'mock_jwt_token_' + Date.now());
-      setUser(mockDashboardData.user);
-      setIsAuthenticated(true);
-      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      return { success: false, message };
     } finally {
       setLoading(false);
     }
@@ -59,20 +69,20 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const res = await authAPI.signup(userData);
-      if (res.data?.token) {
-        localStorage.setItem('subsense_token', res.data.token);
-        setUser(res.data.user || mockDashboardData.user);
+      const token = res.data?.token || res.data?.data?.token;
+      const newUser = res.data?.user || res.data?.data?.user || res.data?.data;
+
+      if (token) {
+        localStorage.setItem('subsense_token', token);
+        setUser(newUser || null);
+        setIsAuthenticated(true);
+        return { success: true };
       } else {
-        localStorage.setItem('subsense_token', 'mock_jwt_token_' + Date.now());
-        setUser({ ...mockDashboardData.user, name: userData.name || mockDashboardData.user.name });
+        return { success: false, message: 'Signup failed. No token received.' };
       }
-      setIsAuthenticated(true);
-      return { success: true };
-    } catch {
-      localStorage.setItem('subsense_token', 'mock_jwt_token_' + Date.now());
-      setUser({ ...mockDashboardData.user, name: userData.name || mockDashboardData.user.name });
-      setIsAuthenticated(true);
-      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Signup failed. Please try again.';
+      return { success: false, message };
     } finally {
       setLoading(false);
     }
@@ -80,12 +90,16 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('subsense_token');
-    setIsAuthenticated(true); // Keep demo state active so user can browse
-    setUser(mockDashboardData.user);
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const updateUser = (updatedData) => {
+    setUser((prev) => ({ ...prev, ...updatedData }));
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, signup, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

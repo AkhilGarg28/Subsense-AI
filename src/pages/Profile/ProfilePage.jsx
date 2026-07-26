@@ -18,13 +18,22 @@ import {
   ProfileSkeleton,
 } from '../../components/profile';
 import { mockProfileData } from '../../data/mockProfileData';
+import { authAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../utils/helpers';
 
 const ProfilePage = () => {
+  const { user: authUser, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState('general');
-  const [userData, setUserData] = useState(mockProfileData.user);
+  // Merge auth user with mock data for fields not in API (stats, achievements, etc.)
+  const [userData, setUserData] = useState({
+    ...mockProfileData.user,
+    ...(authUser || {}),
+  });
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const tabs = [
     {
@@ -64,12 +73,32 @@ const ProfilePage = () => {
     },
   ];
 
-  const handleSaveProfile = (updatedDetails) => {
-    setUserData((prev) => ({
-      ...prev,
-      ...updatedDetails,
-    }));
-    setIsEditingProfile(false);
+  const handleSaveProfile = async (updatedDetails) => {
+    setSaveError(null);
+    setSaveSuccess(false);
+    setIsLoading(true);
+    try {
+      const res = await authAPI.updateProfile(updatedDetails);
+      const savedUser = res.data?.data || res.data?.user || updatedDetails;
+      const merged = { ...userData, ...savedUser };
+      setUserData(merged);
+      // Update AuthContext user so navbar etc. reflects changes
+      if (updateUser) updateUser(merged);
+      setSaveSuccess(true);
+      setIsEditingProfile(false);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('[Profile] Save failed:', err);
+      // Optimistic local update so user isn't confused
+      const merged = { ...userData, ...updatedDetails };
+      setUserData(merged);
+      if (updateUser) updateUser(merged);
+      setSaveError('Changes saved locally — server sync failed.');
+      setIsEditingProfile(false);
+      setTimeout(() => setSaveError(null), 4000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleToggleSimulatedLoading = () => {
@@ -81,6 +110,18 @@ const ProfilePage = () => {
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in w-full">
+      {/* Feedback Banners */}
+      {saveSuccess && (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs font-semibold text-emerald-400">
+          ✅ Profile saved successfully!
+        </div>
+      )}
+      {saveError && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs font-semibold text-amber-400">
+          ⚠️ {saveError}
+        </div>
+      )}
+
       {/* Top Header Controls Bar */}
       <div className="flex items-center justify-between font-mono text-xs">
         <span className="text-[#A1A8B5] font-bold uppercase tracking-wider">

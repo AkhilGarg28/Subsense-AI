@@ -16,16 +16,12 @@ import {
   ChatSkeleton,
 } from '../../components/chat';
 import Toast from '../../components/ui/Toast';
+import { aiAPI } from '../../services/api';
 import { mockChatData } from '../../data/mockChatData';
 
 /**
  * AIChatPage — Complete AI Financial Assistant Page for SubSense AI.
- * Assembles a Perplexity/ChatGPT/Gemini style interface with:
- * - Left Sidebar: Conversation history with search, rename, delete, and new chat triggers
- * - Header Bar: Active AI model indicator, status badge, new chat, and options dropdown
- * - Main Window: Interactive empty state with prompt suggestions, active message thread,
- *   typing indicator animation, 1-Click action modals, voice/document chat input,
- *   and responsive mobile drawer layout.
+ * Uses real backend Gemini AI via POST /api/ai/chat.
  */
 const AIChatPage = () => {
   const [conversations, setConversations] = useState(mockChatData.conversations);
@@ -59,18 +55,14 @@ const AIChatPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [toastNotification, setToastNotification] = useState(null);
-  const [actionModal, setActionModal] = useState(null); // { isOpen, title, description, confirmText, onConfirm }
-  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const [actionModal, setActionModal] = useState(null);
+  const [isLoadingPage] = useState(false);
 
   const messagesEndRef = useRef(null);
 
-  // Active messages list for current conversation
   const activeMessages = messagesMap[activeConversationId] || [];
-
-  // Active conversation metadata
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
 
-  // Auto-scroll to bottom of chat thread smoothly
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -79,7 +71,6 @@ const AIChatPage = () => {
     scrollToBottom();
   }, [activeMessages, isTyping, scrollToBottom]);
 
-  // Show auto-dismissing toast notifications
   const showToast = (message, type = 'success') => {
     setToastNotification({ message, type });
     setTimeout(() => {
@@ -87,12 +78,10 @@ const AIChatPage = () => {
     }, 4000);
   };
 
-  // Helper to format current time string
   const getCurrentTime = () => {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Trigger New Chat
   const handleNewChat = () => {
     const newId = `conv-${Date.now()}`;
     const newConv = {
@@ -110,13 +99,11 @@ const AIChatPage = () => {
     showToast('Started new financial chat session', 'info');
   };
 
-  // Select existing conversation
   const handleSelectConversation = (convId) => {
     setActiveConversationId(convId);
     setIsMobileSidebarOpen(false);
   };
 
-  // Rename existing conversation
   const handleRenameConversation = (convId, newTitle) => {
     setConversations((prev) =>
       prev.map((conv) => (conv.id === convId ? { ...conv, title: newTitle } : conv))
@@ -124,7 +111,6 @@ const AIChatPage = () => {
     showToast('Conversation renamed', 'info');
   };
 
-  // Delete conversation
   const handleDeleteConversation = (convId) => {
     const target = conversations.find((c) => c.id === convId);
     const title = target ? target.title : 'Conversation';
@@ -148,7 +134,6 @@ const AIChatPage = () => {
     showToast(`Deleted "${title}"`, 'warning');
   };
 
-  // Clear History for active conversation
   const handleClearHistory = () => {
     setActionModal({
       isOpen: true,
@@ -167,7 +152,6 @@ const AIChatPage = () => {
     });
   };
 
-  // Export Chat History transcript
   const handleExportChat = () => {
     if (activeMessages.length === 0) {
       showToast('No messages to export', 'warning');
@@ -191,8 +175,10 @@ const AIChatPage = () => {
     showToast('Exported chat history transcript JSON', 'success');
   };
 
-  // Send User Message & Simulate Streaming AI Response
-  const handleSendMessage = ({ text, attachment }) => {
+  /**
+   * Send User Message & Call Real Gemini AI via Backend API
+   */
+  const handleSendMessage = async ({ text, attachment }) => {
     if (!text.trim() && !attachment) return;
 
     const userMsgText = text.trim() + (attachment ? `\n[Attached File: ${attachment.name}]` : '');
@@ -205,7 +191,7 @@ const AIChatPage = () => {
       timestamp: getCurrentTime(),
     };
 
-    // Update active conversation title if default
+    // Auto-title new conversation
     if (activeMessages.length === 0) {
       const generateTitle = text.slice(0, 35) + (text.length > 35 ? '...' : '');
       setConversations((prev) =>
@@ -213,74 +199,77 @@ const AIChatPage = () => {
       );
     }
 
-    // Append User Message
+    // Append User Message immediately
     setMessagesMap((prev) => ({
       ...prev,
       [activeConversationId]: [...(prev[activeConversationId] || []), userMessageObj],
     }));
 
-    // Trigger AI Typing & Intelligent Response Generator
+    // Show typing indicator
     setIsTyping(true);
 
-    const queryLower = text.toLowerCase();
+    try {
+      // Call real backend Gemini AI endpoint
+      const res = await aiAPI.chatMessage({ question: text.trim() });
+      const aiAnswer = res.data?.data?.answer || res.data?.answer || 'I could not process your request at this time.';
+      const modelUsed = res.data?.data?.model || 'gemini-1.5-flash';
 
-    setTimeout(() => {
-      let aiResponseObj = {
+      const aiResponseObj = {
         id: `msg-${Date.now() + 1}`,
         sender: 'ai',
         role: 'assistant',
         timestamp: getCurrentTime(),
-      };
-
-      if (queryLower.includes('spend') || queryLower.includes('month') || queryLower.includes('next')) {
-        aiResponseObj.text = mockChatData.aiKnowledgeBase.spend.text;
-        aiResponseObj.metrics = {
-          projectedSpend: '$1,248.50',
-          potentialSavings: '$180.00/mo',
-          unusedCount: 2,
-        };
-        aiResponseObj.actions = [
-          { label: 'View Spending Breakdown', id: 'view-breakdown' },
-          { label: 'Set Budget Limit', id: 'set-budget' },
-        ];
-      } else if (queryLower.includes('cancel') || queryLower.includes('unused') || queryLower.includes('reduce')) {
-        aiResponseObj.text = mockChatData.aiKnowledgeBase.cancel.text;
-        aiResponseObj.metrics = {
-          potentialSavings: '$118.99/mo',
-          unusedCount: 2,
-        };
-        aiResponseObj.actions = [
-          { label: '1-Click Cancel Canva', id: 'cancel-canva', variant: 'danger' },
-          { label: 'Switch Spotify to Annual', id: 'switch-spotify' },
-        ];
-      } else {
-        aiResponseObj.text = mockChatData.aiKnowledgeBase.default.text;
-        aiResponseObj.metrics = {
-          potentialSavings: '$98.50/mo',
-          projectedSpend: '$318.50/mo',
-          unusedCount: 1,
-        };
-        aiResponseObj.actions = [
+        text: aiAnswer,
+        model: modelUsed,
+        actions: [
           { label: 'Audit All Subscriptions', id: 'audit-all' },
-          { label: 'Scan Receipt Inbox', id: 'scan-inbox' },
-        ];
-      }
+          { label: 'View Spending Breakdown', id: 'view-breakdown' },
+        ],
+      };
 
       setMessagesMap((prev) => ({
         ...prev,
         [activeConversationId]: [...(prev[activeConversationId] || []), aiResponseObj],
       }));
+    } catch (err) {
+      console.error('[AI Chat] API call failed:', err);
 
+      // Fallback: use intelligent local response engine
+      const queryLower = text.toLowerCase();
+      let fallbackText = '';
+
+      if (queryLower.includes('spend') || queryLower.includes('month') || queryLower.includes('next')) {
+        fallbackText = mockChatData.aiKnowledgeBase.spend.text;
+      } else if (queryLower.includes('cancel') || queryLower.includes('unused') || queryLower.includes('reduce')) {
+        fallbackText = mockChatData.aiKnowledgeBase.cancel.text;
+      } else {
+        fallbackText = 'SubSense AI is currently unable to reach the server. Please check your connection and try again. In the meantime, you can explore your subscriptions and upload receipts for offline analysis.';
+      }
+
+      const fallbackResponse = {
+        id: `msg-${Date.now() + 1}`,
+        sender: 'ai',
+        role: 'assistant',
+        timestamp: getCurrentTime(),
+        text: fallbackText,
+        isOffline: true,
+      };
+
+      setMessagesMap((prev) => ({
+        ...prev,
+        [activeConversationId]: [...(prev[activeConversationId] || []), fallbackResponse],
+      }));
+
+      showToast('AI is offline — using fallback responses', 'warning');
+    } finally {
       setIsTyping(false);
-    }, 1600);
+    }
   };
 
-  // Handle Prompt Selection (from Empty State or Suggestions)
   const handleSelectPrompt = (promptText) => {
     handleSendMessage({ text: promptText });
   };
 
-  // Handle Quick Action Clicks (from bottom Quick Actions Bar)
   const handleQuickAction = (actionId, actionObj) => {
     if (actionId === 'upload-receipt') {
       handleSendMessage({ text: 'I want to upload a receipt for AI OCR parsing and auto-logging.' });
@@ -295,7 +284,6 @@ const AIChatPage = () => {
     }
   };
 
-  // Handle Interactive Action Button Triggers inside Message Bubbles
   const handleActionClick = (action, _messageObj) => {
     const actionLabel = typeof action === 'string' ? action : action.label || action.id;
     const actionId = typeof action === 'string' ? action : action.id;
@@ -311,7 +299,6 @@ const AIChatPage = () => {
         onConfirm: () => {
           showToast('Canva Pro subscription cancelled! Saved $79.99/mo.', 'success');
 
-          // Append confirmation AI bubble
           const confirmMsg = {
             id: `msg-${Date.now()}`,
             sender: 'ai',
@@ -350,7 +337,6 @@ const AIChatPage = () => {
     }
   };
 
-  // If page loading state is active (e.g. skeleton test)
   if (isLoadingPage) {
     return <ChatSkeleton viewMode="full" />;
   }
@@ -461,7 +447,7 @@ const AIChatPage = () => {
           onExportChat={handleExportChat}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
           title={activeConversation?.title || 'SubSense AI Copilot'}
-          status="Online • Financial Fine-tune v4"
+          status="Online • Gemini 1.5 Flash"
         />
 
         {/* Scrollable Messages Thread Area */}

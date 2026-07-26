@@ -64,7 +64,7 @@ export const subscriptionsAPI = {
 // Bills & OCR Scanning Endpoints
 export const billsAPI = {
   getAll: () => api.get('/bills'),
-  uploadOCR: (formData) => api.post('/ocr/scan', formData, {
+  uploadOCR: (formData) => api.post('/ocr/extract', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 };
