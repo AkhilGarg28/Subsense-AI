@@ -179,14 +179,24 @@ const BillsList = ({
     return true;
   });
 
-  // Calculate totals
+  // Helper to parse numeric values safely
+  const parseAmountNum = (val) => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const parsed = parseFloat(val.replace(/[^0-9.]/g, ''));
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  };
+
+  // Calculate totals safely
   const totalUpcomingUSD = billsData
     .filter((b) => b.status !== 'Paid')
-    .reduce((sum, b) => sum + b.amountUSD, 0);
+    .reduce((sum, b) => sum + parseAmountNum(b.amountUSD), 0);
 
   const totalUpcomingINR = billsData
     .filter((b) => b.status !== 'Paid')
-    .reduce((sum, b) => sum + b.amountINR, 0);
+    .reduce((sum, b) => sum + parseAmountNum(b.amountINR), 0);
 
   const dueSoonCount = billsData.filter((b) => b.status === 'Due Soon' || b.status === 'Pending').length;
 
@@ -214,9 +224,9 @@ const BillsList = ({
             <div className="px-4 py-2 rounded-xl bg-slate-800/90 border border-slate-700 text-right">
               <div className="text-xs text-slate-400">Total Upcoming</div>
               <div className="text-base font-bold text-white">
-                {currencyMode === 'USD' && `$${totalUpcomingUSD.toFixed(2)}`}
-                {currencyMode === 'INR' && `₹${totalUpcomingINR.toLocaleString()}`}
-                {currencyMode === 'dual' && `$${totalUpcomingUSD.toFixed(2)} (₹${totalUpcomingINR.toLocaleString()})`}
+                {currencyMode === 'USD' && `$${Number(totalUpcomingUSD).toFixed(2)}`}
+                {currencyMode === 'INR' && `₹${Math.round(totalUpcomingINR).toLocaleString()}`}
+                {currencyMode === 'dual' && `$${Number(totalUpcomingUSD).toFixed(2)} (₹${Math.round(totalUpcomingINR).toLocaleString()})`}
               </div>
             </div>
 

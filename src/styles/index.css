@@ -3,9 +3,9 @@
 /* ===== SubSense AI — Apple/Stripe/Linear/Vercel Theme System ===== */
 
 @theme {
-  /* Exact Requested Color Palette */
-  --color-background: #0B0F19;
-  --color-surface: #121826;
+  /* Exact Design Doc Color Palette */
+  --color-background: #0B1020;
+  --color-surface: #121A2F;
   --color-card: #171F2F;
   --color-surface-light: #1E293B;
   
@@ -19,13 +19,13 @@
   --color-danger: #EF4444;
   
   --color-text-primary: #FFFFFF;
-  --color-text-secondary: #9CA3AF;
+  --color-text-secondary: #A1A8B5;
   --color-text-muted: #6B7280;
   
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-hover: rgba(255, 255, 255, 0.18);
   
-  --color-glass: rgba(18, 24, 38, 0.7);
+  --color-glass: rgba(18, 26, 47, 0.7);
   --color-glass-card: rgba(23, 31, 47, 0.75);
   --color-glass-border: rgba(255, 255, 255, 0.08);
 
@@ -63,7 +63,7 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: #0B0F19;
+  background-color: #0B1020;
   color: #FFFFFF;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -79,7 +79,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0F19;
+  background: #0B1020;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -94,7 +94,7 @@ body {
 /* ===== Premium Glassmorphism ===== */
 
 .glass-nav {
-  background: rgba(11, 15, 25, 0.75);
+  background: rgba(11, 16, 32, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -117,7 +117,7 @@ body {
 }
 
 .glass-input {
-  background: rgba(18, 24, 38, 0.8);
+  background: rgba(18, 26, 47, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
   color: #FFFFFF;
@@ -130,7 +130,7 @@ body {
   box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.2);
 }
 
-/* ===== Premium Gradients ===== */
+/* ===== Premium Gradients & Utilities ===== */
 
 .gradient-blue-purple {
   background: linear-gradient(135deg, #5B8CFF 0%, #8B5CF6 100%);
@@ -140,8 +140,15 @@ body {
   background: linear-gradient(135deg, #6366F1 0%, #06B6D4 100%);
 }
 
+.gradient-text {
+  background: linear-gradient(135deg, #5B8CFF 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .gradient-text-primary {
-  background: linear-gradient(135deg, #FFFFFF 0%, #9CA3AF 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #A1A8B5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -159,6 +166,10 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.shadow-glow {
+  box-shadow: 0 0 30px -5px rgba(91, 140, 255, 0.35);
 }
 
 /* ===== Ambient Mesh & Gradient Orbs ===== */
