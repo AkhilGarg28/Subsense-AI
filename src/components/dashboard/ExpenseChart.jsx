@@ -11,74 +11,68 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import {
-  HiOutlineCalendar,
-  HiOutlineAdjustments,
-  HiOutlineTrendingDown,
-  HiOutlineTrendingUp,
-} from 'react-icons/hi';
-import { cn } from '../../utils/helpers';
+import { cn, formatCurrency } from '../../utils/helpers';
 
 /**
- * 6-Month default monthly spending dataset.
+ * Default monthly spending dataset (in INR ₹).
  */
 const defaultMonthlyData = [
-  { month: 'Jan', actual: 2150, target: 2400, savings: 250 },
-  { month: 'Feb', actual: 2380, target: 2400, savings: 20 },
-  { month: 'Mar', actual: 1980, target: 2300, savings: 320 },
-  { month: 'Apr', actual: 2520, target: 2300, savings: -220 },
-  { month: 'May', actual: 2100, target: 2250, savings: 150 },
-  { month: 'Jun', actual: 1890, target: 2200, savings: 310 },
+  { month: 'Feb', actual: 24500, target: 28000, savings: 3500 },
+  { month: 'Mar', actual: 28900, target: 30000, savings: 1100 },
+  { month: 'Apr', actual: 31200, target: 33000, savings: 1800 },
+  { month: 'May', actual: 33400, target: 35000, savings: 1600 },
+  { month: 'Jun', actual: 35800, target: 37000, savings: 1200 },
+  { month: 'Jul', actual: 37618, target: 40000, savings: 2382 },
 ];
 
 /**
- * Custom dark glassmorphism tooltip for Recharts.
+ * Custom dark glassmorphism tooltip for Recharts (in INR ₹).
  */
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
 
-  const actualVal = payload.find((p) => p.dataKey === 'actual')?.value || 0;
-  const targetVal = payload.find((p) => p.dataKey === 'target')?.value || 0;
+  const actualVal = payload.find((p) => p.dataKey === 'actual')?.value || payload[0]?.value || 0;
+  const targetVal = payload.find((p) => p.dataKey === 'target')?.value || Math.round(actualVal * 1.1);
   const variance = targetVal - actualVal;
   const isUnderBudget = variance >= 0;
 
   return (
-    <div className="rounded-xl border border-slate-700/80 bg-slate-900/95 p-3.5 shadow-2xl backdrop-blur-md">
-      <p className="text-xs font-bold uppercase tracking-wider text-text-muted">
+    <div className="rounded-xl border border-slate-700/80 bg-[#121A2F]/95 p-3.5 shadow-2xl backdrop-blur-md font-mono text-xs">
+      <p className="text-xs font-bold uppercase tracking-wider text-[#A1A8B5]">
         {label} Overview
       </p>
       <div className="mt-2.5 space-y-1.5 text-xs">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#5B8CFF]" />
             <span className="font-medium text-text-secondary">Actual Spend:</span>
           </div>
-          <span className="font-bold text-text-primary">
-            ${actualVal.toLocaleString()}
+          <span className="font-bold text-white">
+            {formatCurrency(actualVal)}
           </span>
         </div>
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#22C55E]" />
             <span className="font-medium text-text-secondary">Budget Target:</span>
           </div>
-          <span className="font-bold text-text-primary">
-            ${targetVal.toLocaleString()}
+          <span className="font-bold text-white">
+            {formatCurrency(targetVal)}
           </span>
         </div>
 
-        <div className="mt-2 border-t border-slate-800 pt-2 flex items-center justify-between gap-4">
-          <span className="text-[11px] font-semibold text-text-muted">Variance:</span>
+        <div className="mt-2 border-t border-white/10 pt-2 flex items-center justify-between gap-4">
+          <span className="text-[11px] font-semibold text-[#A1A8B5]">Variance:</span>
           <span
             className={cn(
               'font-bold text-xs px-2 py-0.5 rounded-md border',
               isUnderBudget
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20'
+                : 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20'
             )}
           >
-            {isUnderBudget ? `-$${variance} Under` : `+$${Math.abs(variance)} Over`}
+            {isUnderBudget ? `${formatCurrency(variance)} Under` : `${formatCurrency(Math.abs(variance))} Over`}
           </span>
         </div>
       </div>
@@ -86,27 +80,41 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-/**
- * ExpenseChart — Recharts Area / Line Chart component for SubSense AI dashboard.
- * Displays Monthly Spending (Actual vs Target) over 6 months with gradient area fills,
- * smooth monotone curves, custom dark glass tooltip, and view toggle controls.
- */
 const ExpenseChart = ({
   data = defaultMonthlyData,
   title = 'Monthly Spending Overview',
-  subtitle = 'Actual expenses vs budget target over 6 months',
+  subtitle = 'Actual recurring expenses vs budget target over time',
+  timeFilter = '6M',
+  onTimeFilterChange,
   className = '',
 }) => {
   const [chartType, setChartType] = useState('area'); // 'area' | 'line'
-  const [timeRange, setTimeRange] = useState('6M'); // '3M' | '6M' | '1Y'
+  const [timeRange, setTimeRange] = useState('6M');
   const [showActual, setShowActual] = useState(true);
   const [showTarget, setShowTarget] = useState(true);
 
+  const activeRange = timeFilter && timeFilter !== 'This Month' ? (timeFilter === 'Quarter' ? '3M' : '1Y') : timeRange;
+
+  // Normalize data elements so they support actual/amount properties
+  const normalizedData = React.useMemo(() => {
+    const sourceData = data && data.length > 0 ? data : defaultMonthlyData;
+    return sourceData.map((item) => {
+      const actual = item.actual !== undefined ? item.actual : (item.amount || item.value || 0);
+      const target = item.target !== undefined ? item.target : Math.round(actual * 1.1);
+      return {
+        month: item.month || 'Period',
+        actual,
+        target,
+        savings: target - actual,
+      };
+    });
+  }, [data]);
+
   // Filter data based on timeRange toggle
   const filteredData = React.useMemo(() => {
-    if (timeRange === '3M') return data.slice(-3);
-    return data;
-  }, [data, timeRange]);
+    if (activeRange === '3M') return normalizedData.slice(-3);
+    return normalizedData;
+  }, [normalizedData, activeRange]);
 
   // Aggregate stats
   const totalActual = filteredData.reduce((acc, curr) => acc + curr.actual, 0);
@@ -117,35 +125,39 @@ const ExpenseChart = ({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-2xl border border-glass-border bg-glass p-6 backdrop-blur-xl transition-all duration-300',
-        'hover:border-primary/40 hover:shadow-glow',
+        'group relative overflow-hidden rounded-[20px] border border-white/10 bg-[#171F2F]/80 p-6 sm:p-8 backdrop-blur-xl transition-all duration-300',
+        'hover:border-[#5B8CFF]/40 hover:shadow-glow-blue',
         className
       )}
     >
-      {/* Background Glow */}
-      <div className="pointer-events-none absolute -left-20 -top-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-20 -top-20 h-56 w-56 rounded-full bg-[#5B8CFF]/10 blur-3xl" />
 
       {/* Top Header & Interactive Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-glass-border pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
-          <h3 className="text-lg font-bold text-text-primary">{title}</h3>
-          <p className="mt-0.5 text-xs text-text-secondary">{subtitle}</p>
+          <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>
+          <p className="mt-0.5 text-xs text-[#A1A8B5]">{subtitle}</p>
         </div>
 
         {/* Control Toggles */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Time Range Selector */}
-          <div className="flex items-center rounded-xl border border-glass-border bg-surface/60 p-1">
+          <div className="flex items-center rounded-xl border border-white/10 bg-[#121A2F] p-1 font-mono text-xs">
             {['3M', '6M', '1Y'].map((range) => (
               <button
                 key={range}
                 type="button"
-                onClick={() => setTimeRange(range)}
+                onClick={() => {
+                  setTimeRange(range);
+                  if (onTimeFilterChange) {
+                    onTimeFilterChange(range === '3M' ? 'Quarter' : range === '1Y' ? 'Year' : 'This Month');
+                  }
+                }}
                 className={cn(
-                  'rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
-                  timeRange === range
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary'
+                  'rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer',
+                  activeRange === range
+                    ? 'bg-[#5B8CFF] text-white shadow-glow-blue'
+                    : 'text-[#A1A8B5] hover:text-white'
                 )}
               >
                 {range}
@@ -154,15 +166,15 @@ const ExpenseChart = ({
           </div>
 
           {/* Chart View Mode Toggle */}
-          <div className="flex items-center rounded-xl border border-glass-border bg-surface/60 p-1">
+          <div className="flex items-center rounded-xl border border-white/10 bg-[#121A2F] p-1 font-mono text-xs">
             <button
               type="button"
               onClick={() => setChartType('area')}
               className={cn(
-                'rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
+                'rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer',
                 chartType === 'area'
-                  ? 'bg-surface-light text-text-primary shadow-sm'
-                  : 'text-text-secondary hover:text-text-primary'
+                  ? 'bg-white/15 text-white shadow-sm'
+                  : 'text-[#A1A8B5] hover:text-white'
               )}
             >
               Area
@@ -171,10 +183,10 @@ const ExpenseChart = ({
               type="button"
               onClick={() => setChartType('line')}
               className={cn(
-                'rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
+                'rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer',
                 chartType === 'line'
-                  ? 'bg-surface-light text-text-primary shadow-sm'
-                  : 'text-text-secondary hover:text-text-primary'
+                  ? 'bg-white/15 text-white shadow-sm'
+                  : 'text-[#A1A8B5] hover:text-white'
               )}
             >
               Line
@@ -184,19 +196,19 @@ const ExpenseChart = ({
       </div>
 
       {/* Series Toggle Legends */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4 text-xs font-semibold">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+        <div className="flex items-center gap-4 font-bold">
           <button
             type="button"
             onClick={() => setShowActual(!showActual)}
             className={cn(
-              'flex items-center gap-2 rounded-lg border px-3 py-1.5 transition-all',
+              'flex items-center gap-2 rounded-lg border px-3 py-1.5 transition-all cursor-pointer',
               showActual
-                ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
-                : 'border-glass-border bg-transparent text-text-muted opacity-50'
+                ? 'border-[#5B8CFF]/40 bg-[#5B8CFF]/15 text-[#5B8CFF]'
+                : 'border-white/10 bg-transparent text-[#64748B] opacity-50'
             )}
           >
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#5B8CFF]" />
             <span>Actual Spend</span>
           </button>
 
@@ -204,19 +216,19 @@ const ExpenseChart = ({
             type="button"
             onClick={() => setShowTarget(!showTarget)}
             className={cn(
-              'flex items-center gap-2 rounded-lg border px-3 py-1.5 transition-all',
+              'flex items-center gap-2 rounded-lg border px-3 py-1.5 transition-all cursor-pointer',
               showTarget
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
-                : 'border-glass-border bg-transparent text-text-muted opacity-50'
+                ? 'border-[#22C55E]/40 bg-[#22C55E]/15 text-[#22C55E]'
+                : 'border-white/10 bg-transparent text-[#64748B] opacity-50'
             )}
           >
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-            <span>Target Budget</span>
+            <span className="h-2.5 w-2.5 rounded-full bg-[#22C55E]" />
+            <span>Budget Target</span>
           </button>
         </div>
 
-        <div className="text-xs text-text-secondary">
-          Avg Monthly: <span className="font-bold text-text-primary">${avgMonthly.toLocaleString()}</span>
+        <div className="text-xs text-[#A1A8B5]">
+          Avg Monthly: <span className="font-bold text-white">{formatCurrency(avgMonthly)}</span>
         </div>
       </div>
 
@@ -226,33 +238,33 @@ const ExpenseChart = ({
           {chartType === 'area' ? (
             <AreaChart
               data={filteredData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
             >
               <defs>
                 <linearGradient id="gradientActual" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#5B8CFF" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#5B8CFF" stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="gradientTarget" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#22C55E" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#22C55E" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
 
-              <CartesianGrid stroke="#334155" strokeDasharray="3 3" opacity={0.4} />
+              <CartesianGrid stroke="#1E293B" strokeDasharray="3 3" opacity={0.6} />
               <XAxis
                 dataKey="month"
                 stroke="#64748B"
                 fontSize={12}
                 tickLine={false}
-                axisLine={{ stroke: '#334155' }}
+                axisLine={{ stroke: '#1E293B' }}
               />
               <YAxis
                 stroke="#64748B"
-                fontSize={12}
+                fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: '#334155' }}
-                tickFormatter={(val) => `$${val}`}
+                axisLine={{ stroke: '#1E293B' }}
+                tickFormatter={(val) => `₹${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
               />
               <Tooltip content={<CustomTooltip />} />
 
@@ -260,8 +272,8 @@ const ExpenseChart = ({
                 <Area
                   type="monotone"
                   dataKey="target"
-                  name="Target Budget"
-                  stroke="#10B981"
+                  name="Budget Target"
+                  stroke="#22C55E"
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   fillOpacity={1}
@@ -274,7 +286,7 @@ const ExpenseChart = ({
                   type="monotone"
                   dataKey="actual"
                   name="Actual Spend"
-                  stroke="#3B82F6"
+                  stroke="#5B8CFF"
                   strokeWidth={3}
                   fillOpacity={1}
                   fill="url(#gradientActual)"
@@ -284,22 +296,22 @@ const ExpenseChart = ({
           ) : (
             <LineChart
               data={filteredData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
             >
-              <CartesianGrid stroke="#334155" strokeDasharray="3 3" opacity={0.4} />
+              <CartesianGrid stroke="#1E293B" strokeDasharray="3 3" opacity={0.6} />
               <XAxis
                 dataKey="month"
                 stroke="#64748B"
                 fontSize={12}
                 tickLine={false}
-                axisLine={{ stroke: '#334155' }}
+                axisLine={{ stroke: '#1E293B' }}
               />
               <YAxis
                 stroke="#64748B"
-                fontSize={12}
+                fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: '#334155' }}
-                tickFormatter={(val) => `$${val}`}
+                axisLine={{ stroke: '#1E293B' }}
+                tickFormatter={(val) => `₹${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
               />
               <Tooltip content={<CustomTooltip />} />
 
@@ -307,10 +319,10 @@ const ExpenseChart = ({
                 <Line
                   type="monotone"
                   dataKey="target"
-                  stroke="#10B981"
+                  stroke="#22C55E"
                   strokeWidth={2}
                   strokeDasharray="4 4"
-                  dot={{ r: 4, fill: '#10B981' }}
+                  dot={{ r: 4, fill: '#22C55E' }}
                 />
               )}
 
@@ -318,9 +330,9 @@ const ExpenseChart = ({
                 <Line
                   type="monotone"
                   dataKey="actual"
-                  stroke="#3B82F6"
+                  stroke="#5B8CFF"
                   strokeWidth={3}
-                  dot={{ r: 5, fill: '#3B82F6', strokeWidth: 2, stroke: '#1E293B' }}
+                  dot={{ r: 5, fill: '#5B8CFF', strokeWidth: 2, stroke: '#121A2F' }}
                 />
               )}
             </LineChart>
@@ -329,34 +341,34 @@ const ExpenseChart = ({
       </div>
 
       {/* Summary Footer */}
-      <div className="mt-5 grid grid-cols-3 gap-3 border-t border-glass-border pt-4 text-center">
+      <div className="mt-5 grid grid-cols-3 gap-3 border-t border-white/10 pt-4 text-center font-mono">
         <div>
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+          <p className="text-[11px] font-bold text-[#A1A8B5] uppercase tracking-wider">
             Total Spent
           </p>
-          <p className="mt-1 text-sm font-bold text-text-primary sm:text-base">
-            ${totalActual.toLocaleString()}
+          <p className="mt-1 text-sm font-extrabold text-white sm:text-base">
+            {formatCurrency(totalActual)}
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+          <p className="text-[11px] font-bold text-[#A1A8B5] uppercase tracking-wider">
             Total Budget
           </p>
-          <p className="mt-1 text-sm font-bold text-text-primary sm:text-base">
-            ${totalTarget.toLocaleString()}
+          <p className="mt-1 text-sm font-extrabold text-white sm:text-base">
+            {formatCurrency(totalTarget)}
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+          <p className="text-[11px] font-bold text-[#A1A8B5] uppercase tracking-wider">
             Net Savings
           </p>
           <p
             className={cn(
-              'mt-1 text-sm font-bold sm:text-base',
-              netVariance >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              'mt-1 text-sm font-extrabold sm:text-base',
+              netVariance >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'
             )}
           >
-            {netVariance >= 0 ? `+$${netVariance}` : `-$${Math.abs(netVariance)}`}
+            {netVariance >= 0 ? `+${formatCurrency(netVariance)}` : `-${formatCurrency(Math.abs(netVariance))}`}
           </p>
         </div>
       </div>
@@ -365,16 +377,11 @@ const ExpenseChart = ({
 };
 
 ExpenseChart.propTypes = {
-  data: PropTypes.arrayOf(
-    PropTypes.shape({
-      month: PropTypes.string.isRequired,
-      actual: PropTypes.number.isRequired,
-      target: PropTypes.number.isRequired,
-      savings: PropTypes.number,
-    })
-  ),
+  data: PropTypes.array,
   title: PropTypes.string,
   subtitle: PropTypes.string,
+  timeFilter: PropTypes.string,
+  onTimeFilterChange: PropTypes.func,
   className: PropTypes.string,
 };
 

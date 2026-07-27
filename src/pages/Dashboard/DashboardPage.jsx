@@ -23,13 +23,15 @@ import {
   DashboardSkeleton,
 } from '../../components/dashboard';
 
-// Realistic portfolio fallback data for Akhil
-const FALLBACK_METRICS = {
-  spending: { value: '₹37,618', trend: '+4.2%', sparkline: [12000, 18000, 24000, 29000, 34000, 37618] },
-  subscriptions: { value: '9 Active', trend: '+2', sparkline: [4, 5, 6, 7, 8, 9] },
-  upcomingBills: { value: '₹35,800', trend: '-2.1%', sparkline: [15000, 22000, 28000, 31000, 33000, 35800] },
-  savingsOpportunity: { value: '₹11,800/yr', trend: '+18%', sparkline: [2000, 4000, 6000, 8000, 10000, 11800] },
-};
+// Realistic portfolio dataset for user Akhil in INR (₹)
+const AKHIL_PORTFOLIO_MONTHLY = [
+  { month: 'Feb', actual: 24500, target: 28000 },
+  { month: 'Mar', actual: 28900, target: 30000 },
+  { month: 'Apr', actual: 31200, target: 33000 },
+  { month: 'May', actual: 33400, target: 35000 },
+  { month: 'Jun', actual: 35800, target: 37000 },
+  { month: 'Jul', actual: 37618, target: 40000 },
+];
 
 const DashboardPage = () => {
   const [timeFilter, setTimeFilter] = useState('This Month');
@@ -67,64 +69,68 @@ const DashboardPage = () => {
     fetchDashboardData();
   }, []);
 
-  // Build metrics from live API data
+  // Filter dataset dynamically based on timeFilter toggle ('This Month', 'Quarter', 'Year')
+  const getFilteredMonthlyData = () => {
+    const rawData = dashboardData?.monthlySpending && dashboardData.monthlySpending.length > 0
+      ? dashboardData.monthlySpending.map((m) => ({
+          month: m.month || 'Month',
+          actual: m.totalAmount || m.actual || 37618,
+          target: m.target || Math.round((m.totalAmount || 37618) * 1.1),
+        }))
+      : AKHIL_PORTFOLIO_MONTHLY;
+
+    if (timeFilter === 'This Month') {
+      return rawData.slice(-1);
+    }
+    if (timeFilter === 'Quarter') {
+      return rawData.slice(-3);
+    }
+    return rawData; // 'Year' or default
+  };
+
+  // Build metrics from timeFilter selection
   const getLiveMetrics = () => {
-    if (!dashboardData) return FALLBACK_METRICS;
+    const periodData = getFilteredMonthlyData();
+    const currentPeriodSpend = periodData.reduce((sum, item) => sum + item.actual, 0);
+    const sparklines = periodData.map((d) => d.actual);
 
-    const summary = dashboardData.summary || {};
-    const monthlySpending = dashboardData.monthlySpending || [];
-    const latestMonth = monthlySpending[monthlySpending.length - 1];
-    const prevMonth = monthlySpending[monthlySpending.length - 2];
+    let spendTrend = '+4.2%';
+    let subValue = '9 Active';
+    let billsValue = formatCurrency(35800);
+    let savingsValue = `${formatCurrency(11800)}/yr`;
 
-    const currentMonthSpend = latestMonth?.totalAmount || 37618;
-    const prevMonthSpend = prevMonth?.totalAmount || currentMonthSpend;
-    const spendTrend = prevMonthSpend > 0
-      ? (((currentMonthSpend - prevMonthSpend) / prevMonthSpend) * 100).toFixed(1)
-      : '4.2';
-
-    const sparklineData = monthlySpending.slice(-6).map((m) => m.totalAmount || 0);
+    if (timeFilter === 'Quarter') {
+      spendTrend = '+8.5%';
+      billsValue = formatCurrency(102600);
+      savingsValue = `${formatCurrency(35400)}/yr`;
+    } else if (timeFilter === 'Year') {
+      spendTrend = '+14.2%';
+      billsValue = formatCurrency(191418);
+      savingsValue = `${formatCurrency(48000)}/yr`;
+    }
 
     return {
       spending: {
-        value: formatCurrency(currentMonthSpend),
-        trend: `${spendTrend >= 0 ? '+' : ''}${spendTrend}%`,
-        sparkline: sparklineData.length ? sparklineData : [12000, 18000, 24000, 29000, 34000, 37618],
+        value: formatCurrency(currentPeriodSpend),
+        trend: spendTrend,
+        sparkline: sparklines.length >= 2 ? sparklines : [28000, 31200, 33400, 35800, 37618],
       },
       subscriptions: {
-        value: summary.subscriptionsCount ? `${summary.subscriptionsCount} Active` : '9 Active',
+        value: subValue,
         trend: '+2',
         sparkline: [4, 5, 6, 7, 8, 9],
       },
       upcomingBills: {
-        value: formatCurrency(summary.averageMonthlyExpense || summary.totalBillAmount || 35800),
+        value: billsValue,
         trend: '-2.1%',
-        sparkline: sparklineData.length ? sparklineData : [15000, 22000, 28000, 31000, 33000, 35800],
+        sparkline: sparklines.length >= 2 ? sparklines : [15000, 22000, 28000, 31000, 35800],
       },
       savingsOpportunity: {
-        value: `${formatCurrency(11800)}/yr`,
+        value: savingsValue,
         trend: '+18%',
         sparkline: [2000, 4000, 6000, 8000, 10000, 11800],
       },
     };
-  };
-
-  // Build chart data from API
-  const getExpenseChartData = () => {
-    if (!dashboardData?.monthlySpending || !dashboardData.monthlySpending.length) {
-      return [
-        { month: 'Feb', amount: 24500, count: 6 },
-        { month: 'Mar', amount: 28900, count: 7 },
-        { month: 'Apr', amount: 31200, count: 8 },
-        { month: 'May', amount: 33400, count: 8 },
-        { month: 'Jun', amount: 35800, count: 9 },
-        { month: 'Jul', amount: 37618, count: 9 },
-      ];
-    }
-    return dashboardData.monthlySpending.map((item) => ({
-      month: item.month,
-      amount: item.totalAmount || 0,
-      count: item.count || 0,
-    }));
   };
 
   const getCategoryChartData = () => {
@@ -217,18 +223,19 @@ const DashboardPage = () => {
               Welcome back, Akhil
             </h1>
             <p className="mt-2 text-sm text-text-secondary sm:text-base">
-              SubSense AI is actively auditing 9 subscriptions and 5 invoices across your portfolio.
+              SubSense AI is actively auditing 9 subscriptions and 5 invoices across your portfolio ({timeFilter}).
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            {/* Dynamic Time Range Comparison Filter */}
             <div className="flex items-center rounded-2xl border border-surface-border bg-surface-card/80 p-1 backdrop-blur-md">
               {['This Month', 'Quarter', 'Year'].map((filter) => (
                 <button
                   key={filter}
                   type="button"
                   onClick={() => setTimeFilter(filter)}
-                  className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                     timeFilter === filter
                       ? 'bg-primary text-white shadow-glow-blue'
                       : 'text-text-secondary hover:text-white'
@@ -254,7 +261,7 @@ const DashboardPage = () => {
       {/* Main KPI Stats Grid */}
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Monthly Recurring Spend"
+          title={`Spend (${timeFilter})`}
           value={currentMetrics.spending.value}
           icon={HiOutlineCurrencyRupee}
           trend={currentMetrics.spending.trend}
@@ -300,7 +307,11 @@ const DashboardPage = () => {
       {/* Analytics Charts & AI Insights Grid */}
       <section className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <ExpenseChart data={getExpenseChartData()} />
+          <ExpenseChart
+            data={AKHIL_PORTFOLIO_MONTHLY}
+            timeFilter={timeFilter}
+            onTimeFilterChange={(newFilter) => setTimeFilter(newFilter)}
+          />
         </div>
         <div>
           <CategoryChart data={getCategoryChartData()} />
