@@ -2,12 +2,14 @@
  * Utility helper functions for SubSense AI.
  */
 
-// Format currency values
-export const formatCurrency = (amount, currency = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
+// Format currency values (Default: INR ₹)
+export const formatCurrency = (amount, currency = 'INR') => {
+  const num = typeof amount === 'number' ? amount : parseFloat(amount || 0);
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency,
-  }).format(amount);
+    currency: currency || 'INR',
+    maximumFractionDigits: 0,
+  }).format(num);
 };
 
 // Format dates
@@ -18,17 +20,19 @@ export const formatDate = (date, options = {}) => {
     day: 'numeric',
     ...options,
   };
-  return new Date(date).toLocaleDateString('en-US', defaultOptions);
+  return new Date(date).toLocaleDateString('en-IN', defaultOptions);
 };
 
 // Truncate text with ellipsis
 export const truncateText = (text, maxLength = 50) => {
+  if (!text) return '';
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength)}...`;
 };
 
 // Generate initials from a name
 export const getInitials = (name) => {
+  if (!name) return 'A';
   return name
     .split(' ')
     .map((word) => word[0])

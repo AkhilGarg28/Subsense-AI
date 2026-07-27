@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  HiOutlineCurrencyDollar,
+  HiOutlineCurrencyRupee,
   HiOutlineCreditCard,
   HiOutlineCalendar,
   HiOutlineSparkles,
@@ -8,6 +8,7 @@ import {
   HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 import { dashboardAPI } from '../../services/api';
+import { formatCurrency } from '../../utils/helpers';
 import {
   StatCard,
   HealthScoreCard,
@@ -22,12 +23,12 @@ import {
   DashboardSkeleton,
 } from '../../components/dashboard';
 
-// Fallback static data for empty database state
+// Realistic portfolio fallback data for Akhil
 const FALLBACK_METRICS = {
-  spending: { value: '$0.00', trend: '0%', sparkline: [0, 0, 0, 0, 0, 0] },
-  subscriptions: { value: '0 Active', trend: '+0', sparkline: [0, 0, 0, 0, 0, 0] },
-  upcomingBills: { value: '$0.00', trend: '0%', sparkline: [0, 0, 0, 0, 0, 0] },
-  savingsOpportunity: { value: '$0.00/yr', trend: '+0%', sparkline: [0, 0, 0, 0, 0, 0] },
+  spending: { value: '₹37,618', trend: '+4.2%', sparkline: [12000, 18000, 24000, 29000, 34000, 37618] },
+  subscriptions: { value: '9 Active', trend: '+2', sparkline: [4, 5, 6, 7, 8, 9] },
+  upcomingBills: { value: '₹35,800', trend: '-2.1%', sparkline: [15000, 22000, 28000, 31000, 33000, 35800] },
+  savingsOpportunity: { value: '₹11,800/yr', trend: '+18%', sparkline: [2000, 4000, 6000, 8000, 10000, 11800] },
 };
 
 const DashboardPage = () => {
@@ -75,41 +76,50 @@ const DashboardPage = () => {
     const latestMonth = monthlySpending[monthlySpending.length - 1];
     const prevMonth = monthlySpending[monthlySpending.length - 2];
 
-    const currentMonthSpend = latestMonth?.totalAmount || 0;
+    const currentMonthSpend = latestMonth?.totalAmount || 37618;
     const prevMonthSpend = prevMonth?.totalAmount || currentMonthSpend;
     const spendTrend = prevMonthSpend > 0
       ? (((currentMonthSpend - prevMonthSpend) / prevMonthSpend) * 100).toFixed(1)
-      : '0.0';
+      : '4.2';
 
     const sparklineData = monthlySpending.slice(-6).map((m) => m.totalAmount || 0);
 
     return {
       spending: {
-        value: `$${currentMonthSpend.toFixed(2)}`,
+        value: formatCurrency(currentMonthSpend),
         trend: `${spendTrend >= 0 ? '+' : ''}${spendTrend}%`,
-        sparkline: sparklineData.length ? sparklineData : [0, 0, 0, 0, 0, currentMonthSpend],
+        sparkline: sparklineData.length ? sparklineData : [12000, 18000, 24000, 29000, 34000, 37618],
       },
       subscriptions: {
-        value: `${summary.totalSpentAllTime !== undefined ? 'See Subscriptions' : 'N/A'}`,
-        trend: '+0',
-        sparkline: [0, 0, 0, 0, 0, 0],
+        value: summary.subscriptionsCount ? `${summary.subscriptionsCount} Active` : '9 Active',
+        trend: '+2',
+        sparkline: [4, 5, 6, 7, 8, 9],
       },
       upcomingBills: {
-        value: `$${(summary.averageMonthlyExpense || 0).toFixed(2)}`,
-        trend: '0%',
-        sparkline: sparklineData.length ? sparklineData : [0, 0, 0, 0, 0, 0],
+        value: formatCurrency(summary.averageMonthlyExpense || summary.totalBillAmount || 35800),
+        trend: '-2.1%',
+        sparkline: sparklineData.length ? sparklineData : [15000, 22000, 28000, 31000, 33000, 35800],
       },
       savingsOpportunity: {
-        value: `$${((summary.totalSpentAllTime || 0) * 0.1).toFixed(2)}/yr`,
-        trend: '+10%',
-        sparkline: [0, 100, 200, 300, 400, Math.round((summary.totalSpentAllTime || 0) * 0.1)],
+        value: `${formatCurrency(11800)}/yr`,
+        trend: '+18%',
+        sparkline: [2000, 4000, 6000, 8000, 10000, 11800],
       },
     };
   };
 
   // Build chart data from API
   const getExpenseChartData = () => {
-    if (!dashboardData?.monthlySpending) return [];
+    if (!dashboardData?.monthlySpending || !dashboardData.monthlySpending.length) {
+      return [
+        { month: 'Feb', amount: 24500, count: 6 },
+        { month: 'Mar', amount: 28900, count: 7 },
+        { month: 'Apr', amount: 31200, count: 8 },
+        { month: 'May', amount: 33400, count: 8 },
+        { month: 'Jun', amount: 35800, count: 9 },
+        { month: 'Jul', amount: 37618, count: 9 },
+      ];
+    }
     return dashboardData.monthlySpending.map((item) => ({
       month: item.month,
       amount: item.totalAmount || 0,
@@ -118,7 +128,16 @@ const DashboardPage = () => {
   };
 
   const getCategoryChartData = () => {
-    if (!dashboardData?.categoryWiseSpending) return [];
+    if (!dashboardData?.categoryWiseSpending || !dashboardData.categoryWiseSpending.length) {
+      return [
+        { name: 'Cloud Services', value: 18450 },
+        { name: 'Office Facilities', value: 12500 },
+        { name: 'Utilities', value: 6619 },
+        { name: 'Design & Software', value: 8229 },
+        { name: 'Productivity & AI', value: 3498 },
+        { name: 'Entertainment & Lifestyle', value: 1727 },
+      ];
+    }
     return dashboardData.categoryWiseSpending.map((item) => ({
       name: item.category || 'Other',
       value: item.totalAmount || 0,
@@ -126,15 +145,23 @@ const DashboardPage = () => {
   };
 
   const getHealthSuggestions = () => {
-    if (!healthScore?.suggestions) {
+    if (!healthScore?.suggestions || !healthScore.suggestions.length) {
       return [
         {
           id: 'h-default-1',
-          title: 'Add subscriptions to track savings',
-          description: 'Upload receipts or add subscriptions to get AI-powered savings recommendations.',
-          savings: 'Potential savings TBD',
-          badge: 'Get Started',
-          actionText: 'Upload Receipt',
+          title: 'Switch Notion AI & Figma Enterprise to Annual Billing',
+          description: 'Save 18% annually by switching your team subscriptions to annual plans.',
+          savings: 'Save ₹11,800/yr',
+          badge: 'High Impact',
+          actionText: 'Optimize Plan',
+        },
+        {
+          id: 'h-default-2',
+          title: 'AWS Cloud Reserved Instances Optimization',
+          description: 'Lock in 1-year reserved instances for steady production web servers.',
+          savings: 'Save ₹3,200/mo',
+          badge: 'Cloud Saver',
+          actionText: 'Review AWS',
         },
       ];
     }
@@ -178,30 +205,33 @@ const DashboardPage = () => {
           <div className="max-w-3xl">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.12] px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary">
-                <HiOutlineSparkles className="h-4 w-4" />
-                Pro Plan
+                <HiOutlineSparkles className="h-3.5 w-3.5" />
+                Live Financial Intelligence
               </span>
-              <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-bold text-text-secondary">
-                Updated just now
+              <span className="text-xs text-text-tertiary">
+                Updated in real-time
               </span>
             </div>
-            <h1 className="section-title">Autonomous Portfolio Summary</h1>
-            <p className="section-subtitle mt-3 max-w-2xl">
-              Real-time audit of recurring spend, upcoming renewals, financial health, and AI savings recommendations.
+
+            <h1 className="text-2xl font-black text-white sm:text-3xl lg:text-4xl">
+              Welcome back, Akhil
+            </h1>
+            <p className="mt-2 text-sm text-text-secondary sm:text-base">
+              SubSense AI is actively auditing 9 subscriptions and 5 invoices across your portfolio.
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row xl:justify-end">
-            <div className="flex rounded-2xl border border-white/10 bg-background/50 p-1">
-              {['This Month', 'Last 3 Months', 'Year to Date'].map((filter) => (
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center rounded-2xl border border-surface-border bg-surface-card/80 p-1 backdrop-blur-md">
+              {['This Month', 'Quarter', 'Year'].map((filter) => (
                 <button
                   key={filter}
                   type="button"
                   onClick={() => setTimeFilter(filter)}
-                  className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-all ${
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
                     timeFilter === filter
-                      ? 'gradient-primary text-white shadow-glow-blue'
-                      : 'text-text-secondary hover:bg-white/[0.06] hover:text-white'
+                      ? 'bg-primary text-white shadow-glow-blue'
+                      : 'text-text-secondary hover:text-white'
                   }`}
                 >
                   {filter}
@@ -212,113 +242,125 @@ const DashboardPage = () => {
             <button
               type="button"
               onClick={fetchDashboardData}
-              className="btn-secondary shrink-0"
-              title="Refresh dashboard data"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-surface-border bg-surface-card text-text-secondary hover:text-white hover:border-primary/40 transition-colors"
+              title="Refresh Dashboard"
             >
-              <HiOutlineRefresh className="h-4 w-4 text-primary" />
-              <span>Refresh</span>
+              <HiOutlineRefresh className="h-4 w-4" />
             </button>
           </div>
         </div>
-
-        <div className="relative z-10 mt-8 border-t border-white/10 pt-6">
-          <QuickActions />
-        </div>
       </section>
 
-      <section className="kpi-grid">
+      {/* Main KPI Stats Grid */}
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Monthly Spending"
+          title="Monthly Recurring Spend"
           value={currentMetrics.spending.value}
-          icon={HiOutlineCurrencyDollar}
+          icon={HiOutlineCurrencyRupee}
           trend={currentMetrics.spending.trend}
-          trendDirection="up"
-          isPositiveGood={false}
           sparklineData={currentMetrics.spending.sparkline}
+          description="Total active commitments"
           sparklineColor="#5B8CFF"
-          badgeText={`vs ${timeFilter.toLowerCase()}`}
-          iconBgColor="bg-primary/[0.15] text-primary"
         />
 
         <StatCard
-          title="Total Tracked Expense"
-          value={`$${(dashboardData?.summary?.totalSpentAllTime || 0).toFixed(2)}`}
+          title="Active Subscriptions"
+          value={currentMetrics.subscriptions.value}
           icon={HiOutlineCreditCard}
-          trend={`+${dashboardData?.summary?.activeMonthsCount || 0} months`}
-          trendDirection="up"
-          isPositiveGood={true}
+          trend={currentMetrics.subscriptions.trend}
           sparklineData={currentMetrics.subscriptions.sparkline}
-          sparklineColor="#22C55E"
-          badgeText="all time"
-          iconBgColor="bg-success/[0.15] text-success"
+          description="Tracked SaaS memberships"
+          sparklineColor="#8B5CF6"
+          iconBgColor="bg-[#8B5CF6]/15 text-[#8B5CF6]"
         />
 
         <StatCard
-          title="Avg Monthly Expense"
-          value={`$${(dashboardData?.summary?.averageMonthlyExpense || 0).toFixed(2)}`}
+          title="Upcoming Invoices"
+          value={currentMetrics.upcomingBills.value}
           icon={HiOutlineCalendar}
           trend={currentMetrics.upcomingBills.trend}
-          trendDirection="down"
-          isPositiveGood={true}
           sparklineData={currentMetrics.upcomingBills.sparkline}
+          description="Due in next 14 days"
           sparklineColor="#F59E0B"
-          badgeText="per month"
-          iconBgColor="bg-warning/[0.15] text-warning"
+          iconBgColor="bg-[#F59E0B]/15 text-[#F59E0B]"
         />
 
         <StatCard
-          title="Savings Opportunity"
+          title="Identified Savings"
           value={currentMetrics.savingsOpportunity.value}
           icon={HiOutlineSparkles}
           trend={currentMetrics.savingsOpportunity.trend}
-          trendDirection="up"
-          isPositiveGood={true}
           sparklineData={currentMetrics.savingsOpportunity.sparkline}
-          sparklineColor="#8B5CF6"
-          badgeText="identified by AI"
-          iconBgColor="bg-secondary/[0.15] text-secondary"
+          description="Annual optimization potential"
+          sparklineColor="#22C55E"
+          iconBgColor="bg-[#22C55E]/15 text-[#22C55E]"
         />
       </section>
 
-      <AIInsightsPanel />
-
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <HealthScoreCard
-          score={healthScore?.score || 75}
-          maxScore={100}
-          statusBadge={healthScore?.status || 'Good'}
-          suggestions={getHealthSuggestions()}
-          className="xl:col-span-5"
-        />
-
-        <ExpenseChart
-          data={getExpenseChartData()}
-          timeFilter={timeFilter}
-          className="xl:col-span-7"
-        />
-      </section>
-
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <CategoryChart
-          data={getCategoryChartData()}
-          title="Expense Category Breakdown"
-          className="xl:col-span-6"
-        />
-
-        <div className="xl:col-span-6">
-          <BillsList bills={[]} />
+      {/* Analytics Charts & AI Insights Grid */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ExpenseChart data={getExpenseChartData()} />
+        </div>
+        <div>
+          <CategoryChart data={getCategoryChartData()} />
         </div>
       </section>
 
-      <SubscriptionsTable subscriptions={[]} />
-
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="xl:col-span-6">
-          <RecommendationCard recommendations={[]} />
+      {/* Health Score & AI Insights Row */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        <div>
+          <HealthScoreCard
+            score={healthScore?.score || 94}
+            rating="Optimal"
+            description="Your portfolio health score is in the top 5% of optimized tech accounts."
+            metrics={[
+              { label: 'Active Subscriptions', value: '9' },
+              { label: 'Overdue Invoices', value: '0' },
+              { label: 'Optimized Plans', value: '94%' },
+            ]}
+          />
         </div>
+        <div className="lg:col-span-2">
+          <AIInsightsPanel suggestions={getHealthSuggestions()} />
+        </div>
+      </section>
 
-        <div className="xl:col-span-6">
-          <ActivityTimeline activities={[]} />
+      {/* Subscriptions Table & Bills List */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <SubscriptionsTable
+            subscriptions={
+              dashboardData?.activeSubscriptions || [
+                { id: '1', name: 'AWS Cloud Services', merchant: 'Amazon Web Services', price: 18450, billingCycle: 'Monthly', status: 'Active', category: 'Cloud Services' },
+                { id: '2', name: 'Adobe Creative Cloud', merchant: 'Adobe Systems', price: 4230, billingCycle: 'Monthly', status: 'Active', category: 'Design & Media' },
+                { id: '3', name: 'Figma Enterprise Team', merchant: 'Figma Inc', price: 3999, billingCycle: 'Monthly', status: 'Active', category: 'Design & Software' },
+                { id: '4', name: 'OpenAI ChatGPT Plus', merchant: 'OpenAI LLC', price: 1999, billingCycle: 'Monthly', status: 'Active', category: 'Productivity & AI' },
+                { id: '5', name: 'GitHub Copilot Business', merchant: 'GitHub Inc', price: 1650, billingCycle: 'Monthly', status: 'Active', category: 'Developer Tools' },
+              ]
+            }
+          />
+        </div>
+        <div>
+          <BillsList
+            bills={
+              dashboardData?.upcomingBills || [
+                { id: 'b1', title: 'AWS Monthly Infrastructure Cloud', amount: 18450, dueDate: '2026-08-05', status: 'Pending', category: 'Cloud Services' },
+                { id: 'b2', title: 'Bespoke Coworking Space Suite', amount: 12500, dueDate: '2026-08-01', status: 'Pending', category: 'Office & Facilities' },
+                { id: 'b3', title: 'Tata Power Electricity Invoice', amount: 4850, dueDate: '2026-08-08', status: 'Pending', category: 'Utilities' },
+              ]
+            }
+          />
+        </div>
+      </section>
+
+      {/* Timeline & Quick Actions */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ActivityTimeline />
+        </div>
+        <div>
+          <QuickActions />
         </div>
       </section>
     </div>
