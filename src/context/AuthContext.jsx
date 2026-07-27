@@ -17,12 +17,12 @@ export const AuthProvider = ({ children }) => {
         .getProfile()
         .then((res) => {
           const userData = res.data?.data?.user || res.data?.data || res.data?.user;
-          setUser(userData || { name: 'Demo User', email: 'user@subsense.ai', role: 'Pro Member' });
+          setUser(userData || { name: 'Akhil', email: 'akhil@subsense.ai', role: 'Pro Member' });
           setIsAuthenticated(true);
         })
         .catch(() => {
           // If profile check fails (e.g. backend offline), maintain session if token exists
-          setUser({ name: 'SubSense User', email: 'user@subsense.ai', role: 'Pro Member' });
+          setUser({ name: 'Akhil', email: 'akhil@subsense.ai', role: 'Pro Member' });
           setIsAuthenticated(true);
         })
         .finally(() => {
@@ -40,8 +40,8 @@ export const AuthProvider = ({ children }) => {
       const res = await authAPI.login(credentials);
       const token = res.data?.token || res.data?.data?.token || 'subsense_auth_token_demo';
       const userData = res.data?.user || res.data?.data?.user || res.data?.data || {
-        name: credentials.email ? credentials.email.split('@')[0] : 'Demo User',
-        email: credentials.email || 'user@subsense.ai',
+        name: 'Akhil',
+        email: credentials.email || 'akhil@subsense.ai',
         role: 'Pro Member'
       };
 
@@ -51,11 +51,10 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: userData };
     } catch (err) {
       console.warn('[AuthContext] Backend login error, using local session fallback:', err);
-      // Graceful fallback for offline / demo mode
       const mockToken = 'subsense_demo_jwt_token';
       const mockUser = {
-        name: credentials.email ? credentials.email.split('@')[0] : 'Demo User',
-        email: credentials.email || 'user@subsense.ai',
+        name: 'Akhil',
+        email: credentials.email || 'akhil@subsense.ai',
         role: 'Pro Member'
       };
       localStorage.setItem('subsense_token', mockToken);
@@ -73,8 +72,8 @@ export const AuthProvider = ({ children }) => {
       const res = await authAPI.signup(userData);
       const token = res.data?.token || res.data?.data?.token || 'subsense_auth_token_demo';
       const newUser = res.data?.user || res.data?.data?.user || res.data?.data || {
-        name: userData.name || 'New Member',
-        email: userData.email || 'user@subsense.ai',
+        name: userData.name || 'Akhil',
+        email: userData.email || 'akhil@subsense.ai',
         role: 'Pro Member'
       };
 
@@ -86,8 +85,8 @@ export const AuthProvider = ({ children }) => {
       console.warn('[AuthContext] Backend signup error, using local session fallback:', err);
       const mockToken = 'subsense_demo_jwt_token';
       const mockUser = {
-        name: userData.name || 'New Member',
-        email: userData.email || 'user@subsense.ai',
+        name: userData.name || 'Akhil',
+        email: userData.email || 'akhil@subsense.ai',
         role: 'Pro Member'
       };
       localStorage.setItem('subsense_token', mockToken);
